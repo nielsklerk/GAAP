@@ -19,7 +19,7 @@ def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
     """
     # Convert to wanted dtype
     weight = weight.astype(dtype, copy=False)
-    psf = psf.astype(dtype, copy=False)
+    psf = psf[::-1, ::-1].astype(dtype, copy=False)
 
     # Compute padded shape
     pad_shape = [s1 + s2 - 1 for s1, s2 in zip(weight.shape, psf.shape)]
