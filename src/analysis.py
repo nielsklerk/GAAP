@@ -2,6 +2,8 @@ import numpy as np
 from numpy.fft import fft2, ifft2, fftshift, ifftshift
 from scipy.signal import fftconvolve
 from scipy.ndimage import map_coordinates
+from scipy.spatial import cKDTree
+import pandas as pd
 
 
 def gaussian_weight(height, width, xc=0, yc=0, a=0, b=0):
@@ -59,3 +61,37 @@ def calculate_gaap_flux(image, psf, weight, centers):
     sigma = np.sqrt(np.sum(x ** 2) * np.sum(weight_rescale ** 2) / len(x))
 
     return measured_F, sigma
+
+def align_fluxes_by_reference(dfs, max_dist=2.0):
+    # Find reference catalog (smallest)
+    ref_band = min(dfs, key=lambda k: len(dfs[k]))
+    ref_df = dfs[ref_band]
+    x_ref = ref_df['x'].values
+    y_ref = ref_df['y'].values
+    ref_points = np.column_stack((x_ref, y_ref))
+
+    bands = list(dfs.keys())
+    flux_list = []
+
+    for band in bands:
+        df = dfs[band]
+        x = df['x'].values
+        y = df['y'].values
+        points = np.column_stack((x, y))
+
+        # Build KDTree and query nearest neighbor for each reference point
+        tree = cKDTree(points)
+        dist, idx = tree.query(ref_points, distance_upper_bound=max_dist)
+
+        # Initialize flux array with NaNs
+        flux_aligned = np.full(len(ref_points), np.nan)
+
+        # Fill only valid matches
+        valid = idx < len(df)
+        flux_aligned[valid] = df['flux'].values[idx[valid]]
+
+        flux_list.append(flux_aligned)
+
+    # Combine into 2D array: rows = galaxies, columns = filters
+    flux_matrix = np.column_stack(flux_list)
+    return bands, flux_matrix
