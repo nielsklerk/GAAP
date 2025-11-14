@@ -4,17 +4,25 @@ from scipy.signal import fftconvolve
 from scipy.ndimage import map_coordinates
 from scipy.spatial import cKDTree
 import pandas as pd
+from functools import lru_cache
+from joblib import Memory
+memory = Memory("/net/vdesk/data2/deklerk/GAAP_data/cache_dir", verbose=0)
 
 
-def gaussian_weight(height, width, xc=0, yc=0, a=0, b=0):
-    """
-    Compute a Gaussian weight map centered at (xc, yc).
-    """
-    y, x = np.indices((height, width), dtype=float)
-    weight = np.exp(-0.5 * (((x - xc) / a) ** 2 + ((y - yc) / b) ** 2))
-    return weight / weight.sum()
+@lru_cache(maxsize=None)
+def gaussian_1d(n, center, sigma):
+    x = np.arange(n, dtype=float)
+    return np.exp(-0.5 * ((x - center) / sigma) ** 2)
 
+def gaussian_weight(height, width, xc=0, yc=0, a=1, b=1):
+    gx = gaussian_1d(width,  xc, a)
+    gy = gaussian_1d(height, yc, b)
 
+    weight = gy[:, None] * gx[None, :]
+    weight /= weight.sum()
+    return weight
+
+@memory.cache
 def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
     """
     Perform Wiener deconvolution on an weight function using the given PSF.
@@ -52,13 +60,16 @@ def calculate_gaap_flux(image, psf, weight, centers):
     weight_rescale = wiener_deconvolution(weight, psf, 0)
     flux_map = fftconvolve(image, weight_rescale[::-1, ::-1], mode='same')
 
-    measured_F = np.zeros(len(centers))
-    for i, (xc, yc) in enumerate(centers):
-        measured_F[i] = map_coordinates(flux_map, [[yc], [xc]], order=1)
+    centers = np.asarray(centers)
+    ys = centers[:, 1]
+    xs = centers[:, 0]
 
-    x = image[image<0].flatten()
+    valid = np.isfinite(xs) & np.isfinite(ys)
+    measured_F = np.full(len(centers), np.nan, dtype=np.float32)
+    measured_F[valid] = map_coordinates(flux_map, [ys[valid], xs[valid]], order=1)
 
-    sigma = np.sqrt(np.sum(x ** 2) * np.sum(weight_rescale ** 2) / len(x))
+    x_negative = image[image<0].flatten()
+    sigma = np.sqrt(np.sum(x_negative ** 2) * np.sum(weight_rescale ** 2) / len(x_negative))
 
     return measured_F, sigma
 
