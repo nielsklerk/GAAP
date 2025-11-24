@@ -1,0 +1,92 @@
+\documentclass[oneside, single, authoryear, semicolon, 12pt]{lion-msc}
+\usepackage{lipsum}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage[version=4]{mhchem}
+\usepackage{parskip}
+\usepackage{float}
+\usepackage{makecell}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{caption} 
+\usepackage{amsmath}
+\usepackage{amssymb}
+\title{Measuring galaxy colours from Euclid+Rubin data}
+\author{Niels de Klerk}
+
+\major{Astronomy and Physics}
+\affiliation{Leiden Observatory, Universiteit Leiden}
+
+\newdate{date}{\day}{\month}{\year}           % definition of time and date using datetime package
+% \newdate{date}{27}{08}{2010}
+\date{\displaydate{date}}
+
+\studentid{s3640477}                           % check you student ID, LaTeX does not do this
+\abstract{}% limit your self to 1/2 page or 500 words
+\supervisor{Prof. Dr. K. Kuijken}
+
+\degree{Master of Science}                     % The default option is "Bachelor of Science", change if needed
+
+\major{Astronomy}                  % The default option is "Physics", change if needed
+%\major{Physics and Mathematics}
+
+% optional cover picture - should be jpg or pdf
+% \coverpicture{\includegraphics[width=2cm]{Latex/lion-msc-logo.pdf}}
+
+% Use this to make hyperlinks visible in the document.
+% \hypersetup{colorlinks=true}
+
+% ---------------------------------------------------------------- My defintions!
+\renewcommand{\vec}[1] {\ensuremath{ \overrightarrow{ #1 } }}
+% \renewcommand{\vec}[1] {\ensuremath{ \mathbf{ #1 } }}
+% \bra \ket \braket and \proj
+\newcommand{\bra}[1]{\ensuremath{\langle #1 \vert}}
+\newcommand{\ket}[1]{\ensuremath{\vert #1 \rangle}}
+\newcommand{\braket}[2]{\ensuremath{\langle #1 \vert #2 \rangle}}
+\newcommand{\proj}[1]{\ensuremath{\vert #1 \rangle \langle #1 \vert}}
+
+\newcommand{\kpar}{\ensuremath{k_\parallel}}
+
+\newcommand{\4}{$_4$}
+\newcommand{\3}{$_3$}
+\newcommand{\2}{$_2$}
+% ----------------------------------------------------------------
+
+% \usepackage{tocloft}
+% \renewcommand{\cftchapdotsep}{\cftdotsep}
+\begin{document}
+
+% roman numbering in the table of contents section
+\pagenumbering{roman}
+
+\maketitle
+
+\tableofcontents
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+\include{report/sections/introduction}
+
+\chapter{Theoretical Background}\label{Ch: theory}
+
+\include{report/sections/methods}
+
+\include{report/sections/results}
+
+\include{report/sections/discussion}
+
+\include{report/sections/conclusion}
+
+
+
+% \section*{Acknowledgements}
+
+
+\bibliographystyle{aa.bst}
+\bibliography{references}
+
+
+\appendix
+\end{document}
