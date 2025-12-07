@@ -1,23 +1,74 @@
 from astropy.io import fits
 import numpy as np
-from src.analysis import gaussian_weight, wiener_deconvolution
+from numpy.fft import fft2, ifft2, fftshift, ifftshift
 from astropy.wcs import WCS
 from scipy.signal import fftconvolve
 from scipy.ndimage import map_coordinates
 from astropy.nddata import Cutout2D
 from astropy.table import Table
 import matplotlib.pyplot as plt
+from functools import lru_cache
+from joblib import Memory
+memory = Memory("/net/vdesk/data2/deklerk/GAAP_data/cache_dir", verbose=0)
 
-def find_flux(image_path: str,
-              telescope: str,
-              weight_size: float,
-              ra: np.ndarray,
-              dec: np.ndarray,
-              correlated: float = None,
-              psf_path:str = None,
-              catalog_path: str = None,
-              psf_size: float = 25,
-              tilesize:int = 100
+
+@lru_cache(maxsize=None)
+def gaussian_1d(n, center, sigma):
+    x = np.arange(n, dtype=float)
+    return np.exp(-0.5 * ((x - center) / sigma) ** 2)
+
+def gaussian_weight(height, width, xc=0, yc=0, a=1):
+    gx = gaussian_1d(width,  xc, a)
+    gy = gaussian_1d(height, yc, a)
+
+    weight = gy[:, None] * gx[None, :]
+    weight /= weight.sum()
+    return weight
+
+@memory.cache
+def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
+    """
+    Perform Wiener deconvolution on an weight function using the given PSF.
+    """
+    print("Deconvolving weight function")
+    # Convert to wanted dtype
+    weight = weight.astype(dtype, copy=False)
+    psf = psf[::-1, ::-1].astype(dtype, copy=False)
+
+    # Compute padded shape
+    pad_shape = [s1 + s2 - 1 for s1, s2 in zip(weight.shape, psf.shape)]
+
+    # Center PSF in padded array
+    psf_padded = np.zeros(pad_shape, dtype=dtype)
+    y0 = pad_shape[0] // 2 - psf.shape[0] // 2
+    x0 = pad_shape[1] // 2 - psf.shape[1] // 2
+    psf_padded[y0 : y0 + psf.shape[0], x0 : x0 + psf.shape[1]] = psf
+
+    # Compute FFTs of image and PSF
+    psf_fft = fft2(ifftshift(psf_padded))
+    weight_fft = fft2(weight, pad_shape)
+
+    # Wiener deconvolve
+    denom = (psf_fft * np.conj(psf_fft)) + K
+    result_fft = (np.conj(psf_fft) * weight_fft) / denom
+    result = np.real(ifft2(result_fft))
+
+    # Crop back to original image size
+    result = result[:weight.shape[0], :weight.shape[1]]
+    return result
+
+
+def find_flux(
+    image_path: str,
+    telescope: str,
+    weight_size: float,
+    ra: np.ndarray,
+    dec: np.ndarray,
+    correlated: float = None,
+    psf_path: str = None,
+    catalog_path: str = None,
+    psf_size: float = 25,
+    tilesize: int = 100,
 ) -> tuple[np.ndarray, float]:
     """Find fluxes in an image at given coordinates using weighted aperture photometry.
 
@@ -29,98 +80,131 @@ def find_flux(image_path: str,
         dec (np.ndarray): Array of dec
         correlated (float, optional): Correlation length for noise estimation. Defaults to None.
         psf_path (str, optional): Path to the PSF file. If None, a PSF will be created from the image. Defaults to None.
+        catalog_path (str, optional): Path to the catalog file. *.cat has to contain "FLUX_RADIUS", "FLUX_AUTO", "X_IMAGE", "Y_IMAGE".
         psf_size (float, optional): Size of the PSF to create if psf_path is None. Defaults to 25.
         tilesize (int, optional): Size of tiles for local flux measurement. If None, use full image. Defaults to None.
     Returns:
         np.ndarray: Array of fluxes at the given coordinates.
         float: Estimated noise sigma.
     """
-    print('Analyzing image')
+    if psf_path == None and catalog_path == None:
+        raise Exception("Need either psf_path or catalog_path")
+
+    print("Analyzing image")
+    # Open the image and extract useful information
     with fits.open(image_path) as hdul:
         hdu = hdul[1 if telescope == "Rubin" else 0]
-    image = hdu.data
-    wcs = WCS(hdu.header)
-    nx = hdu.header["NAXIS1"]
-    ny = hdu.header["NAXIS2"]
+        image = hdu.data
+        wcs = WCS(hdu.header)
+        nx = hdu.header["NAXIS1"]
+        ny = hdu.header["NAXIS2"]
 
+    # Convert the image to μJy if in AB magnitude
     try:
-        zeropoint = hdu.header['MAGZERO']
-        conversion_factor = 10**((8.90 - zeropoint)/2.5) * 10**9
+        zeropoint = hdu.header["MAGZERO"]
+        conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 10**9
     except:
         conversion_factor = 1
     image *= conversion_factor
-    
 
+    # Translate the ra and dec into pixel coordinates
     x, y = wcs.wcs_world2pix(ra, dec, 0, ra_dec_order=True)
     mask = (x >= 0) & (x < nx) & (y >= 0) & (y < ny)
     x[~mask] = None
     y[~mask] = None
 
-    if telescope == 'Rubin':
-        intrinsic_weight = gaussian_weight(nx, ny, nx//2, ny//2, weight_size/2, weight_size/2)
+    if telescope == "Rubin":
+        # Make weight map
+        intrinsic_weight = gaussian_weight(
+            nx, ny, nx // 2, ny // 2, weight_size / 2,
+        )
+
+        # Load PSF and if not available create one
         if psf_path is not None:
             with fits.open(psf_path) as hdul:
                 psf = hdul[0].data
         else:
-            print('Creating PSF')
-            catalog = Table.read(catalog_path, format='ascii')
+            print("Creating PSF")
+            catalog = Table.read(catalog_path, format="ascii")
             psf = create_psf(image, catalog_path, psf_size)
         
-        print('Deconvolving weight function')
+        # Calculate weight map and apply to image
         weight = wiener_deconvolution(intrinsic_weight, psf)
-        flux_map = fftconvolve(image, weight[::-1, ::-1], mode='same')
+        flux_map = fftconvolve(image, weight[::-1, ::-1], mode="same")
+
+        # Extracting fluxes from image
         measured_fluxes = map_coordinates(flux_map, [y, x], order=1)
+
+        # Calculate error on the flux
         if correlated is not None:
             sigma = find_correlated_sigma(image, correlated)
         else:
-            negative_pixels = image[image<0].flatten()
-            sigma = np.sqrt(np.sum(negative_pixels ** 2) * np.sum(weight ** 2) / len(negative_pixels))
+            negative_pixels = image[image < 0].flatten()
+            sigma = np.sqrt(
+                np.sum(negative_pixels**2)
+                * np.sum(weight**2)
+                / len(negative_pixels)
+            )
+
     else:
+        # Load PSF and if not available create one
         if psf_path is not None:
             with fits.open(psf_path) as hdul:
                 psf = hdul[0].data
         else:
-            print('Creating PSF')
-            catalog = Table.read(catalog_path, format='fits', hdu=2)
+            print("Creating PSF")
+            catalog = Table.read(catalog_path, format="fits", hdu=2)
             psf = create_psf(image, catalog, psf_size)
-        
+
+        # Set up boundaries of tiles
         x_edges = np.arange(0, nx + 1, tilesize)
         y_edges = np.arange(0, ny + 1, tilesize)
 
+        # Calculate the flux and error of each tile
         measured_fluxes = np.full(len(x), np.nan)
         sigma_tiles = []
         weight = None
         for y_start, y_end in zip(y_edges[:-1], y_edges[1:]):
             for x_start, x_end in zip(x_edges[:-1], x_edges[1:]):
-                print(f"Processing x=({x_start},{x_end}), y=({y_start},{y_end})           ", end='\r', flush=True)
+                print(
+                    f"Processing x=({x_start},{x_end}), y=({y_start},{y_end})           ",
+                    end="\r",
+                    flush=True,
+                )
+
+                # Create tile
                 image_cut = image[y_start:y_end, x_start:x_end]
+
+                # Calculate weight function for the tile if not already calculated
                 if weight is None:
                     intrinsic_weight = gaussian_weight(
-                    image_cut.shape[0],
-                    image_cut.shape[1],
-                    image_cut.shape[0] / 2,
-                    image_cut.shape[1] / 2,
-                    weight_size,
-                    weight_size
+                        image_cut.shape[0],
+                        image_cut.shape[1],
+                        image_cut.shape[0] / 2,
+                        image_cut.shape[1] / 2,
+                        weight_size
                     )
                     weight = wiener_deconvolution(intrinsic_weight, psf)
-                
-                flux_tile = fftconvolve(image_cut, weight[::-1, ::-1], mode='same')
 
-                mask_tile = (
-                    (x >= x_start) & (x < x_end) &
-                    (y >= y_start) & (y < y_end)
-                    )
+                # Apply weight to tile
+                flux_tile = fftconvolve(image_cut, weight[::-1, ::-1], mode="same")
+
+                # Select the sources that are in the image
+                mask_tile = (x >= x_start) & (x < x_end) & (y >= y_start) & (y < y_end)
                 idx_tile = np.where(mask_tile)[0]
                 if len(idx_tile) == 0:
                     continue
-
+                
+                # Translate image coordinates to tile coordinates
                 xt = x[idx_tile] - x_start
                 yt = y[idx_tile] - y_start
 
+                # Extract the flux
+                measured_fluxes[idx_tile] = map_coordinates(
+                    flux_tile, [yt, xt], order=1
+                )
 
-                measured_fluxes[idx_tile] = map_coordinates(flux_tile, [yt, xt], order=1)
-
+                # Calculate the error
                 if correlated is not None:
                     sigma_local = find_correlated_sigma(image_cut, correlated)
                 else:
@@ -129,11 +213,19 @@ def find_flux(image_path: str,
                         np.sum(neg**2) * np.sum(weight**2) / len(neg)
                     )
 
+                # Store error in tile
                 sigma_tiles.append(sigma_local)
 
-        sigma = np.mean(sigma_tiles)
-    print()
+        # Calculate the error for the whole image
+        sigma = np.mean(sigma_tiles) 
+        
+        # Factor 4 to convert to the same pixel scale as Rubin
+        measured_fluxes *= 4
+        sigma *= 4
+        print()
+
     return measured_fluxes, sigma
+
 
 def create_psf(
     image: np.ndarray,
@@ -143,8 +235,9 @@ def create_psf(
     lower_percentile: float = 98.0,
     upper_percentile: float = 99.9,
     increase_window_factor: float = 2,
+    minimum_log_flux=8,
     plot_chimney: bool = False,
-    plot_psf: bool = False
+    plot_psf: bool = False,
 ) -> np.ndarray:
     """
     Create a point spread function (PSF) using saturated stars identified in a catalog.
@@ -163,37 +256,85 @@ def create_psf(
     Returns:
         np.ndarray: The computed PSF image with shape (psf_size, psf_size).
     """
-    x = np.log(catalog['FLUX_RADIUS'])
-    y = np.log(catalog['FLUX_AUTO'])
-    mask = np.isfinite(x) & np.isfinite(y)
-    maximum = -np.inf
-    x_0_maximum = -np.inf
-    for x_0 in np.linspace(min(x[mask]), max(x[mask]), 100):
-        new_mask = np.isfinite(x) & np.isfinite(y) & (x > x_0 - window_size) & (x < x_0 + window_size) & (y > 8)
-        if np.sum(y[new_mask]) > maximum:
-            maximum = np.sum(y[new_mask])
-            x_0_maximum = x_0
-    selection_mask = np.isfinite(x) & np.isfinite(y) & (x > x_0_maximum - increase_window_factor*window_size) & (x < x_0_maximum + increase_window_factor*window_size)
-    percentiles = np.percentile(y[selection_mask], [lower_percentile, upper_percentile])
-    selection_mask = np.isfinite(x) & np.isfinite(y) & (x > x_0_maximum - increase_window_factor*window_size) & (x < x_0_maximum + increase_window_factor*window_size) & (y > percentiles[0]) & (y < percentiles[1])
+    # Opening the flux and flux radius
+    log_flux_radius = np.log(catalog["FLUX_RADIUS"])
+    log_flux = np.log(catalog["FLUX_AUTO"])
+    mask = np.isfinite(log_flux_radius) & np.isfinite(log_flux)
+
+    # Calculate the flux radius that has the highest total flux within a window size
+    maximum_flux = -np.inf
+    center_maximum = -np.inf
+    for window_center in np.linspace(min(log_flux_radius[mask]), max(log_flux_radius[mask]), 100):
+        # Select region around window center
+        new_mask = (
+            np.isfinite(log_flux_radius)
+            & np.isfinite(log_flux)
+            & (log_flux_radius > window_center - window_size)
+            & (log_flux_radius < window_center + window_size)
+            & (log_flux > minimum_log_flux)
+        )
+
+        # Check if the total flux in region is maximum
+        if np.sum(log_flux[new_mask]) > maximum_flux:
+            maximum_flux = np.sum(log_flux[new_mask])
+            center_maximum = window_center
+    
+    # Select all the sources in the found chimney
+    selection_mask = (
+        np.isfinite(log_flux_radius)
+        & np.isfinite(log_flux)
+        & (log_flux_radius > center_maximum - increase_window_factor * window_size)
+        & (log_flux_radius < center_maximum + increase_window_factor * window_size)
+    )
+
+    # Make a selection of the sources in the chinmey
+    percentiles = np.percentile(log_flux[selection_mask], [lower_percentile, upper_percentile])
+    selection_mask = (
+        np.isfinite(log_flux_radius)
+        & np.isfinite(log_flux)
+        & (log_flux_radius > center_maximum - increase_window_factor * window_size)
+        & (log_flux_radius < center_maximum + increase_window_factor * window_size)
+        & (log_flux > percentiles[0])
+        & (log_flux < percentiles[1])
+    )
+
+    # Plot the flux, flux radius plot with the selected sources highlighted
     if plot_chimney:
-        plt.scatter(x[mask], y[mask], color='b', s=1, alpha=0.5, label='Sources')
-        plt.scatter(x[selection_mask], y[selection_mask], s=1, alpha=0.5, color='r', label='Selected Sources for PSF')
-        plt.xlabel('log(flux radius)')
-        plt.ylabel('log flux')
+        plt.scatter(log_flux_radius[mask], log_flux[mask], color="b", s=1, alpha=0.5, label="Sources")
+        plt.scatter(
+            log_flux_radius[selection_mask],
+            log_flux[selection_mask],
+            s=1,
+            alpha=0.5,
+            color="r",
+            label="Selected Sources for PSF",
+        )
+        plt.xlabel("log(flux radius)")
+        plt.ylabel("log flux")
         plt.legend()
         plt.show()
-    positions = catalog[selection_mask][['X_IMAGE', 'Y_IMAGE']]
+    
+    # Make cutouts of the selected sources
+    positions = catalog[selection_mask][["X_IMAGE", "Y_IMAGE"]]
     n_cutouts = len(positions)
     cutouts = np.empty((n_cutouts, psf_size, psf_size), dtype=image.dtype)
     for i, (x, y) in enumerate(positions):
-        cutout = Cutout2D(image, (x, y), psf_size, mode='partial', fill_value=np.nan)
+        cutout = Cutout2D(image, (x, y), psf_size, mode="partial", fill_value=np.nan)
         cutouts[i] = cutout.data
+    
+    # Average the cutouts to create the PSF
     psf = np.nanmean(cutouts, axis=0)
+
+    # Plot the PSF
     if plot_psf:
-        plt.imshow(psf, cmap='gray')
+        plt.imshow(psf, cmap="gray")
         plt.show()
-    return psf/np.sum(psf)
+
+    # Normalize the PSF
+    psf /= np.sum(psf)
+
+    return psf
+
 
 def find_correlated_sigma(*args):
-    raise NotImplementedError('This function is yet to be created')
+    raise NotImplementedError("This function is yet to be created")

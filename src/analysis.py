@@ -27,6 +27,7 @@ def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
     """
     Perform Wiener deconvolution on an weight function using the given PSF.
     """
+    print("Deconvolving weight function")
     # Convert to wanted dtype
     weight = weight.astype(dtype, copy=False)
     psf = psf[::-1, ::-1].astype(dtype, copy=False)
@@ -52,57 +53,3 @@ def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
     # Crop back to original image size
     result = result[:weight.shape[0], :weight.shape[1]]
     return result
-
-def calculate_gaap_flux(image, psf, weight, centers):
-    """
-    Placeholder function for flux calculation.
-    """
-    weight_rescale = wiener_deconvolution(weight, psf, 0)
-    flux_map = fftconvolve(image, weight_rescale[::-1, ::-1], mode='same')
-
-    centers = np.asarray(centers)
-    ys = centers[:, 1]
-    xs = centers[:, 0]
-
-    valid = np.isfinite(xs) & np.isfinite(ys)
-    measured_F = np.full(len(centers), np.nan, dtype=np.float32)
-    measured_F[valid] = map_coordinates(flux_map, [ys[valid], xs[valid]], order=1)
-
-    x_negative = image[image<0].flatten()
-    sigma = np.sqrt(np.sum(x_negative ** 2) * np.sum(weight_rescale ** 2) / len(x_negative))
-
-    return measured_F, sigma
-
-def align_fluxes_by_reference(dfs, max_dist=2.0):
-    # Find reference catalog (smallest)
-    ref_band = min(dfs, key=lambda k: len(dfs[k]))
-    ref_df = dfs[ref_band]
-    x_ref = ref_df['x'].values
-    y_ref = ref_df['y'].values
-    ref_points = np.column_stack((x_ref, y_ref))
-
-    bands = list(dfs.keys())
-    flux_list = []
-
-    for band in bands:
-        df = dfs[band]
-        x = df['x'].values
-        y = df['y'].values
-        points = np.column_stack((x, y))
-
-        # Build KDTree and query nearest neighbor for each reference point
-        tree = cKDTree(points)
-        dist, idx = tree.query(ref_points, distance_upper_bound=max_dist)
-
-        # Initialize flux array with NaNs
-        flux_aligned = np.full(len(ref_points), np.nan)
-
-        # Fill only valid matches
-        valid = idx < len(df)
-        flux_aligned[valid] = df['flux'].values[idx[valid]]
-
-        flux_list.append(flux_aligned)
-
-    # Combine into 2D array: rows = galaxies, columns = filters
-    flux_matrix = np.column_stack(flux_list)
-    return bands, flux_matrix
