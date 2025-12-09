@@ -53,3 +53,26 @@ def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
     # Crop back to original image size
     result = result[:weight.shape[0], :weight.shape[1]]
     return result
+
+
+    
+def calculate_gaap_flux(image, psf, weight, centers):
+    """
+    Placeholder function for flux calculation.
+    """
+    weight_rescale = wiener_deconvolution(weight, psf, 0)
+    flux_map = fftconvolve(image, weight_rescale[::-1, ::-1], mode='same')
+
+    centers = np.asarray(centers)
+    ys = centers[:, 1]
+    xs = centers[:, 0]
+
+    valid = np.isfinite(xs) & np.isfinite(ys)
+    measured_F = np.full(len(centers), np.nan, dtype=np.float32)
+    measured_F[valid] = map_coordinates(flux_map, [ys[valid], xs[valid]], order=1)
+
+    x_negative = image[image<0].flatten()
+    sigma = np.sqrt(np.sum(x_negative ** 2) * np.sum(weight_rescale ** 2) / len(x_negative))
+
+    return measured_F, sigma
+

@@ -9,8 +9,88 @@ from astropy.table import Table
 import matplotlib.pyplot as plt
 from functools import lru_cache
 from joblib import Memory
+from scipy.ndimage import uniform_filter
 memory = Memory("/net/vdesk/data2/deklerk/GAAP_data/cache_dir", verbose=0)
 
+def find_noise_square(image, box_size=50, margin=3):
+    """
+    Automatically find a square region with low signal (noise-dominated).
+    image: 2D array
+    box_size: side of the square region (pixels)
+    margin: exclude edges
+    threshold: how many sigma above the median to consider as "source"
+    returns: (y0, x0, y1, x1) slice indices of best noise square
+    """
+    img = np.asarray(image, float)
+    h, w = img.shape
+
+    # smooth absolute value to find low-variance zones
+    local_mean = uniform_filter(img, size=box_size)
+    local_var = uniform_filter(img**2, size=box_size) - local_mean**2
+    local_std = np.sqrt(np.maximum(local_var, 0))
+
+    # exclude borders
+    local_std[:margin, :] = np.inf
+    local_std[-margin:, :] = np.inf
+    local_std[:, :margin] = np.inf
+    local_std[:, -margin:] = np.inf
+
+    # pick minimum std region (least structured)
+    cy, cx = np.unravel_index(np.nanargmin(local_std), local_std.shape)
+
+    # ensure square fits inside image
+    half = box_size // 2
+    y0 = max(0, cy - half)
+    x0 = max(0, cx - half)
+    y1 = min(h, y0 + box_size)
+    x1 = min(w, x0 + box_size)
+
+    return y0, x0, y1, x1
+
+
+def estimate_sigma(noise_image, weight, maxlag):
+    local_covariance = covariance_fft2d(noise_image, maxlag)
+    negative_pixels = noise_image[noise_image<0]
+    uncorrelated_variance = np.sum(negative_pixels**2)/len(negative_pixels)
+    local_covariance = local_covariance / local_covariance[maxlag, maxlag] * uncorrelated_variance
+    variance = weighted_variance_lag(weight, local_covariance, maxlag)
+    return np.sqrt(variance)
+
+def covariance_fft2d(image, maxlag):
+    """
+    Compute 2D covariance by FFT of background-subtracted residual.
+    - image: 2D array (float)
+    - maxlag: integer; returns covariance for lags -maxlag..+maxlag in both axes
+    Returns: cov (2*maxlag+1, 2*maxlag+1) centered at lag (0,0)
+    """
+    img = image.astype(float)
+    h, w = img.shape
+    img -= np.mean(img)
+
+    # straightforward FFT autocorrelation
+    F = fft2(img)
+    ac = fftshift(ifft2(F * np.conj(F)).real)
+    ac_norm = ac / (h * w)
+
+    cy, cx = h//2, w//2
+    window = ac_norm[cy-maxlag:cy+maxlag+1, cx-maxlag:cx+maxlag+1]
+    return window
+
+
+
+def weighted_variance_lag(s, C_local, max_lag):
+    H, W = s.shape
+    V = 0.0
+    for dy in range(-max_lag, max_lag + 1):
+        for dx in range(-max_lag, max_lag + 1):
+            y0 = max(0, -dy)
+            y1 = min(H, H - dy)
+            x0 = max(0, -dx)
+            x1 = min(W, W - dx)
+            s1 = s[y0:y1, x0:x1]
+            s2 = s[y0 + dy:y1 + dy, x0 + dx:x1 + dx]
+            V += np.sum(s1 * s2) * C_local[dy + max_lag, dx + max_lag]
+    return V
 
 @lru_cache(maxsize=None)
 def gaussian_1d(n, center, sigma):
@@ -64,11 +144,15 @@ def find_flux(
     weight_size: float,
     ra: np.ndarray,
     dec: np.ndarray,
-    correlated: float = None,
+    correlated: int = None,
     psf_path: str = None,
     catalog_path: str = None,
     psf_size: float = 25,
     tilesize: int = 100,
+    noise_y0: int = 0,
+    noise_y1: int = -1,
+    noise_x0: int = 0,
+    noise_x1: int = -1
 ) -> tuple[np.ndarray, float]:
     """Find fluxes in an image at given coordinates using weighted aperture photometry.
 
@@ -98,6 +182,8 @@ def find_flux(
         wcs = WCS(hdu.header)
         nx = hdu.header["NAXIS1"]
         ny = hdu.header["NAXIS2"]
+
+    noise_image = image[noise_y0: noise_y1, noise_x0:noise_x1]
 
     # Convert the image to μJy if in AB magnitude
     try:
@@ -137,7 +223,7 @@ def find_flux(
 
         # Calculate error on the flux
         if correlated is not None:
-            sigma = find_correlated_sigma(image, correlated)
+            sigma = estimate_sigma(noise_image, weight, correlated)
         else:
             negative_pixels = image[image < 0].flatten()
             sigma = np.sqrt(
@@ -206,7 +292,7 @@ def find_flux(
 
                 # Calculate the error
                 if correlated is not None:
-                    sigma_local = find_correlated_sigma(image_cut, correlated)
+                    sigma_local = estimate_sigma(noise_image, weight, correlated)
                 else:
                     neg = image_cut[image_cut < 0].ravel()
                     sigma_local = np.sqrt(
