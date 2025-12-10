@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from functools import lru_cache
 from joblib import Memory
 from scipy.ndimage import uniform_filter
+from numba import njit
 memory = Memory("/net/vdesk/data2/deklerk/GAAP_data/cache_dir", verbose=0)
 
 def find_noise_square(image, box_size=50, margin=3):
@@ -77,7 +78,7 @@ def covariance_fft2d(image, maxlag):
     return window
 
 
-
+# @njit(parallel=True, fastmath=True)
 def weighted_variance_lag(s, C_local, max_lag):
     H, W = s.shape
     V = 0.0
@@ -92,7 +93,7 @@ def weighted_variance_lag(s, C_local, max_lag):
             V += np.sum(s1 * s2) * C_local[dy + max_lag, dx + max_lag]
     return V
 
-@lru_cache(maxsize=None)
+# @njit(fastmath=True)
 def gaussian_1d(n, center, sigma):
     x = np.arange(n, dtype=float)
     return np.exp(-0.5 * ((x - center) / sigma) ** 2)
