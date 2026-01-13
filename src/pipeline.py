@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from functools import lru_cache
 from joblib import Memory
 from scipy.ndimage import uniform_filter
-from numba import njit
+# from numba import njit
 memory = Memory("/net/vdesk/data2/deklerk/GAAP_data/cache_dir", verbose=0)
 
 def find_noise_square(image, box_size=50, margin=3):
@@ -107,7 +107,7 @@ def gaussian_weight(height, width, xc=0, yc=0, a=1):
     return weight
 
 @memory.cache
-def wiener_deconvolution(weight, psf, K=0.01, dtype=np.float64):
+def wiener_deconvolution(weight, psf, K=0, dtype=np.float64):
     """
     Perform Wiener deconvolution on an weight function using the given PSF.
     """
