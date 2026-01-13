@@ -51,9 +51,6 @@ def find_noise_square(image, box_size=50, margin=3):
 
 def estimate_sigma(noise_image, weight, maxlag):
     local_covariance = covariance_fft2d(noise_image, maxlag)
-    negative_pixels = noise_image[noise_image<0]
-    uncorrelated_variance = np.sum(negative_pixels**2)/len(negative_pixels)
-    local_covariance = local_covariance / local_covariance[maxlag, maxlag] * uncorrelated_variance
     variance = weighted_variance_lag(weight, local_covariance, maxlag)
     return np.sqrt(variance)
 
@@ -67,10 +64,9 @@ def covariance_fft2d(image, maxlag):
     img = image.astype(float)
     h, w = img.shape
     img -= np.mean(img)
+    
+    ac = fftconvolve(img, img[::-1, ::-1], mode="same")
 
-    # straightforward FFT autocorrelation
-    F = fft2(img)
-    ac = fftshift(ifft2(F * np.conj(F)).real)
     ac_norm = ac / (h * w)
 
     cy, cx = h//2, w//2
