@@ -193,8 +193,8 @@ def find_flux(
     # Translate the ra and dec into pixel coordinates
     x, y = wcs.wcs_world2pix(ra, dec, 0, ra_dec_order=True)
     mask = (x >= 0) & (x < nx) & (y >= 0) & (y < ny)
-    x[~mask] = None
-    y[~mask] = None
+    x[~mask] = np.nan
+    y[~mask] = np.nan
 
     if telescope == "Rubin":
         # Make weight map
