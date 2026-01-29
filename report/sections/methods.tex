@@ -92,34 +92,34 @@ The algorithm then works as follows:
 
 As the image has discrete pixels, the formula for the aperture flux becomes
 \begin{equation}
-    F_A=O_{i}w_{i}
+    F_A=\sum_iO_{i}w_{i}
 \end{equation}
 where $O$ and $w$ are the flattened versions of the observation and the weight, respectively. The uncertainty in the flux can be calculated using
 \begin{equation}
-    \sigma^2 = w_iw_jC_{ij}
+    \sigma^2 = \sum_{i,j}w_iw_jC_{ij}
 \end{equation}
 where $C_{ij}$ is the covariance matrix. Assuming that the pixel variations are independent and have variance $\sigma_{\mathrm{pixel}}^2$, the covariance matrix can be written like $C_{ij}=\sigma_{\mathrm{pixel}}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
 \begin{equation}
-    \sigma^2 = \sigma_{\mathrm{pixel}}^2w_iw_i.
+    \sigma^2 = \sigma_{\mathrm{pixel}}^2\sum_iw_i^2.
 \end{equation}
 Assuming that the pixel values are normally distributed around zero $x_i \sim\mathcal{N}(0, \sigma_{\mathrm{pixel}}^2)$
 Choosing the uninformative conjugate prior $p(\sigma_{\mathrm{pixel}}^2)\sim IG(\alpha, \beta)$ with $\alpha=\beta=0$. This results in the posterior distribution $p(\sigma_{\mathrm{pixel}}^2|\{x_i\})\propto p(\{x_i\}|\sigma_{\mathrm{pixel}}^2)p(\sigma_{\mathrm{pixel}}^2)\propto IG(\alpha + \frac{N}{2}, \beta+\frac{\sum x_i^2}{2})$. Using the fact that the mean of the inverse gamma distribution is given by $\frac{\beta}{\alpha-1}$, we find
 $\sigma_{\mathrm{pixel}}^2=\frac{\sum x_i^2}{n+2}$.
 
 \begin{equation}
-    SNR  = \frac{\sum_iO_iw_i}{\sqrt{}}
+    SNR  = \frac{\sum_iO_iw_i}{\sqrt{\sum_{i,j}w_iw_jC_{ij}}}
 \end{equation}
 
 The deconvolution can be calculated by looking at the equations in the frequency domain 
 
 \begin{equation}
-    \mathcal{F}\{\tilde{W}_A^P(x,y)\}=\mathcal{F}\{\bar{P}(x,y)\}\cdot\mathcal{F}\{W_A(x,y)\}
+    \mathcal{F}\{\tilde{W}_A^i(x,y)\}=\mathcal{F}\{\bar{P}_i(x,y)\}\cdot\mathcal{F}\{W_A(x,y)\}
 \end{equation}
 
 which gives us 
 
 \begin{equation}
-    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_A^P(x,y)\}}{\mathcal{F}\{\bar{P}(x,y)\}}\right\}
+    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_A(x,y)\}}{\mathcal{F}\{\bar{P}_i(x,y)\}}\right\}
 \end{equation}
 
 This is the weight matrix that is
@@ -182,16 +182,17 @@ Note: when $\Delta x = \Delta y = 0$, the expression reduces back to the express
 
 \section{Simulation Framework}
 We define a fiducial model. 
-We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. This intrinsic image is then convolved with a Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. To add noise to the image, we take Gaussian distributed values with a variance of \textbf{NOISE VARIANCE}. This noise is uncorrelated, so for the next part we can use \autoref{eq: uncorrelated noise}
+We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 10 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.1. This noise is uncorrelated, so for the next part we can use \autoref{eq: uncorrelated noise}
+
+Next, each component of the fiducial model is varied individually to investigate the consequence each different parts have on the measured flux and the estimated error.  
 
 \subsection{Color Precision: PSF Size}
 
 \subsection{Color Precision: Aperture Size}
 
-\subsection{Error Precision: PSF Size}
-The error precision is independent of the size of the PSF. 
+\subsection{Error Precision: PSF Size} 
 \subsection{Error Precision: Pixel Covariance}
-The error precision depends both on the covariance of the pixel values and the distance of pixel values that is taken into the local covariance matrix
+
 
 \subsection{Aperture Shape}
 The best aperture shape is the one that follows the shape of the source. 
