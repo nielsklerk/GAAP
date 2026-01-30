@@ -1,3 +1,4 @@
+GAAP
 
 This is the GitHub repository for my first research project.
 This project is about Gaussian Aperture and Photometry (GAAP). 
