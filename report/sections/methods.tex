@@ -54,31 +54,31 @@
 Aperture photometry can be written like
 
 \begin{equation}
-    F_A = \int\int dxdyO(x,y)W_A(x,y)
+    F_A = \int dxdyO(x,y)W_A(x,y)
 \end{equation}
 
 where $O(x,y)$ is the observed data and $W_A(x,y)$ some weight function. We know that $O(x,y)$ is the convolution of the intrinsic image with the PSF
 
 \begin{equation}
-    O(x,y) = \int\int dx'dy'P(x-x', y-y')I(x',y')=P\otimes I
+    O(x,y) = \int dx'dy'P(x-x', y-y')I(x',y')=(P\otimes I)(x,y)
 \end{equation}
 
 We can use this to rewrite
 
 \begin{equation}
-    F_A = \int\int dxdy\int\int dx'dy'P(x-x', y-y')I(x',y')W_A(x,y)
+    F_A = \int dxdy\int dx'dy'P(x-x', y-y')I(x',y')W_A(x,y)
 \end{equation}
 
 a change of coordinates, then gives
 
 \begin{equation}
-    F_A = \int\int dxdyI(x,y)\tilde{W}_A^P(x,y)
+    F_A = \int dxdyI(x,y)\tilde{W}_A(x,y)
 \end{equation}
 
 where 
 
 \begin{equation}
-    \tilde{W}_A^P(x,y) = \int\int dx'dy'P(x'-x, y'-y)W_A(x',y')=\bar{P}\otimes W_A
+    \tilde{W}_A(x,y) = \int dx'dy'P(x'-x, y'-y)W_A(x',y')=(\bar{P}\otimes W_A)(x,y)
 \end{equation}
 
 where $\bar{P}(x,y)=P(-x,-y)$.
@@ -90,50 +90,63 @@ The algorithm then works as follows:
     \item Calculate the aperture flux for each band using the deconvolved aperture function $W_A^i$.
 \end{enumerate}
 
+The deconvolution can be calculated by examining the equations in the frequency domain 
+
+\begin{equation}
+    \mathcal{F}\{\tilde{W}_A\}=\mathcal{F}\{\bar{P}_i\}\cdot\mathcal{F}\{W_A^i\},
+\end{equation}
+
+which results in
+
+\begin{equation}
+    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_A\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
+\end{equation}
+To improve the numerical stability of this function, a factor $K=1e{-15}$ is added
+
+\begin{equation}
+    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_A\}\right\}.
+\end{equation}
+
+This is the weight matrix that can be used to calculate the aperture flux
+
+\begin{equation}
+    F_A^i = \int dxdyO(x,y)W_A^i(x,y)
+\end{equation}
+
+If the weight matrix is the same across different sources, except for a shift. The aperture flux becomes 
+
+\begin{equation}
+    F_A(x',y') = \int dxdyO(x,y)W_A(x-x',y-y') = (O \otimes \bar{W}_A)(x',y')
+\end{equation}
+
+with $\bar{W}_A(x,y)=W_A(-x,-y)$.
+
 As the image has discrete pixels, the formula for the aperture flux becomes
+
 \begin{equation}
     F_A=\sum_iO_{i}w_{i}
 \end{equation}
+
 where $O$ and $w$ are the flattened versions of the observation and the weight, respectively. The uncertainty in the flux can be calculated using
+
 \begin{equation}
     \sigma^2 = \sum_{i,j}w_iw_jC_{ij}
 \end{equation}
+
 where $C_{ij}$ is the covariance matrix. Assuming that the pixel variations are independent and have variance $\sigma_{\mathrm{pixel}}^2$, the covariance matrix can be written like $C_{ij}=\sigma_{\mathrm{pixel}}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
+
 \begin{equation}
     \sigma^2 = \sigma_{\mathrm{pixel}}^2\sum_iw_i^2.
 \end{equation}
+
 Assuming that the pixel values are normally distributed around zero $x_i \sim\mathcal{N}(0, \sigma_{\mathrm{pixel}}^2)$
 Choosing the uninformative conjugate prior $p(\sigma_{\mathrm{pixel}}^2)\sim IG(\alpha, \beta)$ with $\alpha=\beta=0$. This results in the posterior distribution $p(\sigma_{\mathrm{pixel}}^2|\{x_i\})\propto p(\{x_i\}|\sigma_{\mathrm{pixel}}^2)p(\sigma_{\mathrm{pixel}}^2)\propto IG(\alpha + \frac{N}{2}, \beta+\frac{\sum x_i^2}{2})$. Using the fact that the mean of the inverse gamma distribution is given by $\frac{\beta}{\alpha-1}$, we find
 $\sigma_{\mathrm{pixel}}^2=\frac{\sum x_i^2}{n+2}$.
 
+
 \begin{equation}
     SNR  = \frac{\sum_iO_iw_i}{\sqrt{\sum_{i,j}w_iw_jC_{ij}}}
 \end{equation}
-
-The deconvolution can be calculated by looking at the equations in the frequency domain 
-
-\begin{equation}
-    \mathcal{F}\{\tilde{W}_A^i(x,y)\}=\mathcal{F}\{\bar{P}_i(x,y)\}\cdot\mathcal{F}\{W_A(x,y)\}
-\end{equation}
-
-which gives us 
-
-\begin{equation}
-    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_A(x,y)\}}{\mathcal{F}\{\bar{P}_i(x,y)\}}\right\}
-\end{equation}
-
-This is the weight matrix that is
-\begin{equation}
-    F_A = \int\int dxdyO(x,y)W_A(x,y)
-\end{equation}
-The weight matrix is the same for different sources, other than the fact that it is shifted 
-\begin{equation}
-    F_A(x',y') = \int\int dxdyO(x,y)W_A(x-x',y-y') = \int\int dxdyO(x,y)W_A(-(x'-x),-(y'-y') \newline = (O \otimes \bar{W_A})(x',y')
-\end{equation}
-\begin{equation}
-    F_A(x',y')  = (O \otimes \bar{W}_A)(x',y')
-\end{equation}
-with $\bar{W}_A(x,y)=W_A(-x,-y)$
 
 \subsection{Noise Estimation}
 The variance on the flux is given by the following equation
@@ -142,7 +155,7 @@ The variance on the flux is given by the following equation
 \end{equation}
 where $C_{ij}$ is the covariance matrix. This value is independent of the observed object so the variance on the flux is the same for all objects in the image. 
 \subsection{Uncorrelated Noise}
-If we assume there is no correlation between the pixels values, we find that $C_{ij}=\sigma_{pixel}^2\delta_{ij}$ where $\sigma_{pixel}$ is the variance the the pixel values. Assuming that the noise is symmetric around zero, we will only consider the negative pixel values. This is to exclude any signals other that the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
+If we assume there is no correlation between the pixels values, we find that $C_{ij}=\sigma_{pixel}^2\delta_{ij}$ where $\sigma_{pixel}$ is the variance of the pixel values. Assuming that the noise is symmetric around zero, we will only consider the negative pixel values. This is to exclude any signals other than the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
 \begin{equation}
 \sigma_{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
 \end{equation} 
@@ -173,10 +186,10 @@ formula
 \end{equation}
 where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure noise image.
 \begin{equation}
-    C(\Delta x, \Delta y) = \frac{1}{HW} \int\int dx dy \tilde{I}(x,y)\tilde{I}(x+\Delta x,y+\Delta y)
+    C(\Delta x, \Delta y) = \frac{1}{HW} \int dx dy \tilde{I}(x,y)\tilde{I}(x+\Delta x,y+\Delta y)
 \end{equation}
 \begin{equation}
-    C(\Delta x, \Delta y) = \frac{1}{HW} (\tilde{I}(x,y) \otimes\tilde{I}(-x,-y))(\Delta x, \Delta y)
+    C(\Delta x, \Delta y) = \frac{1}{HW} \left(\tilde{I}(x,y) \otimes\tilde{I}(-x,-y)\right)(\Delta x, \Delta y)
 \end{equation}
 Note: when $\Delta x = \Delta y = 0$, the expression reduces back to the expression derived for the uncorrelated noise
 
@@ -184,14 +197,12 @@ Note: when $\Delta x = \Delta y = 0$, the expression reduces back to the express
 We define a fiducial model. 
 We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 10 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.1. This noise is uncorrelated, so for the next part we can use \autoref{eq: uncorrelated noise}
 
-Next, each component of the fiducial model is varied individually to investigate the consequence each different parts have on the measured flux and the estimated error.  
+Next, each component of the fiducial model is varied individually to investigate the consequences of each part on the measured flux and the estimated error.  
 
-\subsection{Color Precision: PSF Size}
+\subsection{Color Precision}
 
-\subsection{Color Precision: Aperture Size}
 
-\subsection{Error Precision: PSF Size} 
-\subsection{Error Precision: Pixel Covariance}
+\subsection{Error Precision}
 
 
 \subsection{Aperture Shape}
