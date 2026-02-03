@@ -1,23 +1,13 @@
 from astropy.nddata import Cutout2D
-from numpy.polynomial import Polynomial
-from scipy.optimize import curve_fit
 from scipy.ndimage import uniform_filter
 from scipy.ndimage import map_coordinates
 from scipy.signal import fftconvolve
 from numpy.fft import rfft2, irfft2, ifftshift
 import numpy as np
-import glob
-import gc
-from astropy.io import fits
-from astropy.wcs import WCS
 from astropy.table import Table
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy.io import fits
-import glob
 import warnings
-import pandas as pd
-from astropy.wcs import WCS
 warnings.filterwarnings("ignore")
 
 
@@ -308,23 +298,6 @@ def create_psf(
         & (log_flux < percentiles[1])
     )
 
-    # Plot the flux, flux radius plot with the selected sources highlighted
-    if plot_chimney:
-        plt.scatter(log_flux_radius[mask], log_flux[mask],
-                    color="b", s=1, alpha=0.5, label="Sources")
-        plt.scatter(
-            log_flux_radius[selection_mask],
-            log_flux[selection_mask],
-            s=1,
-            alpha=0.5,
-            color="r",
-            label="Selected Sources for PSF",
-        )
-        plt.xlabel("log(flux radius)")
-        plt.ylabel("log flux")
-        plt.legend()
-        plt.show()
-
     # Make cutouts of the selected sources
     positions = catalog[selection_mask][["X_IMAGE", "Y_IMAGE"]]
     n_cutouts = len(positions)
@@ -337,155 +310,58 @@ def create_psf(
     # Average the cutouts to create the PSF
     psf = np.nanmean(cutouts, axis=0)
 
-    # Plot the PSF
-    if plot_psf:
-        plt.imshow(psf, cmap="gray")
+    # Plot the flux, flux radius plot with the selected sources highlighted
+    if plot_chimney and plot_psf:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+
+        # Left plot: chimney
+        axes[0].scatter(log_flux_radius[mask], log_flux[mask],
+                        color="b", s=1, alpha=0.5, label="Sources")
+        axes[0].scatter(
+            log_flux_radius[selection_mask],
+            log_flux[selection_mask],
+            s=1,
+            alpha=0.5,
+            color="r",
+            label="Selected Sources for PSF",
+        )
+        axes[0].set_xlabel("log(flux radius)")
+        axes[0].set_ylabel("log flux")
+        axes[0].legend()
+        axes[0].set_title("Chimney Plot")
+
+        # Right plot: PSF
+        im = axes[1].imshow(psf, cmap="gray")
+        axes[1].set_title("PSF")
+        fig.colorbar(im, ax=axes[1], fraction=0.046,
+                     pad=0.04)  # optional colorbar
+
+        plt.tight_layout()
         plt.show()
+
+    else:
+        # Individual plots as before
+        if plot_chimney:
+            plt.scatter(log_flux_radius[mask], log_flux[mask],
+                        color="b", s=1, alpha=0.5, label="Sources")
+            plt.scatter(
+                log_flux_radius[selection_mask],
+                log_flux[selection_mask],
+                s=1,
+                alpha=0.5,
+                color="r",
+                label="Selected Sources for PSF",
+            )
+            plt.xlabel("log(flux radius)")
+            plt.ylabel("log flux")
+            plt.legend()
+            plt.show()
+
+        if plot_psf:
+            plt.imshow(psf, cmap="gray")
+            plt.show()
 
     # Normalize the PSF
     psf /= np.sum(psf)
 
     return psf
-
-
-def process_rubin_filter(args):
-    (
-        filter,
-        location,
-        field,
-        ra_reference,
-        dec_reference,
-        size,
-        maxlag,
-        aperture_size_array,
-        psf,
-        noise_cutout
-    ) = args
-
-    files = glob.glob(f'{location}/{field}/{filter}_*.fits')
-    image_file = [f for f in files if not f.endswith("psf.fits")][0]
-    psf_file = [f for f in files if f.endswith("psf.fits")][0]
-
-    with fits.open(image_file, memmap=True) as hdul:
-        hdu = hdul[1]
-        image = hdu.data
-        wcs = WCS(hdu.header)
-        nx = hdu.header["NAXIS1"]
-        ny = hdu.header["NAXIS2"]
-
-    x_c, y_c = wcs.wcs_world2pix(
-        ra_reference, dec_reference, 0, ra_dec_order=True
-    )
-
-    mask = (
-        (x_c >= 0) & (x_c < nx) &
-        (y_c >= 0) & (y_c < ny) &
-        (~np.isnan(aperture_size_array))
-    )
-
-    cache = prepare_wiener_psf(psf, [size, size])
-
-    n = len(x_c)
-    flux_out = np.full(n, np.nan, dtype=np.float32)
-    sigma_out = np.full(n, np.nan, dtype=np.float32)
-
-    for i, (x_center, y_center, valid) in enumerate(zip(x_c, y_c, mask)):
-        if not valid:
-            continue
-
-        cutout, new_center = padded_cutout_with_center(
-            image, x_center, y_center, size
-        )
-
-        weight = gaussian_weight(
-            size, size, size / 2, size / 2, aperture_size_array[i]
-        )
-
-        flux, weight_rescale = calculate_gaap_flux(
-            cutout, cache, weight, [new_center]
-        )
-
-        sigma = estimate_sigma(noise_cutout, weight_rescale, maxlag)
-
-        flux_out[i] = flux[0]
-        sigma_out[i] = sigma
-
-        if i % 2500 == 0:
-            gc.collect()
-
-    return filter, flux_out, sigma_out
-
-
-def process_euclid_filter(
-    filter,
-    location,
-    field,
-    ra_reference,
-    dec_reference,
-    euclid_size,
-    maxlag,
-    aperture_size_array,
-    noise_cutout,
-    psf,
-):
-    files = glob.glob(f'{location}/{field}/{filter}_*.fits')
-    image_file = [f for f in files if not f.endswith("psf.fits")][0]
-
-    with fits.open(image_file, memmap=True) as hdul:
-        hdu = hdul[0]
-        image = hdu.data
-        wcs = WCS(hdu.header)
-        nx = hdu.header["NAXIS1"]
-        ny = hdu.header["NAXIS2"]
-        zeropoint = hdu.header["MAGZERO"]
-
-    conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
-
-    x_c, y_c = wcs.wcs_world2pix(
-        ra_reference, dec_reference, 0, ra_dec_order=True
-    )
-
-    mask = (
-        (x_c >= 0) & (x_c < nx) &
-        (y_c >= 0) & (y_c < ny) &
-        (~np.isnan(aperture_size_array))
-    )
-
-    cache = prepare_wiener_psf(psf, [euclid_size, euclid_size])
-
-    n = len(x_c)
-    flux_out = np.full(n, np.nan, dtype=np.float32)
-    sigma_out = np.full(n, np.nan, dtype=np.float32)
-
-    for i, (x_center, y_center, valid) in enumerate(zip(x_c, y_c, mask)):
-        if not valid:
-            continue
-
-        cutout, new_center = padded_cutout_with_center(
-            image, x_center, y_center, euclid_size
-        )
-
-        cutout = cutout.astype(np.float32, copy=False)
-        cutout *= conversion_factor
-
-        weight = gaussian_weight(
-            euclid_size,
-            euclid_size,
-            euclid_size / 2,
-            euclid_size / 2,
-            aperture_size_array[i],
-        )
-
-        flux, weight_rescale = calculate_gaap_flux(
-            cutout, cache, weight, [new_center]
-        )
-
-        sigma = estimate_sigma(noise_cutout, weight_rescale, maxlag)
-
-        flux_out[i] = flux[0]
-        sigma_out[i] = sigma
-
-        if i % 2500 == 0:
-            gc.collect()
-
-    return filter, flux_out, sigma_out
