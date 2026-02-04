@@ -1,46 +1,73 @@
 \chapter{Results}
-\section{Simulation Results: Deconvolution}
-\begin{figure}[!h]
+
+
+\section{Simulation}
+
+
+\subsection{Deconvolution}
+
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
-\begin{figure}[!h]
+
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/deconvolution_stability.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
-\section{Simulation Results: Color Accuracy}
-These simulations were performed without the noise in the simulated image. 
-\begin{figure}[!h]
+
+
+\subsection{Flux Accuracy}
+
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/simulation/flux_psf_size.pdf}
+    \includegraphics[width=0.5\linewidth]{results/figures/simulation/flux_weight_psf_size.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
 
-\begin{figure}[!h]
+The incorrect measurements above the PSF line are due to the limited size of the weight function, which results in fringing. This can be mitigated by increase the image size of the weight function.
+
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/simulation/flux_weight_size.pdf}
+    \includegraphics[width=0.5\linewidth]{results/figures/simulation/flux_weight_psf_size0.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
-\section{Simulation Results: Color Precision}
-\begin{figure}[!h]
+
+
+\subsection{Flux Error Accuracy}
+
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/error_psf_size.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/simulation/error_covariance_size.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/aperture_size.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
+
+
+\section{Observation}
+
+
 \section{Observation Results: Color Measurements}
+
 
 \section{Observation Results: Photometric Redshift}

@@ -1,55 +1,7 @@
 \chapter{Methods}
 
+
 \section{Color Determination Algorithm}
-\citep{Kuijken_2008}, \cite{Refregier_2003_1}, \cite{Refregier_2003_2} \cite{Kuijken_2015}
-
-% \begin{equation}
-%     L_{lmn}(a,b,c) = \tfrac{1}{\sqrt{\pi}}\int dx\; e^{-x^2}H_l(ax)H_m(bx)H_n(cx)
-% \end{equation}
-
-% Using the explicit expression of the Hermite polynomial
-
-% \begin{align}
-%     H_n(ax)&=\sum_{m=0}^{\lfloor\frac{n}{2}\rfloor}\frac{n!(-1)^m}{m!(n-2m)!}(2ax)^{n-2m}\\&=\sum_{m=0}^{\lfloor\frac{n}{2}\rfloor}h_{m,n}(a)x^{n-2m}
-% \end{align}
-
-% with 
-
-% \begin{equation}
-%     h_{m,n}(a)=\frac{n!(-1)^m(2a)^{n-2m}}{m!(n-2m)!}
-% \end{equation}
-
-% we find
-
-% \begin{align}
-%     L_{lmn}(a,b,c) &= \tfrac{1}{\sqrt{\pi}}\int dx\; e^{-x^2}\sum_{i=0}^{\lfloor\frac{l}{2}\rfloor}h_{i,l}(a)x^{l-2i}\sum_{j=0}^{\lfloor\frac{m}{2}\rfloor}h_{j,m}(b)x^{m-2j}\sum_{k=0}^{\lfloor\frac{n}{2}\rfloor}h_{k,n}(c)x^{n-2k}\\
-%      &= \tfrac{1}{\sqrt{\pi}}\int dx\; e^{-x^2}\sum_{i=0}^{\lfloor\frac{l}{2}\rfloor}\sum_{j=0}^{\lfloor\frac{m}{2}\rfloor}\sum_{k=0}^{\lfloor\frac{n}{2}\rfloor}h_{i,l}(a)h_{j,m}(b)h_{k,n}(c)x^{l+m+n-2(i+j+k)}\\
-%      &= \tfrac{1}{\sqrt{\pi}}\sum_{i=0}^{\lfloor\frac{l}{2}\rfloor}\sum_{j=0}^{\lfloor\frac{m}{2}\rfloor}\sum_{k=0}^{\lfloor\frac{n}{2}\rfloor}h_{i,l}(a)h_{j,m}(b)h_{k,n}(c)\int dx\; e^{-x^2}x^{l+m+n-2(i+j+k)}
-% \end{align}
-
-% Using the fact that $L_{lmn}$ is only non-zero when $l+m+n$ is even, we can use
-
-% \begin{equation}
-%     \int dx\;x^{2n}e^{-x^2}=\sqrt{\pi}\frac{(2n)!}{n!}\left(\frac{1}{2}\right)^{2n}
-% \end{equation}
-
-% to evaluate the integral.
-
-% % \begin{align}
-% %     L_{lmn}(a,b,c) &= \sum_{i=0}^{\lfloor\frac{l}{2}\rfloor}\sum_{j=0}^{\lfloor\frac{m}{2}\rfloor}\sum_{k=0}^{\lfloor\frac{n}{2}\rfloor}h_{i,l}(a)h_{j,m}(b)h_{k,n}(c)\frac{(l+m+n-2(i+j+k))!}{((l+m+n)/2-(i+j+k)!}\left(\frac{1}{2}\right)^{l+m+n-2(i+j+k)}
-% % \end{align}
-
-% \begin{align}
-% L_{lmn}(a,b,c) &= 
-% \sum_{i=0}^{\lfloor\frac{l}{2}\rfloor}
-% \sum_{j=0}^{\lfloor\frac{m}{2}\rfloor}
-% \sum_{k=0}^{\lfloor\frac{n}{2}\rfloor}
-% h_{i,l}(a)\, h_{j,m}(b)\, h_{k,n}(c) \\
-% &\quad\;\, \times 
-% \frac{(l+m+n-2(i+j+k))!}
-%      { \left( \frac{l+m+n}{2} - (i+j+k) \right)! }
-% \left( \frac{1}{2} \right)^{l+m+n-2(i+j+k)}
-% \end{align}
 
 Aperture photometry can be written like
 
@@ -101,22 +53,17 @@ which results in
 \begin{equation}
     W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_A\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
 \end{equation}
-To improve the numerical stability of this function, a factor $K=1e{-15}$ is added
+To improve the numerical stability of this function, a factor $K=10^{-15}$ is added
 
 \begin{equation}
     W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_A\}\right\}.
 \end{equation}
 
-This is the weight matrix that can be used to calculate the aperture flux
-
-\begin{equation}
-    F_A^i = \int dxdyO(x,y)W_A^i(x,y)
-\end{equation}
 
 If the weight matrix is the same across different sources, except for a shift. The aperture flux becomes 
 
 \begin{equation}
-    F_A(x',y') = \int dxdyO(x,y)W_A(x-x',y-y') = (O \otimes \bar{W}_A)(x',y')
+    F_A(x',y') = \int dxdyO(x,y)W_A(x-x',y-y') = (O \otimes \bar{W}_A)(x',y'),
 \end{equation}
 
 with $\bar{W}_A(x,y)=W_A(-x,-y)$.
@@ -133,81 +80,114 @@ where $O$ and $w$ are the flattened versions of the observation and the weight, 
     \sigma^2 = \sum_{i,j}w_iw_jC_{ij}
 \end{equation}
 
-where $C_{ij}$ is the covariance matrix. Assuming that the pixel variations are independent and have variance $\sigma_{\mathrm{pixel}}^2$, the covariance matrix can be written like $C_{ij}=\sigma_{\mathrm{pixel}}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
+where $C_{ij}$ is the covariance matrix.
 
-\begin{equation}
+\subsection{Uncorrelated Noise}
+Assuming that the pixel variations are independent and have variance $\sigma_{\mathrm{pixel}}^2$, the covariance matrix can be written like $C_{ij}=\sigma_{\mathrm{pixel}}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
+
+\begin{equation}\label{eq: uncorrelated noise}
     \sigma^2 = \sigma_{\mathrm{pixel}}^2\sum_iw_i^2.
 \end{equation}
 
-Assuming that the pixel values are normally distributed around zero $x_i \sim\mathcal{N}(0, \sigma_{\mathrm{pixel}}^2)$
-Choosing the uninformative conjugate prior $p(\sigma_{\mathrm{pixel}}^2)\sim IG(\alpha, \beta)$ with $\alpha=\beta=0$. This results in the posterior distribution $p(\sigma_{\mathrm{pixel}}^2|\{x_i\})\propto p(\{x_i\}|\sigma_{\mathrm{pixel}}^2)p(\sigma_{\mathrm{pixel}}^2)\propto IG(\alpha + \frac{N}{2}, \beta+\frac{\sum x_i^2}{2})$. Using the fact that the mean of the inverse gamma distribution is given by $\frac{\beta}{\alpha-1}$, we find
-$\sigma_{\mathrm{pixel}}^2=\frac{\sum x_i^2}{n+2}$.
-
+Assuming the noise is symmetric around zero, we consider only negative pixel values. This is to exclude any signals other than the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
 
 \begin{equation}
-    SNR  = \frac{\sum_iO_iw_i}{\sqrt{\sum_{i,j}w_iw_jC_{ij}}}
+    \sigma_{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
 \end{equation}
 
-\subsection{Noise Estimation}
-The variance on the flux is given by the following equation
-\begin{equation}
-    \sigma^2 = w_iw_jC_{ij}
-\end{equation}
-where $C_{ij}$ is the covariance matrix. This value is independent of the observed object so the variance on the flux is the same for all objects in the image. 
-\subsection{Uncorrelated Noise}
-If we assume there is no correlation between the pixels values, we find that $C_{ij}=\sigma_{pixel}^2\delta_{ij}$ where $\sigma_{pixel}$ is the variance of the pixel values. Assuming that the noise is symmetric around zero, we will only consider the negative pixel values. This is to exclude any signals other than the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
-\begin{equation}
-\sigma_{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
-\end{equation} 
-This results in the uncorrelated variance being:
-\begin{equation}\label{eq: uncorrelated noise}
-    \sigma_{uncorrelated}^2=\sigma_{pixel}^2\sum_iw_i^2
-\end{equation}
 \subsection{Correlated Noise}
+
 \begin{equation}
     \sigma^2 = \sum_{x,y}\sum_{x',y'}W_A(x,y)C(x,y;x',y')W_A(x',y')
 \end{equation}
+
 We assume that the covariance of pixels only depends on the distance between the pixels
+
 \begin{equation}
     C(x,y;x',y') \approx C(x'-x,y'-y)=C(\Delta x, \Delta y)
 \end{equation}
+
 \begin{equation}
     \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_A(x,y)C(\Delta x, \Delta y)W_A(x+\Delta x,y + \Delta y)
 \end{equation}
-Lastly, we assume that the $C(\Delta x, \Delta y) = 0 \forall|\Delta x|, |\Delta y| > L$ 
+
+Lastly, we assume that the $C(\Delta x, \Delta y) = 0 \forall|\Delta x|, |\Delta y| > L$
+
 This reduces the number of terms in the 
+
 \begin{equation}
     \sigma^2 = \sum_{\Delta x=-L}^{+L}\sum_{\Delta y=-L}^{+L}C(\Delta x, \Delta y)\sum_{x,y}W_A(x,y)W_A(x+\Delta x,y + \Delta y)
 \end{equation}
+
 The $C(\Delta x, \Delta y)$ can be calculated using the 
 formula
+
 \begin{equation}
     C(\Delta x, \Delta y) = \langle \tilde{I}(x,y)\tilde{I}(x+\Delta x,y+\Delta y)\rangle 
 \end{equation}
+
 where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure noise image.
+
 \begin{equation}
-    C(\Delta x, \Delta y) = \frac{1}{HW} \int dx dy \tilde{I}(x,y)\tilde{I}(x+\Delta x,y+\Delta y)
+    C(\Delta x, \Delta y) = \frac{\int dx dy \tilde{I}(x,y)\tilde{I}(x+\Delta x,y+\Delta y)}{\int dx dy} 
 \end{equation}
+
 \begin{equation}
-    C(\Delta x, \Delta y) = \frac{1}{HW} \left(\tilde{I}(x,y) \otimes\tilde{I}(-x,-y)\right)(\Delta x, \Delta y)
+    C(\Delta x, \Delta y) = \frac{\left(\tilde{I}(x,y) \otimes\tilde{I}(-x,-y)\right)(\Delta x, \Delta y)}{\int dx dy} 
 \end{equation}
-Note: when $\Delta x = \Delta y = 0$, the expression reduces back to the expression derived for the uncorrelated noise
+
+
+\subsection{Poisson Noise}
+
+For the Poisson noise, it is assumed that the pixels are uncorrelated. However, unlike the variance in \autoref{eq: uncorrelated noise}, this noise depends on the location in the image. A characteristic property of Poisson noise is that the variance is equal to the mean of the value. 
+
+\begin{equation}
+    \sigma_{poisson}^2=\sum_iw_i^2O_i
+\end{equation}
+
+This only works if the image is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
+
 
 \section{Simulation Framework}
+
 We define a fiducial model. 
-We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 10 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.1. This noise is uncorrelated, so for the next part we can use \autoref{eq: uncorrelated noise}
+We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 10 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.01. This noise is uncorrelated, so for the next part we can use \autoref{eq: uncorrelated noise}
 
 Next, each component of the fiducial model is varied individually to investigate the consequences of each part on the measured flux and the estimated error.  
 
-\subsection{Color Precision}
+
+\subsection{Flux Accuracy}
+
+To test the accuracy of the GAAP method, the flux determined from the pre-seeing image with the pre-seeing weight function
+
+\begin{equation}
+    F_{True} = \int dxdy I(x,y) \tilde{W}_A(x,y)
+\end{equation}
+
+with the flux measured with the deconvolved weight and the observed image with noise. 
+
+\begin{equation}
+    F_{Measured} = \int dxdy O(x,y) W_A(x,y)
+\end{equation}
 
 
 \subsection{Error Precision}
 
 
 \subsection{Aperture Shape}
-The best aperture shape is the one that follows the shape of the source. 
+
+The best aperture shape is the one that follows the intrinsic shape of the source. 
+
 
 \section{Observational Data}
+
+
+\subsection{PSF Construction}
+
+chimney plot
+
+
+\subsection{Noise Square}
+
 
 \section{Photometric Redshift Estimation}
