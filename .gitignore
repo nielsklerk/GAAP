@@ -1,0 +1,8 @@
+*.fits
+*.dat
+*.png
+*.param
+*.translate
+*.zeropoint
+*.gdss
+*.cat
