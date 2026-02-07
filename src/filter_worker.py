@@ -1,3 +1,4 @@
+from numba import njit
 from astropy.nddata import Cutout2D
 from numpy.polynomial import Polynomial
 from scipy.optimize import curve_fit
@@ -84,20 +85,20 @@ def covariance_fft2d(image, maxlag):
     return window
 
 
-# @njit
-def weighted_variance_lag(s, C_local, max_lag):
-    H, W = s.shape
-    V = 0.0
-    for dy in range(-max_lag, max_lag + 1):
-        for dx in range(-max_lag, max_lag + 1):
-            y0 = max(0, -dy)
-            y1 = min(H, H - dy)
-            x0 = max(0, -dx)
-            x1 = min(W, W - dx)
-            s1 = s[y0:y1, x0:x1]
-            s2 = s[y0 + dy:y1 + dy, x0 + dx:x1 + dx]
-            V += np.sum(s1 * s2) * C_local[dy + max_lag, dx + max_lag]
-    return V
+# # @njit
+# def weighted_variance_lag(s, C_local, max_lag):
+#     H, W = s.shape
+#     V = 0.0
+#     for dy in range(-max_lag, max_lag + 1):
+#         for dx in range(-max_lag, max_lag + 1):
+#             y0 = max(0, -dy)
+#             y1 = min(H, H - dy)
+#             x0 = max(0, -dx)
+#             x1 = min(W, W - dx)
+#             s1 = s[y0:y1, x0:x1]
+#             s2 = s[y0 + dy:y1 + dy, x0 + dx:x1 + dx]
+#             V += np.sum(s1 * s2) * C_local[dy + max_lag, dx + max_lag]
+#     return V
 
 # @njit(fastmath=True)
 
@@ -348,7 +349,7 @@ def create_psf(
     return psf
 
 
-def process_rubin_filter(args):
+def process_filter_2(args):
     (
         filter,
         location,
@@ -359,19 +360,24 @@ def process_rubin_filter(args):
         maxlag,
         aperture_size_array,
         psf,
-        noise_cutout
+        noise_cutout,
+        hdu_index
     ) = args
 
     files = glob.glob(f'{location}/{field}/{filter}_*.fits')
     image_file = [f for f in files if not f.endswith("psf.fits")][0]
-    psf_file = [f for f in files if f.endswith("psf.fits")][0]
 
     with fits.open(image_file, memmap=True) as hdul:
-        hdu = hdul[1]
+        hdu = hdul[hdu_index]
         image = hdu.data
         wcs = WCS(hdu.header)
         nx = hdu.header["NAXIS1"]
         ny = hdu.header["NAXIS2"]
+        if hdu_index == 0:
+            zeropoint = hdu.header["MAGZERO"]
+            conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
+        else:
+            conversion_factor = 1
 
     x_c, y_c = wcs.wcs_world2pix(
         ra_reference, dec_reference, 0, ra_dec_order=True
@@ -384,6 +390,7 @@ def process_rubin_filter(args):
     )
 
     cache = prepare_wiener_psf(psf, [size, size])
+    local_covariance = covariance_fft2d(noise_cutout, maxlag)
 
     n = len(x_c)
     flux_out = np.full(n, np.nan, dtype=np.float32)
@@ -397,18 +404,24 @@ def process_rubin_filter(args):
             image, x_center, y_center, size
         )
 
+        cutout = cutout.astype(np.float32, copy=False)
+        cutout *= conversion_factor
+
         weight = gaussian_weight(
             size, size, size / 2, size / 2, aperture_size_array[i]
         )
 
-        flux, weight_rescale = calculate_gaap_flux(
-            cutout, cache, weight, [new_center]
-        )
+        weight_rescale = wiener_deconvolution_fast(weight, cache)
 
-        sigma = estimate_sigma(noise_cutout, weight_rescale, maxlag)
+        flux_map = fftconvolve(cutout, weight_rescale[::-1, ::-1], mode='same')
 
-        flux_out[i] = flux[0]
-        sigma_out[i] = sigma
+        flux = bilinear_sample(flux_map, new_center[0], new_center[1])
+
+        variance = weighted_variance_lag(
+            weight_rescale, local_covariance, maxlag)
+
+        flux_out[i] = flux
+        sigma_out[i] = np.sqrt(variance)
 
         if i % 2500 == 0:
             gc.collect()
@@ -416,30 +429,303 @@ def process_rubin_filter(args):
     return filter, flux_out, sigma_out
 
 
-def process_euclid_filter(
-    filter,
-    location,
-    field,
-    ra_reference,
-    dec_reference,
-    euclid_size,
-    maxlag,
-    aperture_size_array,
-    noise_cutout,
-    psf,
-):
+@njit
+def weighted_variance_lag(s, C_local, max_lag):
+    H, W = s.shape
+    V = 0.0
+    for dy in range(-max_lag, max_lag + 1):
+        for dx in range(-max_lag, max_lag + 1):
+            y0 = max(0, -dy)
+            y1 = min(H, H - dy)
+            x0 = max(0, -dx)
+            x1 = min(W, W - dx)
+            s1 = s[y0:y1, x0:x1]
+            s2 = s[y0 + dy:y1 + dy, x0 + dx:x1 + dx]
+            V += np.sum(s1 * s2) * C_local[dy + max_lag, dx + max_lag]
+    return V
+
+# def weighted_variance_lag(s, C_local, max_lag):
+#     # Convolution with flipped version of s
+#     conv = fftconvolve(s, s[::-1, ::-1], mode="full")
+
+#     cy, cx = np.array(conv.shape) // 2
+#     conv_local = conv[
+#         cy - max_lag: cy + max_lag + 1,
+#         cx - max_lag: cx + max_lag + 1,
+#     ]
+
+#     return np.sum(conv_local * C_local)
+
+
+@njit
+def bilinear_sample(img, x, y):
+    x0 = int(np.floor(x))
+    y0 = int(np.floor(y))
+    dx = x - x0
+    dy = y - y0
+
+    return (
+        img[y0, x0] * (1 - dx) * (1 - dy) +
+        img[y0, x0 + 1] * dx * (1 - dy) +
+        img[y0 + 1, x0] * (1 - dx) * dy +
+        img[y0 + 1, x0 + 1] * dx * dy
+    )
+
+
+# @njit
+# def padded_cutout_with_center(image, cx, cy, size):
+#     ny, nx = image.shape
+#     half = size // 2
+
+#     ix = int(np.floor(cx))
+#     iy = int(np.floor(cy))
+
+#     y0 = iy - half
+#     x0 = ix - half
+
+#     cutout = np.zeros((size, size), dtype=image.dtype)
+
+#     for j in range(size):
+#         iy_img = y0 + j
+#         if iy_img < 0 or iy_img >= ny:
+#             continue
+
+#         for i in range(size):
+#             ix_img = x0 + i
+#             if ix_img < 0 or ix_img >= nx:
+#                 continue
+
+#             cutout[j, i] = image[iy_img, ix_img]
+
+#     cy_c = cy - y0
+#     cx_c = cx - x0
+
+#     return cutout, cx_c, cy_c
+
+
+class GAAP_object:
+    def __init__(self, image, psf):
+        self.image = image.astype(np.float64)
+        self.ny, self.nx = image.shape
+        self.psf = psf
+
+        self.noise_square = None
+        self.flux = None
+        self.variance = None
+
+    def find_noise_square(self, image=None, box_size=50):
+        """
+        Automatically find a square region with low signal (noise-dominated).
+        image: 2D array
+        box_size: side of the square region (pixels)
+        margin: exclude edges
+        threshold: how many sigma above the median to consider as "source"
+        returns: (y0, x0, y1, x1) slice indices of best noise square
+        """
+        if image == None:
+            image = self.image
+
+        # smooth absolute value to find low-variance zones
+        local_mean = uniform_filter(image, size=box_size)
+        local_var = uniform_filter(image**2, size=box_size) - local_mean**2
+        local_std = np.sqrt(np.maximum(local_var, 0))
+
+        # exclude borders
+        half = box_size // 2
+        local_std[:half, :] = np.inf
+        local_std[-half:, :] = np.inf
+        local_std[:, :half] = np.inf
+        local_std[:, -half:] = np.inf
+
+        # pick minimum std region (least structured)
+        cy, cx = np.unravel_index(np.nanargmin(local_std), local_std.shape)
+
+        # ensure square fits inside image
+        half = box_size // 2
+        y0 = max(0, cy - half)
+        x0 = max(0, cx - half)
+        y1 = min(self.ny, y0 + box_size)
+        x1 = min(self.nx, x0 + box_size)
+
+        self.noise_square = image[y0:y1, x0:x1]
+
+    def create_weights(self, sigmas, size):
+        y0 = (size - 1) / 2
+        x0 = (size - 1) / 2
+
+        y, x = np.mgrid[:size, :size]
+        r2 = (x - x0)**2 + (y - y0)**2
+
+        self.weights = np.exp(
+            -r2[None, :, :] / (2 * sigmas[:, None, None]**2)
+        )
+
+    def prepare_wiener_psf(self, image_shape=[100, 100], K=1e-16, dtype=np.float64):
+        """
+        Precompute PSF FFT terms for Wiener deconvolution.
+        """
+
+        psf = self.psf[::-1, ::-1].astype(dtype, copy=False)
+
+        pad_shape = (
+            image_shape[0] + psf.shape[0] - 1,
+            image_shape[1] + psf.shape[1] - 1,
+        )
+
+        psf_padded = np.zeros(pad_shape, dtype=dtype)
+        y0 = pad_shape[0] // 2 - psf.shape[0] // 2
+        x0 = pad_shape[1] // 2 - psf.shape[1] // 2
+        psf_padded[y0:y0 + psf.shape[0], x0:x0 + psf.shape[1]] = psf
+
+        H = rfft2(ifftshift(psf_padded))
+        H_conj = np.conj(H)
+        denom = (H * H_conj) + K
+
+        self.psf_cache = {
+            "H_conj": H_conj,
+            "denom": denom,
+            "pad_shape": pad_shape
+        }
+
+    def deconvolve_weights(self):
+        W = rfft2(self.weights, self.psf_cache["pad_shape"], axes=(-2, -1))
+        F = self.psf_cache["H_conj"][None, :, :] * \
+            W / self.psf_cache["denom"][None, :, :]
+        result = irfft2(F, self.psf_cache["pad_shape"], axes=(-2, -1))
+        self.deconvolved_weight = result[:, :self.ny, :self.nx]
+
+    def set_noise_covariance(self, noise_image, maxlag):
+        self.noise_covariance = self.covariance_fft2d(noise_image, maxlag)
+
+    def estimate_variance(self, weight, maxlag):
+        return weighted_variance_lag(weight, self.noise_covariance, maxlag)
+
+    def covariance_fft2d(self, image, maxlag):
+        """
+        Compute 2D covariance by FFT of background-subtracted residual.
+        - image: 2D array (float)
+        - maxlag: integer; returns covariance for lags -maxlag..+maxlag in both axes
+        Returns: cov (2*maxlag+1, 2*maxlag+1) centered at lag (0,0)
+        """
+        img = image.astype(float)
+        h, w = img.shape
+        img -= np.mean(img)
+
+        ac = fftconvolve(img, img[::-1, ::-1], mode="same")
+
+        ac_norm = ac / (h * w)
+
+        cy, cx = h//2, w//2
+        window = ac_norm[cy-maxlag:cy+maxlag+1, cx-maxlag:cx+maxlag+1]
+        return window
+
+    def calculate_gaap_flux(self, centers, size, maxlag):
+        x_c, y_c = centers
+        n_sources = centers.shape[1]
+
+        if self.flux is None or len(self.flux) != n_sources:
+            self.flux = np.full(n_sources, np.nan, dtype=np.float64)
+            self.variance = np.full(n_sources, np.nan, dtype=np.float64)
+
+        # valid sources mask
+        mask = (x_c >= 0) & (x_c < self.nx) & (y_c >= 0) & (y_c < self.ny)
+        valid_idx = np.where(mask)[0]
+
+        # Preallocate arrays
+        cutouts = np.zeros((len(valid_idx), size, size), dtype=np.float64)
+        cx_arr = np.zeros(len(valid_idx), dtype=np.float64)
+        cy_arr = np.zeros(len(valid_idx), dtype=np.float64)
+
+        # Extract all cutouts in a Numba loop
+        for idx, i in enumerate(valid_idx):
+            cutouts[idx], cx_arr[idx], cy_arr[idx] = padded_cutout_with_center(
+                self.image, x_c[i], y_c[i], size
+            )
+
+        # Convolve all cutouts with their corresponding weights
+        for idx, i in enumerate(valid_idx):
+            flux_map = fftconvolve(
+                cutouts[idx], self.deconvolved_weight[i,
+                                                      ::-1, ::-1], mode='same'
+            )
+            self.variance[i] = weighted_variance_lag(
+                self.deconvolved_weight[i, :, :],
+                self.noise_covariance,
+                maxlag
+            )
+            self.flux[i] = bilinear_sample(flux_map, cx_arr[idx], cy_arr[idx])
+
+
+def process_filter(args):
+    (
+        filter,
+        location,
+        field,
+        ra_reference,
+        dec_reference,
+        size,
+        maxlag,
+        aperture_sizes,
+        psf,
+        noise_cutout,
+        batch_size,
+        hdu_index
+    ) = args
     files = glob.glob(f'{location}/{field}/{filter}_*.fits')
     image_file = [f for f in files if not f.endswith("psf.fits")][0]
-
     with fits.open(image_file, memmap=True) as hdul:
-        hdu = hdul[0]
+        hdu = hdul[hdu_index]
         image = hdu.data
         wcs = WCS(hdu.header)
         nx = hdu.header["NAXIS1"]
         ny = hdu.header["NAXIS2"]
-        zeropoint = hdu.header["MAGZERO"]
+    x_c, y_c = wcs.wcs_world2pix(
+        ra_reference, dec_reference, 0, ra_dec_order=True
+    )
+    mask = (
+        (x_c >= 0) & (x_c < nx) &
+        (y_c >= 0) & (y_c < ny)
+    )
 
-    conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
+    centers = np.array([x_c[mask], y_c[mask]])
+    gaap = GAAP_object(image, psf)
+    gaap.prepare_wiener_psf([size, size])
+    gaap.set_noise_covariance(noise_cutout, maxlag)
+    for i in range(0, centers.shape[1], batch_size):
+        gaap.create_weights(aperture_sizes[mask][i:i + batch_size], size)
+        gaap.deconvolve_weights()
+        gaap.calculate_gaap_flux(
+            centers[:, i:i + batch_size], size, maxlag)
+        gc.collect()
+    return filter, gaap.flux, np.sqrt(gaap.variance)
+
+
+def process_filter_new(args):
+    (
+        filter,
+        location,
+        field,
+        ra_reference,
+        dec_reference,
+        size,
+        maxlag,
+        aperture_size_array,
+        psf,
+        noise_cutout,
+        hdu_index
+    ) = args
+
+    files = glob.glob(f'{location}/{field}/{filter}_*.fits')
+    image_file = [f for f in files if not f.endswith("psf.fits")][0]
+
+    with fits.open(image_file, memmap=True) as hdul:
+        hdu = hdul[hdu_index]
+        image = hdu.data
+        wcs = WCS(hdu.header)
+        nx = hdu.header["NAXIS1"]
+        ny = hdu.header["NAXIS2"]
+
+    image = image.astype(np.float64)
 
     x_c, y_c = wcs.wcs_world2pix(
         ra_reference, dec_reference, 0, ra_dec_order=True
@@ -450,42 +736,33 @@ def process_euclid_filter(
         (y_c >= 0) & (y_c < ny) &
         (~np.isnan(aperture_size_array))
     )
-
-    cache = prepare_wiener_psf(psf, [euclid_size, euclid_size])
+    valid_idx = np.where(mask)[0]
+    cache = prepare_wiener_psf(psf, [size, size], K=1e-16)
+    noise_covariance = covariance_fft2d(noise_cutout, maxlag)
 
     n = len(x_c)
     flux_out = np.full(n, np.nan, dtype=np.float32)
     sigma_out = np.full(n, np.nan, dtype=np.float32)
-
-    for i, (x_center, y_center, valid) in enumerate(zip(x_c, y_c, mask)):
-        if not valid:
-            continue
-
-        cutout, new_center = padded_cutout_with_center(
-            image, x_center, y_center, euclid_size
+    for i in valid_idx:
+        cutout, cx_c, cy_c = padded_cutout_with_center(
+            image, x_c[i], y_c[i], size
         )
-
-        cutout = cutout.astype(np.float32, copy=False)
-        cutout *= conversion_factor
 
         weight = gaussian_weight(
-            euclid_size,
-            euclid_size,
-            euclid_size / 2,
-            euclid_size / 2,
-            aperture_size_array[i],
+            size, size, size / 2, size / 2, aperture_size_array[i]
         )
+        deconvolved_weight = wiener_deconvolution_fast(weight, cache)
 
-        flux, weight_rescale = calculate_gaap_flux(
-            cutout, cache, weight, [new_center]
+        flux_map = fftconvolve(
+            cutout, deconvolved_weight, mode='same'
         )
+        flux = bilinear_sample(flux_map, cx_c, cy_c)
 
-        sigma = estimate_sigma(noise_cutout, weight_rescale, maxlag)
+        variance = weighted_variance_lag(weight, noise_covariance, maxlag)
 
-        flux_out[i] = flux[0]
-        sigma_out[i] = sigma
+        flux_out[i] = flux
+        sigma_out[i] = np.sqrt(variance)
 
-        if i % 2500 == 0:
-            gc.collect()
+        gc.collect()
 
     return filter, flux_out, sigma_out

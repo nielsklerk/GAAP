@@ -331,7 +331,7 @@ def create_psf(
         axes[0].set_title("Chimney Plot")
 
         # Right plot: PSF
-        im = axes[1].imshow(psf, cmap="gray")
+        im = axes[1].imshow(np.log(psf), cmap="gray")
         axes[1].set_title("PSF")
         fig.colorbar(im, ax=axes[1], fraction=0.046,
                      pad=0.04)  # optional colorbar
@@ -358,7 +358,7 @@ def create_psf(
             plt.show()
 
         if plot_psf:
-            plt.imshow(psf, cmap="gray")
+            plt.imshow(np.log(psf), cmap="gray")
             plt.show()
 
     # Normalize the PSF
