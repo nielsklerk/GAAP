@@ -1,106 +1,91 @@
 \chapter{Methods}
 
-
 \section{Color Determination Algorithm}
 
 Aperture photometry can be written like
 
 \begin{equation}
-    F_A = \int dxdyO(x,y)W_A(x,y)
+    F_\mathrm{A} = \int dxdyO(x,y)W_\mathrm{A}(x,y)
 \end{equation}
-
-where $O(x,y)$ is the observed data and $W_A(x,y)$ some weight function. We know that $O(x,y)$ is the convolution of the intrinsic image with the PSF
+where $O(x,y)$ is the observed data and $W_\mathrm{A}(x,y)$ some weight function. We know that $O(x,y)$ is the convolution of the intrinsic image with the PSF
 
 \begin{equation}
-    O(x,y) = \int dx'dy'P(x-x', y-y')I(x',y')=(P\otimes I)(x,y)
+    O(x,y)=(P\otimes I)(x,y) = \int dx'dy'P(x-x', y-y')I(x',y')
 \end{equation}
-
 We can use this to rewrite
 
 \begin{equation}
-    F_A = \int dxdy\int dx'dy'P(x-x', y-y')I(x',y')W_A(x,y)
+    F_\mathrm{A} = \int dxdy\int dx'dy'P(x-x', y-y')I(x',y')W_\mathrm{A}(x,y)
 \end{equation}
-
 a change of coordinates, then gives
 
 \begin{equation}
-    F_A = \int dxdyI(x,y)\tilde{W}_A(x,y)
+    F_\mathrm{A} = \int dxdyI(x,y)\tilde{W}_\mathrm{A}(x,y)
 \end{equation}
-
 where 
 
-\begin{equation}
-    \tilde{W}_A(x,y) = \int dx'dy'P(x'-x, y'-y)W_A(x',y')=(\bar{P}\otimes W_A)(x,y)
+\begin{equation}\label{eq: weight convolution}
+    \tilde{W}_\mathrm{A}(x,y) = \int dx'dy'P(x'-x, y'-y)W_\mathrm{A}(x',y')=(\bar{P}\otimes W_\mathrm{A})(x,y)
 \end{equation}
-
 where $\bar{P}(x,y)=P(-x,-y)$.
 
-The algorithm then works as follows:
+\noindent The algorithm then works as follows:
 \begin{enumerate}
-    \item Choose an aperture function $\tilde{W}_A$, which is going to be applied to all bands
-    \item Calculate the post-seeing aperture $\tilde{W}_A^i$ by deconvolving the aperture function $\tilde{W}_A$ by the reflected PSF $\bar{P}_i$, of band $i$, $W^i_A=\tilde{W}_A\otimes^{-1}\bar{P}_i$
-    \item Calculate the aperture flux for each band using the deconvolved aperture function $W_A^i$.
+    \item Choose an aperture function $\tilde{W}_\mathrm{A}$, which is going to be applied to all bands
+    \item Calculate the post-seeing aperture $\tilde{W}_\mathrm{A}^i$ by deconvolving the aperture function $\tilde{W}_\mathrm{A}$ by the reflected PSF $\bar{P}_i$, of band $i$, $W^i_\mathrm{A}=\tilde{W}_\mathrm{A}\otimes^{-1}\bar{P}_i$
+    \item Calculate the aperture flux for each band using the deconvolved aperture function $W_\mathrm{A}^i$.
 \end{enumerate}
-
-The deconvolution can be calculated by examining the equations in the frequency domain 
+The deconvolution can be calculated by examining \autoref{eq: weight convolution} in the frequency domain 
 
 \begin{equation}
-    \mathcal{F}\{\tilde{W}_A\}=\mathcal{F}\{\bar{P}_i\}\cdot\mathcal{F}\{W_A^i\},
+    \mathcal{F}\{\tilde{W}_\mathrm{A}\}=\mathcal{F}\{\bar{P}_i\}\cdot\mathcal{F}\{W_\mathrm{A}^i\},
 \end{equation}
-
 which results in
 
-\begin{equation}
-    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_A\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
+\begin{equation}\label{eq: analytical deconvolution}
+    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_\mathrm{A}\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
 \end{equation}
-To improve the numerical stability of this function, a factor $K=10^{-15}$ is added
+To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $K=10^{-16}$ is added
 
 \begin{equation}
-    W^i_A = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_A\}\right\}.
+    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\right\}.
 \end{equation}
-
-
 If the weight matrix is the same across different sources, except for a shift. The aperture flux becomes 
 
 \begin{equation}
-    F_A(x',y') = \int dxdyO(x,y)W_A(x-x',y-y') = (O \otimes \bar{W}_A)(x',y'),
+    F_\mathrm{A}(x',y') = \int dxdyO(x,y)W_\mathrm{A}(x-x',y-y') = (O \otimes \bar{W}_\mathrm{A})(x',y'),
 \end{equation}
-
 with $\bar{W}_A(x,y)=W_A(-x,-y)$.
 
-As the image has discrete pixels, the formula for the aperture flux becomes
+\noindent As the image has discrete pixels, the formula for the aperture flux becomes
 
 \begin{equation}
-    F_A=\sum_iO_{i}w_{i}
+    F_\mathrm{A}=\sum_iO_{i}w_{i}
 \end{equation}
-
 where $O$ and $w$ are the flattened versions of the observation and the weight, respectively. The uncertainty in the flux can be calculated using
 
 \begin{equation}
     \sigma^2 = \sum_{i,j}w_iw_jC_{ij}
 \end{equation}
-
 where $C_{ij}$ is the covariance matrix.
 
 \subsection{Uncorrelated Noise}
-Assuming that the pixel variations are independent and have variance $\sigma_{\mathrm{pixel}}^2$, the covariance matrix can be written like $C_{ij}=\sigma_{\mathrm{pixel}}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
+Assuming that the pixel variations are independent and have variance $\sigma_\mathrm{pixel}^2$, the covariance matrix can be written like $C_{ij}=\sigma_\mathrm{pixel}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
 
 \begin{equation}\label{eq: uncorrelated noise}
     \sigma^2 = \sigma_{\mathrm{pixel}}^2\sum_iw_i^2.
 \end{equation}
-
 Assuming the noise is symmetric around zero, we consider only negative pixel values. This is to exclude any signals other than the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
 
 \begin{equation}
-    \sigma_{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
+    \sigma_\mathrm{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
 \end{equation}
 
 \subsection{Correlated Noise}
 
 \begin{equation}
-    \sigma^2 = \sum_{x,y}\sum_{x',y'}W_A(x,y)C(x,y;x',y')W_A(x',y')
+    \sigma^2 = \sum_{x,y}\sum_{x',y'}W_\mathrm{A}(x,y)C(x,y;x',y')W_\mathrm{A}(x',y')
 \end{equation}
-
 We assume that the covariance of pixels only depends on the distance between the pixels
 
 \begin{equation}
@@ -108,24 +93,21 @@ We assume that the covariance of pixels only depends on the distance between the
 \end{equation}
 
 \begin{equation}
-    \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_A(x,y)C(\Delta x, \Delta y)W_A(x+\Delta x,y + \Delta y)
+    \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_\mathrm{A}(x,y)C(\Delta x, \Delta y)W_\mathrm{A}(x+\Delta x,y + \Delta y)
 \end{equation}
-
 Lastly, we assume that the $C(\Delta x, \Delta y) = 0 \forall|\Delta x|, |\Delta y| > L$
 
-This reduces the number of terms in the 
+\noindent This reduces the number of terms in the 
 
 \begin{equation}
-    \sigma^2 = \sum_{\Delta x=-L}^{+L}\sum_{\Delta y=-L}^{+L}C(\Delta x, \Delta y)\sum_{x,y}W_A(x,y)W_A(x+\Delta x,y + \Delta y)
+    \sigma^2 = \sum_{\Delta x, \Delta y=-L}^{+L}C(\Delta x, \Delta y)\sum_{x,y}W_\mathrm{A}(x,y)W_\mathrm{A}(x+\Delta x,y + \Delta y)
 \end{equation}
-
 The $C(\Delta x, \Delta y)$ can be calculated using the 
-formula
+formula \citep{SourceNeeded}
 
 \begin{equation}
     C(\Delta x, \Delta y) = \langle \tilde{I}(x,y)\tilde{I}(x+\Delta x,y+\Delta y)\rangle 
 \end{equation}
-
 where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure noise image.
 
 \begin{equation}
@@ -142,17 +124,21 @@ where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure nois
 For the Poisson noise, it is assumed that the pixels are uncorrelated. However, unlike the variance in \autoref{eq: uncorrelated noise}, this noise depends on the location in the image. A characteristic property of Poisson noise is that the variance is equal to the mean of the value. 
 
 \begin{equation}
-    \sigma_{poisson}^2=\sum_iw_i^2O_i
+    \sigma_\mathrm{Poisson}^2=\sum_iw_i^2O_i
 \end{equation}
-
-This only works if the image is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
+This only works if the image $O_i$ is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
 
 
 \section{Simulation Framework}
 
-We define a fiducial model. 
-We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 10 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.01. This noise is uncorrelated, so for the next part we can use \autoref{eq: uncorrelated noise}
+We define a fiducial model. We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.01. This noise is uncorrelated, so for the next parts \autoref{eq: uncorrelated noise} can be used. 
 
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{placeholder.pdf}
+    \caption{The simulated fiducial model, PSF, Noise, and the simulated observation.}
+    \label{fig: fiducial model}
+\end{figure}
 Next, each component of the fiducial model is varied individually to investigate the consequences of each part on the measured flux and the estimated error.  
 
 
@@ -161,33 +147,63 @@ Next, each component of the fiducial model is varied individually to investigate
 To test the accuracy of the GAAP method, the flux determined from the pre-seeing image with the pre-seeing weight function
 
 \begin{equation}
-    F_{True} = \int dxdy I(x,y) \tilde{W}_A(x,y)
+    F_\mathrm{True} = \int dxdy I(x,y) \tilde{W}_\mathrm{A}(x,y)
 \end{equation}
-
 with the flux measured with the deconvolved weight and the observed image with noise. 
 
 \begin{equation}
-    F_{Measured} = \int dxdy O(x,y) W_A(x,y)
+    F_\mathrm{Measured} = \int dxdy O(x,y) W_\mathrm{A}(x,y)
 \end{equation}
+The Gaussian noise is applied after the convolution to keep the noise uncorrelated and to apply the equation of the uncorrelated noise \autoref{eq: uncorrelated noise}. 
+This results in the observation being
+
+\begin{equation}
+    O = P\otimes I + N
+\end{equation}
+where $P$ is the PSF $I$ the intrinsic image and $N$ the uncorrelated Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian PSFs and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
 
 
-\subsection{Error Precision}
+\subsection{Error Accuracy}
+To test the accuracy of the error, different instances of noise are created, and the flux $F_i$ and error $\sigma_i$ are calculated for each instance. The standard deviation of the flux values is taken to be the true standard deviation $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors is used to compare with the true standard deviation. This is repeated for different combinations of the size of the weight and the size of the PSF. 
+
 
 
 \subsection{Aperture Shape}
+To test the aperture shape that maximizes the SNR, the SNR of the flux is calculated for various scale parameters in both the x- and y-directions. 
 
-The best aperture shape is the one that follows the intrinsic shape of the source. 
+
 
 
 \section{Observational Data}
 
 
+To apply the GAAP method to images from both Euclid and Rubin, several inputs are required: PSFs, noise squares, and weight functions.
+
+
 \subsection{PSF Construction}
 
-chimney plot
+The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before the method
+
+For this, the Source EXtractor \citep{1996A&AS..117..393B} is used to find the fluxes and full-width half-maxima (FWHM) of different sources in the image. Taking the natural logarithm of both sides and plotting the results yields the image shown in \autoref{fig: Chimney}. 
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{placeholder.pdf}
+    \caption{The flux of the sources in the VIS-band for different FWHM. The vertical strip of sources is saturated stars in the image. These stars can be used to create an estimate of the PSF. }
+    \label{fig: Chimney}
+\end{figure}
+The stretch of sources that form a vertical line are the saturated stars, which are point sources.  This means that after convolution with the PSF, they have the same shape as the PSF. These sources can be stacked to create an estimate for the PSF in that image. 
 
 
 \subsection{Noise Square}
+
+Find a square with the minimal variance. This square should not contain any sources, so only be background noise. This noise square is used to calculate the local covariance matrix $C(\Delta x, \Delta y)$.
+
+
+\subsection{Fitting Weights}
+To determine the weight that approximately maximizes the achievable SNR, a fit is performed for each source. Then we use the fit of the deconvolution relation to find the best original weight.  
+
+\subsection{Applying GAAP Algorithm}
 
 
 \section{Photometric Redshift Estimation}
