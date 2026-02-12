@@ -1,42 +1,42 @@
 \chapter{Results}
 
-
 \section{Simulation}
-
 
 \subsection{Deconvolution}
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{The deconvolution of Gaussian weight functions of different sizes by a Gaussian PSF. The deconvolved weights are fitted to find their standard deviation. This is compared to the expected result $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$.}
+    \label{fig: deconvolution relation}
 \end{figure}
+
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/deconvolution_stability.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{The normalized RMS for different Gaussian weights and image sizes. This is found by deconvolving the weights by a PSF and fitting a Gaussian to the result. Then the RMS of the difference between the deconvolution and the fit is calculated and divided by the \textbf{WHAT}.}
+    \label{fig: deconvolution stability}
 \end{figure}
 
 
 \subsection{Flux Accuracy}
 
+
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/flux_weight_psf_size.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{The measured flux normalized by the true flux for different weights and PSF sizes. The flux measurements with weights smaller than the PSF are not accurate. The same is true for the weights with a standard deviation $\lesssim9\%$ of the image size.}
+    \label{fig: flux accuracy}
 \end{figure}
 
-The incorrect measurements above the PSF line are due to the limited size of the weight function, which results in fringing. This can be mitigated by increase the image size of the weight function.
+The incorrect measurements above the PSF line are due to the limited size of the weight function, leading to fringing. This can be mitigated by increasing the image size of the weight function.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/flux_weight_psf_size0.pdf}
     \caption{Caption}
-    \label{fig:placeholder}
+    \label{fig: flux accuracy small}
 \end{figure}
 
 
@@ -45,22 +45,23 @@ The incorrect measurements above the PSF line are due to the limited size of the
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/error_psf_size.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{The measured error divided by the true flux error measured from the distribution of flux values for different instances of noise. This error is calculated for different PSF sizes. The size of the PSF does not seem to matter for the accuracy of the uncorrelated noise.}
+    \label{fig: error PSF}
 \end{figure}
-
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/error_covariance_size.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{The amount of the standard deviation on the flux values is accounted for for different correlations of the noise size and the maxlag, the pixel distance used for the estimation of the variance.}
+    \label{fig: error covariance}
 \end{figure}
+\textbf{MAYBE EXAMPLES OF WHAT THE NOISE LOOKS LIKE FOR DIFFERENT NOISE SIZES}
 
+\subsection{Aperture Shape}
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/aperture_size.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{The SNR for different combinations of both horizontal and vertical standard deviation of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.  }
+    \label{fig: best aperture}
 \end{figure}
 
 
