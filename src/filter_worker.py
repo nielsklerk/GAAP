@@ -309,23 +309,6 @@ def create_psf(
         & (log_flux < percentiles[1])
     )
 
-    # Plot the flux, flux radius plot with the selected sources highlighted
-    if plot_chimney:
-        plt.scatter(log_flux_radius[mask], log_flux[mask],
-                    color="b", s=1, alpha=0.5, label="Sources")
-        plt.scatter(
-            log_flux_radius[selection_mask],
-            log_flux[selection_mask],
-            s=1,
-            alpha=0.5,
-            color="r",
-            label="Selected Sources for PSF",
-        )
-        plt.xlabel("log(flux radius)")
-        plt.ylabel("log flux")
-        plt.legend()
-        plt.show()
-
     # Make cutouts of the selected sources
     positions = catalog[selection_mask][["X_IMAGE", "Y_IMAGE"]]
     n_cutouts = len(positions)
@@ -338,10 +321,56 @@ def create_psf(
     # Average the cutouts to create the PSF
     psf = np.nanmean(cutouts, axis=0)
 
-    # Plot the PSF
-    if plot_psf:
-        plt.imshow(psf, cmap="gray")
+    # Plot the flux, flux radius plot with the selected sources highlighted
+    if plot_chimney and plot_psf:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+
+        # Left plot: chimney
+        axes[0].scatter(log_flux_radius[mask], log_flux[mask],
+                        color="b", s=1, alpha=0.5, label="Sources")
+        axes[0].scatter(
+            log_flux_radius[selection_mask],
+            log_flux[selection_mask],
+            s=1,
+            alpha=0.5,
+            color="r",
+            label="Selected Sources for PSF",
+        )
+        axes[0].set_xlabel("log(flux radius)")
+        axes[0].set_ylabel("log flux")
+        axes[0].legend()
+        axes[0].set_title("Chimney Plot")
+
+        # Right plot: PSF
+        im = axes[1].imshow(np.log(psf), cmap="gray")
+        axes[1].set_title("PSF")
+        fig.colorbar(im, ax=axes[1], fraction=0.046,
+                     pad=0.04)  # optional colorbar
+
+        plt.tight_layout()
         plt.show()
+
+    else:
+        # Individual plots as before
+        if plot_chimney:
+            plt.scatter(log_flux_radius[mask], log_flux[mask],
+                        color="b", s=1, alpha=0.5, label="Sources")
+            plt.scatter(
+                log_flux_radius[selection_mask],
+                log_flux[selection_mask],
+                s=1,
+                alpha=0.5,
+                color="r",
+                label="Selected Sources for PSF",
+            )
+            plt.xlabel("log(flux radius)")
+            plt.ylabel("log flux")
+            plt.legend()
+            plt.show()
+
+        if plot_psf:
+            plt.imshow(np.log(psf), cmap="gray")
+            plt.show()
 
     # Normalize the PSF
     psf /= np.sum(psf)
