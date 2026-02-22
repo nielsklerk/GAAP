@@ -1,6 +1,7 @@
-\chapter{Methods}
+\chapter{Methods}\label{ch: Methods}
+In this chapter, the GAAP algorithm is explained and tested on simulated observations. Next, the technique is applied to real observations for different filters made using Rubin, Euclid, and Decam. The fluxes and their errors are used to fit spectra with Eazy. This gives the photometric redshifts of the sources in the image. 
 
-\section{Color Determination Algorithm}
+\section{GAAP}
 
 Aperture photometry can be written like
 
@@ -81,12 +82,23 @@ Assuming the noise is symmetric around zero, we consider only negative pixel val
     \sigma_\mathrm{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
 \end{equation}
 
-\subsection{Correlated Noise}
+\subsection{Poisson Noise}
+
+For the Poisson noise, it is assumed that the pixels are uncorrelated. However, unlike the variance in \autoref{eq: uncorrelated noise}, this noise depends on the location in the image. A characteristic property of Poisson noise is that the variance is equal to the mean of the value. So we can take the image as an estimate for the Poisson variance.
 
 \begin{equation}
-    \sigma^2 = \sum_{x,y}\sum_{x',y'}W_\mathrm{A}(x,y)C(x,y;x',y')W_\mathrm{A}(x',y')
+    \sigma_\mathrm{Poisson}^2=\sum_iw_i^2O_i
 \end{equation}
-We assume that the covariance of pixels only depends on the distance between the pixels
+This only works if the image $O_i$ is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
+
+\subsection{Correlated Noise}
+
+The most general form of the error on the flux is given by
+
+\begin{equation}
+    \sigma^2 = \sum_{x,y}\sum_{x',y'}W_\mathrm{A}(x,y)C(x,y;x',y')W_\mathrm{A}(x',y').
+\end{equation}
+Assuming that the covariance of pixels only depends on the distance between the pixels, the covariance becomes a local covariance matrix.
 
 \begin{equation}
     C(x,y;x',y') \approx C(x'-x,y'-y)=C(\Delta x, \Delta y)
@@ -95,11 +107,11 @@ We assume that the covariance of pixels only depends on the distance between the
 \begin{equation}
     \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_\mathrm{A}(x,y)C(\Delta x, \Delta y)W_\mathrm{A}(x+\Delta x,y + \Delta y)
 \end{equation}
-Lastly, we assume that the $C(\Delta x, \Delta y) = 0 \forall|\Delta x|, |\Delta y| > L$
+Lastly, we assume that the local covariance matrix is 0 above some lag $L$ such that$C(\Delta x, \Delta y) = 0 \forall|\Delta x|, |\Delta y| > L$.
 
 \noindent This reduces the number of terms in the 
 
-\begin{equation}
+\begin{equation}\label{eq: correlated noise}
     \sigma^2 = \sum_{\Delta x, \Delta y=-L}^{+L}C(\Delta x, \Delta y)\sum_{x,y}W_\mathrm{A}(x,y)W_\mathrm{A}(x+\Delta x,y + \Delta y)
 \end{equation}
 The $C(\Delta x, \Delta y)$ can be calculated using the 
@@ -119,24 +131,14 @@ where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure nois
 \end{equation}
 
 
-\subsection{Poisson Noise}
-
-For the Poisson noise, it is assumed that the pixels are uncorrelated. However, unlike the variance in \autoref{eq: uncorrelated noise}, this noise depends on the location in the image. A characteristic property of Poisson noise is that the variance is equal to the mean of the value. 
-
-\begin{equation}
-    \sigma_\mathrm{Poisson}^2=\sum_iw_i^2O_i
-\end{equation}
-This only works if the image $O_i$ is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
-
-
 \section{Simulation Framework}
 
 We define a fiducial model. We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.01. This noise is uncorrelated, so for the next parts \autoref{eq: uncorrelated noise} can be used. 
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.5\linewidth]{placeholder.pdf}
-    \caption{The simulated fiducial model, PSF, Noise, and the simulated observation.}
+    \includegraphics[width=0.3\linewidth]{results/figures/simulation/fiducial_model.pdf}
+    \caption{The simulated fiducial model, PSF, background noise, and the simulated observation.}
     \label{fig: fiducial model}
 \end{figure}
 Next, each component of the fiducial model is varied individually to investigate the consequences of each part on the measured flux and the estimated error.  
@@ -160,11 +162,17 @@ This results in the observation being
 \begin{equation}
     O = P\otimes I + N
 \end{equation}
-where $P$ is the PSF $I$ the intrinsic image and $N$ the uncorrelated Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian PSFs and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
+where $P$ is the PSF, $I$ the intrinsic image, and $N$ the uncorrelated Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian PSFs and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
 
 
 \subsection{Error Accuracy}
-To test the accuracy of the error, different instances of noise are created, and the flux $F_i$ and error $\sigma_i$ are calculated for each instance. The standard deviation of the flux values is taken to be the true standard deviation $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors is used to compare with the true standard deviation. This is repeated for different combinations of the size of the weight and the size of the PSF. 
+To test the accuracy of the error, different instances of noise are created, and the flux $F_i$ and error $\sigma_i$ are calculated for each instance. The standard deviation of the flux values is taken to be the true standard deviation $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors is used to compare with the true standard deviation. This is repeated for different combinations of the weight size and the PSF size. 
+
+The same process is repeated for Poisson noise. 
+
+Next observations are created that include both Gaussian background noise and Poisson noise. The variances for both types of noise are calculated and added together to obtain the variance of the flux measurements. This is compared to the real variance of the flux values. 
+
+Up until this point, the noise in the simulations was uncorrelated. However, in real observations, this is rarely the case. To simulate correlated noise, uncorrelated noise is convolved with a Gaussian with a scale parameter called 'noise scale'. The accuracy of the correlated noise is also dependent on the value of the lag chosen in \autoref{eq: correlated noise}. This lag can be estimated from the local covariance matrix, where $L$ is chosen to give the matrix centered around the center where the absolute sum of its values is greater than 99\% of the sum of absolute values of the full local covariance matrix.
 
 
 
@@ -175,20 +183,18 @@ To test the aperture shape that maximizes the SNR, the SNR of the flux is calcul
 
 
 \section{Observational Data}
-
-
 To apply the GAAP method to images from both Euclid and Rubin, several inputs are required: PSFs, noise squares, and weight functions.
 
 
 \subsection{PSF Construction}
 
-The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before the method
+The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before GAAP can be applied to its images.
 
 For this, the Source EXtractor \citep{1996A&AS..117..393B} is used to find the fluxes and full-width half-maxima (FWHM) of different sources in the image. Taking the natural logarithm of both sides and plotting the results yields the image shown in \autoref{fig: Chimney}. 
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.5\linewidth]{placeholder.pdf}
+    \includegraphics[width=0.3\linewidth]{placeholder.pdf}
     \caption{The flux of the sources in the VIS-band for different FWHM. The vertical strip of sources is saturated stars in the image. These stars can be used to create an estimate of the PSF. }
     \label{fig: Chimney}
 \end{figure}
@@ -207,3 +213,4 @@ To determine the weight that approximately maximizes the achievable SNR, a fit i
 
 
 \section{Photometric Redshift Estimation}
+Eazy \citep{2008ApJ...686.1503B}
