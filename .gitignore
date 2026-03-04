@@ -1,6 +1,5 @@
 *.fits
 *.dat
-*.png
 *.param
 *.translate
 *.zeropoint
