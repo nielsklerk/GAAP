@@ -694,14 +694,14 @@ class GAAPPhotometry:
             poisson_trim = poisson_cutout[:W2_shifted.shape[0],
                                           :W2_shifted.shape[1]]
 
-            self.flux[i] = np.sum(W_shifted * cutout_trim)
+            self.flux[i] = np.sum(
+                W_shifted * cutout_trim)
 
-            poisson_variance = np.sum(W2_shifted * poisson_trim)
+            poisson_variance = np.sum(
+                W2_shifted * poisson_trim)
             self.variance[i] = background_variance + poisson_variance
 
             if j % 2500 == 0:
                 gc.collect()
 
-        self.flux /= self.pixel_scale**2
-        self.variance /= self.pixel_scale**2
         return self.flux, self.variance
