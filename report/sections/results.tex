@@ -6,7 +6,7 @@ This chapter begins with simulation results that demonstrate the reliability and
 \subsection{Deconvolution}\label{subsec: Deconvolution}
 The deconvolution is stable when the weight is 'larger' than the PSF. In the simulation, this is easy to derive because they are both Gaussian, so comparing their scale factors yields a direct measure of their size. The convolution of two Gaussians gives a Gaussian with a variance that is the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a PSF with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the PSF. The deconvolution was tested using different Gaussian weights and fitting a Gaussian to the results to estimate the scale parameter. The results are shown in \autoref{fig: deconvolution relation}. 
 
-\begin{figure}[!ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
     \caption{The deconvolution of Gaussian weight functions of different sizes by a Gaussian PSF. The deconvolved weights are fitted to find their standard deviation. This is compared to the expected result $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$.}
@@ -18,7 +18,7 @@ Next, the stability of the deconvolution was tested for different image sizes. D
 
 
 
-\begin{figure}[!ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/deconvolution_stability.pdf}
     \caption{The normalized RMS for different Gaussian weights and image sizes. This is found by deconvolving the weights by a PSF and fitting a Gaussian to the result. Then the RMS of the difference between the deconvolution and the fit is calculated and divided by the \textbf{WHAT}.}
@@ -32,7 +32,7 @@ Next, the stability of the deconvolution was tested for different image sizes. D
 
 The true flux values and the flux values of the observations were compared for different-sized PSFs and weights. The result is shown in \autoref{fig: flux accuracy}
 
-\begin{figure}[!ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/flux_weight_psf_size0.pdf}
     \caption{The measured flux normalized by the true flux for different weights and PSF sizes. The flux measurements with weights smaller than the PSF are not as accurate. The same is true for the weights with a standard deviation $\lesssim9\%$ of the image size. The latter is the same result found in \autoref{fig: deconvolution stability}. The yellow line denotes the border of 1$\%$ error}
@@ -43,7 +43,7 @@ The figure shows 2 regions where the measured flux values are inaccurate. The fi
 \subsection{Flux Error Accuracy}
 For each combination of the PSF and weight size, 10000 simulations were run to find the true error and the estimated error. 
 
-\begin{figure}[!ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/error_psf_size.pdf}
     \caption{The measured error divided by the true flux error measured from the distribution of flux values for different instances of noise. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
@@ -57,7 +57,7 @@ The error is accurate and does not depend on the PSF size or the weight.
 
 Next, the 1000 simulations are ran with different lag and correlation. 
 \textbf{MAYBE EXAMPLES OF WHAT THE NOISE LOOKS LIKE FOR DIFFERENT NOISE SIZES}
-\begin{figure}[!ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/error_covariance_size.pdf}
     \caption{The amount of the standard deviation on the flux values is accounted for for different correlations of the noise size and the lag, the pixel distance used for the estimation of the variance.}
@@ -68,7 +68,7 @@ Next, the 1000 simulations are ran with different lag and correlation.
 \subsection{Aperture Shape}
 The SNR for different weight function shapes was calculated. The results are shown in \autoref{fig: best aperture}.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/aperture_size.pdf}
     \caption{The SNR for different combinations of both horizontal and vertical standard deviation of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
@@ -92,23 +92,23 @@ comparing g,r,i, with DES-G,R,I
 
 color color plot stars. gri using mer
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/observation/color_color_euclid.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/observation/color_color_rubin.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/observation/snr_comparison.pdf}
+    \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
