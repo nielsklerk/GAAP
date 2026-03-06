@@ -610,9 +610,9 @@ class GAAPPhotometry:
         maxlag: int
             Description of param2
         noise_model: NoiseModel
-
+            Instance of NoiseModel
         deconvolver: PSFDeconvolver
-
+            Instance of PSFDeconvolver
 
         Returns
         -------
@@ -704,4 +704,4 @@ class GAAPPhotometry:
             if j % 2500 == 0:
                 gc.collect()
 
-        return self.flux, self.variance
+        return self.flux, np.sqrt(self.variance)
