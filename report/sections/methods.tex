@@ -186,19 +186,19 @@ To test the aperture shape that maximizes the SNR, the SNR of the flux is calcul
 To apply the GAAP method to images from both Euclid and Rubin, several inputs are required: PSFs, noise squares, and weight functions.
 
 
-\subsection{PSF Construction}
+% \subsection{PSF Construction}
 
-The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before GAAP can be applied to its images.
+% The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before GAAP can be applied to its images.
 
-For this, the Source EXtractor \citep{1996A&AS..117..393B} is used to find the fluxes and full-width half-maxima (FWHM) of different sources in the image. Taking the natural logarithm of both sides and plotting the results yields the image shown in \autoref{fig: Chimney}. 
+% For this, the Source EXtractor \citep{1996A&AS..117..393B} is used to find the fluxes and full-width half-maxima (FWHM) of different sources in the image. Taking the natural logarithm of both sides and plotting the results yields the image shown in \autoref{fig: Chimney}. 
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=0.3\linewidth]{placeholder.pdf}
-    \caption{The flux of the sources in the VIS-band for different FWHM. The vertical strip of sources is saturated stars in the image. These stars can be used to create an estimate of the PSF. }
-    \label{fig: Chimney}
-\end{figure}
-The stretch of sources that form a vertical line are the saturated stars, which are point sources.  This means that after convolution with the PSF, they have the same shape as the PSF. These sources can be stacked to create an estimate for the PSF in that image. 
+% \begin{figure}[!ht]
+%     \centering
+%     \includegraphics[width=0.3\linewidth]{placeholder.pdf}
+%     \caption{The flux of the sources in the VIS-band for different FWHM. The vertical strip of sources is saturated stars in the image. These stars can be used to create an estimate of the PSF. }
+%     \label{fig: Chimney}
+% \end{figure}
+% The stretch of sources that form a vertical line are the saturated stars, which are point sources.  This means that after convolution with the PSF, they have the same shape as the PSF. These sources can be stacked to create an estimate for the PSF in that image. 
 
 
 \subsection{Noise Square}
