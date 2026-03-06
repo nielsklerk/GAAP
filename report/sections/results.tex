@@ -26,7 +26,12 @@ Next, the stability of the deconvolution was tested for different image sizes. D
 \end{figure}
 \autoref{fig: deconvolution stability} shows that the deconvolution becomes unstable when the weight function is $\lesssim 9\%$ of the size of the image.
 
-\textbf{PLOT OF THE 3 REGIMES}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/simulation/2_regimes.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
 
 \subsection{Flux Accuracy}
 
@@ -38,14 +43,14 @@ The true flux values and the flux values of the observations were compared for d
     \caption{The measured flux normalized by the true flux for different weights and PSF sizes. The flux measurements with weights smaller than the PSF are not as accurate. The same is true for the weights with a standard deviation $\lesssim9\%$ of the image size. The latter is the same result found in \autoref{fig: deconvolution stability}. The yellow line denotes the border of 1$\%$ error}
     \label{fig: flux accuracy}
 \end{figure}
-The figure shows 2 regions where the measured flux values are inaccurate. The first region is the measurements taken with weights smaller than the PSF. This result is expected, as shown in \autoref{subsec: Deconvolution}. The second region is the measurements above the PSF line and $\gtrsim 10$ pixels. These incorrect measurements are due to the limited size of the weight function, leading to fringing. This can be mitigated by increasing the image size of the weight function.
+The figure shows 2 regions where the measured flux values are inaccurate. The first region is the measurements taken with weights smaller than the PSF. This result is expected, as shown in \autoref{subsec: Deconvolution}. The second region comprises measurements above the PSF line and is $\gtrsim 10$ pixels wide. These incorrect measurements are due to the limited size of the weight function, leading to fringing. This can be mitigated by increasing the image size of the weight function.
 
 \subsection{Flux Error Accuracy}
 For each combination of the PSF and weight size, 10000 simulations were run to find the true error and the estimated error. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.3\linewidth]{results/figures/simulation/error_psf_size.pdf}
+    \includegraphics[width=0.3\linewidth]{results/figures/simulation/error_weight_psf_size.pdf}
     \caption{The measured error divided by the true flux error measured from the distribution of flux values for different instances of noise. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: error PSF}
 \end{figure}
@@ -80,6 +85,13 @@ The best weight is approximately the same as the shape of the intrinsic galaxy. 
 \section{Observation}
 The following analysis was done on the 53.00, -28.00 field. 
 
+\subsection{Preprocessing}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/observation/relation_pre_seeing_post_seeing.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
 
 \subsection{Observation Results: Flux Measurements}
 Using MER for coordinates
@@ -95,21 +107,21 @@ color color plot stars. gri using mer
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/observation/color_color_euclid.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{Color color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the DECam filters G, R, I. The sources in the image are the sources that have a point-source-probability > 90\%.}
+    \label{fig:color_color_euclid}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/observation/color_color_rubin.pdf}
-    \caption{Caption}
-    \label{fig:placeholder}
+    \caption{Color color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the Rubin filters g, r, i. The sources in the image are the sources that have a point-source-probability > 90\%.}
+    \label{fig:color_color_rubin}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison.pdf}
-    \caption{Caption}
+    \caption{Comparison flux measurements using GAAP and that of the MER catalog for all filters in the catalog. The dashed line denote equal SNR.}
     \label{fig:placeholder}
 \end{figure}
 
@@ -118,6 +130,20 @@ color color plot stars. gri using mer
 parameters explained
 
 compared redshift statistics derived from GAAP flux to those derived from MER
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/analysis/z_distribution.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/analysis/3d_plot.png}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
 
 3d plot using cosmology
 
