@@ -51,7 +51,7 @@ For each combination of the PSF and weight size, 10000 simulations were run to f
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/simulation/error_weight_psf_size.pdf}
-    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances.} This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
+    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: error PSF}
 \end{figure}
 The error is accurate and does not depend on the PSF size or the weight.
@@ -62,10 +62,11 @@ The error is accurate and does not depend on the PSF size or the weight.
 
 Next, the 1000 simulations are ran with different lag and correlation. 
 \textbf{MAYBE EXAMPLES OF WHAT THE NOISE LOOKS LIKE FOR DIFFERENT NOISE SIZES}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/simulation/error_covariance_size.pdf}
-    \caption{The standard deviation of the flux values is accounted for by different correlations between the noise size and the lag, and by the pixel distance used for the variance estimation.}}
+    \caption{The standard deviation of the flux values is accounted for by different correlations between the noise size and the lag, and by the pixel distance used for the variance estimation.}
     \label{fig: error covariance}
 \end{figure}
 
@@ -76,7 +77,7 @@ The SNR for different weight function shapes was calculated. The results are sho
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/simulation/aperture_size.pdf}
-    \caption{The SNR for different combinations of the horizontal and vertical standard deviations of the weight.} The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
+    \caption{The SNR for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
     \label{fig: best aperture}
 \end{figure}
 
@@ -120,14 +121,14 @@ color color plot stars. gri using mer
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison_correlated.pdf}
+    \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison_uncorrelated.pdf}
     \caption{Comparison of flux measurements from GAAP and the MER catalog for all catalog filters. The dashed line denotes equal SNR.}
     \label{fig:placeholder}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison_uncorrelated.pdf}
+    \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison_correlated.pdf}
     \caption{Comparison of flux measurements from GAAP and the MER catalog for all catalog filters. The dashed line denotes equal SNR.}
     \label{fig:placeholder}
 \end{figure}
@@ -138,21 +139,27 @@ parameters explained
 
 compared redshift statistics derived from GAAP flux to those derived from MER
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/analysis/z_distribution.pdf}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/analysis/z_phot_comparison.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
+
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/analysis/3d_plot.png}
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
-
-3d plot using cosmology
 
 spectroscopic redshift?
 
