@@ -73,28 +73,28 @@ where $O$ and $w$ are the flattened versions of the observation and the weight, 
 \end{equation}
 where $C_{ij}$ is the covariance matrix.
 
-\subsection{Uncorrelated Noise}
-Assuming that the pixel variations are independent and have variance $\sigma_\mathrm{pixel}^2$, the covariance matrix can be written like $C_{ij}=\sigma_\mathrm{pixel}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
+% \subsection{Uncorrelated Noise}
+% Assuming that the pixel variations are independent and have variance $\sigma_\mathrm{pixel}^2$, the covariance matrix can be written like $C_{ij}=\sigma_\mathrm{pixel}^2\delta_{ij}$. This simplifies the formula for the uncertainty in the flux to
 
-\begin{equation}\label{eq: uncorrelated noise}
-    \sigma^2 = \sigma_{\mathrm{pixel}}^2\sum_iw_i^2.
-\end{equation}
-Assuming the noise is symmetric around zero, we consider only negative pixel values. This is to exclude any signals other than the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
+% \begin{equation}\label{eq: uncorrelated noise}
+%     \sigma^2 = \sigma_{\mathrm{pixel}}^2\sum_iw_i^2.
+% \end{equation}
+% Assuming the noise is symmetric around zero, we consider only negative pixel values. This is to exclude any signals other than the noise. Let $O_i$ be the pixel values at index $i$ and $O_-$ be the set of indexes where $O_i<0$
 
-\begin{equation}
-    \sigma_\mathrm{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
-\end{equation}
+% \begin{equation}
+%     \sigma_\mathrm{pixel}^2 = \frac{1}{|O_{-}|} \sum_{i \in O_{-}} O_i^2
+% \end{equation}
 
-\subsection{Poisson Noise}
+% \subsection{Poisson Noise}
 
-For the Poisson noise, it is assumed that the pixels are uncorrelated. However, unlike the variance in \autoref{eq: uncorrelated noise}, this noise depends on the location in the image. A characteristic property of Poisson noise is that the variance is equal to the mean of the value. So we can take the image as an estimate for the Poisson variance.
+% For the Poisson noise, it is assumed that the pixels are uncorrelated. However, unlike the variance in \autoref{eq: uncorrelated noise}, this noise depends on the location in the image. A characteristic property of Poisson noise is that the variance is equal to the mean of the value. So we can take the image as an estimate for the Poisson variance.
 
-\begin{equation}
-    \sigma_\mathrm{Poisson}^2=\sum_iw_i^2O_i
-\end{equation}
-This only works if the image $O_i$ is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
+% \begin{equation}
+%     \sigma_\mathrm{Poisson}^2=\sum_iw_i^2O_i
+% \end{equation}
+% This only works if the image $O_i$ is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
 
-\subsection{Correlated Noise}
+\subsection{Noise Estimation from background Noise}
 
 The most general form of the error on the flux is given by
 
@@ -109,6 +109,10 @@ Assuming that the covariance of pixels only depends on the distance between the 
 
 \begin{equation}
     \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_\mathrm{A}(x,y)C(\Delta x, \Delta y)W_\mathrm{A}(x+\Delta x,y + \Delta y)
+\end{equation}
+
+\begin{equation}
+    \sigma^2 = \sigma^2_\mathrm{pixel}\sum_{x,y}W^2_\mathrm{A}(x,y)
 \end{equation}
 Lastly, we assume that the local covariance matrix is 0 above some lag $L$ such that$C(\Delta x, \Delta y) = 0 \forall|\Delta x|, |\Delta y| > L$.
 
@@ -133,6 +137,7 @@ where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure nois
     C(\Delta x, \Delta y) = \frac{\left(\tilde{I}(x,y) \otimes\tilde{I}(-x,-y)\right)(\Delta x, \Delta y)}{\int dx dy} 
 \end{equation}
 
+\subsection{Noise from RMS}
 \begin{equation}
     \sigma^2=\sum_{x,y,x',y'}W(x,y)C(x,y,x',y')W(x',y')
 \end{equation}
@@ -141,11 +146,18 @@ where $\tilde{I}(x,y)=I(x,y) - \langle I(x,y)\rangle$ with $I$ being a pure nois
 \end{equation}
 Define $W(x,y)\sigma(x,y)=W'(x,y)$
 \begin{equation}
+    \sigma^2=\sum_{x,y,x',y'}W'(x,y)\rho(x-x',y-y')W'(x',y')
+\end{equation}
+\begin{equation}
     \sigma^2=\sum_{x,y}W'(x,y)(\rho\otimes W')(x,y)
 \end{equation}
 For uncorrelated noise, this will be
 \begin{equation}
     \sigma^2=\sum_{x,y}W'^2(x,y)
+\end{equation}
+
+\begin{equation}
+    C(x,y;x',y') \approx \sigma(x,y)\rho(x-x',y-y')\sigma(x',y')
 \end{equation}
 
 \section{Simulation Framework}
