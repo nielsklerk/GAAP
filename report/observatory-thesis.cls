@@ -4,7 +4,7 @@
 
 \typeout{}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{layout/observatory-thesis}[2023/03/28 v0.1]
+\ProvidesClass{report/observatory-thesis}[2023/03/28 v0.1]
 \typeout{}
 \typeout{Official Leiden Observatory thesis class, created for Leiden Observatory}
 \typeout{}
@@ -156,12 +156,12 @@
 
 % Set default logo depending on language
 \addto\captionsenglish{%
-\coveraffiliationlogo{layout/figures/leidenuniv_logos/Observatory_diapositive.pdf}
-\affiliationlogo{layout/figures/leidenuniv_logos/Observatory.pdf}
+\coveraffiliationlogo{report/layout/figures/leidenuniv_logos/Observatory_diapositive.pdf}
+\affiliationlogo{report/layout/figures/leidenuniv_logos/Observatory.pdf}
 }
 \addto\captionsdutch{%
-\coveraffiliationlogo{layout/figures/leidenuniv_logos/Sterrewacht_diapositief.pdf}
-\affiliationlogo{layout/figures/leidenuniv_logos/Sterrewacht.pdf}
+\coveraffiliationlogo{report/layout/figures/leidenuniv_logos/Sterrewacht_diapositief.pdf}
+\affiliationlogo{report/layout/figures/leidenuniv_logos/Sterrewacht.pdf}
 }
 
 
@@ -278,8 +278,8 @@
 }
 
 % Make different glossaries for units and constants
-\newcommand{\glossaryunitname}{Units}
-\newcommand{\glossaryconstantsname}{Constants}
+\newcommand{\glossaryunitname}{units}
+\newcommand{\glossaryconstantsname}{constants}
 
 \newglossary[slg-c]{constants}{sls-c}{slo-c}{\glossaryconstantsname}
 \newglossary[slg-u]{units}{sls-u}{slo-u}{\glossaryunitname}

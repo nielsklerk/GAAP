@@ -12,7 +12,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Load acronyms and symbols %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \makeglossaries
+
+\makeglossaries
 \input{report/glossaries/custom_units} % load custom defined units -add to tips and tricks
 \input{report/glossaries/gls-acronyms}
 \input{report/glossaries/gls-constants}
@@ -60,14 +61,14 @@
 \maketitle % Create titlepage
 
 % Frontmatter contents
-\input{frontmatter/abstract}
-\input{frontmatter/acknowledgements.tex}
+\input{report/frontmatter/abstract}
+\input{report/frontmatter/acknowledgements.tex}
 \tableofcontents
 \listoftables
 \listoffigures
-\input{frontmatter/nomenclature.tex}
+\input{report/frontmatter/nomenclature.tex}
 
-\cleardoublepage
+%\cleardoublepage
 
 %%%%%%%%%%%%%%%%
 %% Mainmatter %%
@@ -81,7 +82,6 @@
 \input{report/sections/results}
 \input{report/sections/discussion}
 \input{report/sections/conclusion}
-
 
 %%%%%%%%%%%%%%
 %% Appendix %%
