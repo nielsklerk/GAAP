@@ -349,6 +349,7 @@ class NoiseModel:
         self.noise_covariance = None
         self.poisson_image = None
         self.ac = None
+        self.kernel = None
 
     def find_noise_square(self,
                           box_size: int = 100,
@@ -486,6 +487,18 @@ class NoiseModel:
                 return i
         return cy
 
+    def rms_error(self, weight, xc, yc, size, uncorrelated=False):
+        if self.kernel is None:
+            self.kernel = self.ac / np.max(self.ac)
+
+        rms_cutout, _ = padded_cutout_with_center(self.rms, xc, yc, size)
+        rms_cutout = rms_cutout[:weight.shape[0], :weight.shape[1]]
+        weight_prime = rms_cutout * weight * self.rms_conversion_factor
+        if uncorrelated:
+            return np.sum(weight_prime * weight_prime)
+        conv = fftconvolve(weight_prime, self.kernel, mode='same')
+        return np.sum(weight_prime * conv)
+
 
 class PSFDeconvolver:
     def __init__(self, psf: np.ndarray):
@@ -599,6 +612,7 @@ class GAAPPhotometry:
         noise_model: NoiseModel,
         deconvolver: PSFDeconvolver,
         show_progress=True,
+        uncorrelated=False,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Calculates the GAAP flux of the sources and weight functions.
@@ -658,25 +672,18 @@ class GAAPPhotometry:
                 )
 
                 weight_rescale = deconvolver.deconvolve(weight, size)
-                weight_rescale2 = weight_rescale**2
 
-                background_variance = weighted_variance_lag(
-                    weight_rescale,
-                    noise_model.noise_covariance,
-                    maxlag,
-                )
+                if noise_model.rms is None:
+                    background_variance = weighted_variance_lag(
+                        weight_rescale,
+                        noise_model.noise_covariance,
+                        maxlag,
+                    )
 
                 last_aperture = aperture
 
             cutout, (cx_cut, cy_cut) = padded_cutout_with_center(
                 self.image,
-                xc,
-                yc,
-                size,
-            )
-
-            poisson_cutout, _ = padded_cutout_with_center(
-                noise_model.poisson_image,
                 xc,
                 yc,
                 size,
@@ -688,18 +695,18 @@ class GAAPPhotometry:
             dy = cy_cut - np.floor(cy_cut)
 
             W_shifted = bilinear_shift(weight_rescale, dx, dy)
-            W2_shifted = bilinear_shift(weight_rescale2, dx, dy)
 
             cutout_trim = cutout[:W_shifted.shape[0], :W_shifted.shape[1]]
-            poisson_trim = poisson_cutout[:W2_shifted.shape[0],
-                                          :W2_shifted.shape[1]]
 
             self.flux[i] = np.sum(
                 W_shifted * cutout_trim)
 
-            poisson_variance = np.sum(
-                W2_shifted * poisson_trim)
-            self.variance[i] = background_variance + poisson_variance
+            if noise_model.rms is None:
+                self.variance[i] = background_variance
+            else:
+                self.variance[i] = noise_model.rms_error(W_shifted, xc,
+                                                         yc,
+                                                         size, uncorrelated)
 
             if j % 2500 == 0:
                 gc.collect()
