@@ -8,7 +8,7 @@ Aperture photometry can be written like
 \begin{equation}\label{eq: aperture photometry}
     F_\mathrm{A} = \int dxdyO(x,y)W_\mathrm{A}(x,y)
 \end{equation}
-where $O(x,y)$ is the observed data and $W_\mathrm{A}(x,y)$ some weight function.$O(x,y)$ is the convolution of the intrinsic image with the PSF
+where $O(x,y)$ is the observed data and $W_\mathrm{A}(x,y)$ some weight function.$O(x,y)$ is the convolution of the intrinsic image with the \gls{psf}
 
 \begin{equation}\label{eq: observation convolution}
     O(x,y)=(P\otimes I)(x,y) = \int dx'dy'P(x-x', y-y')I(x',y').
@@ -18,7 +18,7 @@ where $O(x,y)$ is the observed data and $W_\mathrm{A}(x,y)$ some weight function
 \begin{equation}
     F_\mathrm{A} = \int dxdy\int dx'dy'P(x-x', y-y')I(x',y')W_\mathrm{A}(x,y).
 \end{equation}
-A change of coordinates gives
+Changing the order of integration, and changing the primed coordinates to the unprimed coordinates gives
 
 \begin{equation}
     F_\mathrm{A} = \int dxdyI(x,y)\tilde{W}_\mathrm{A}(x,y),
@@ -28,15 +28,15 @@ where
 \begin{equation}\label{eq: weight convolution}
     \tilde{W}_\mathrm{A}(x,y) = \int dx'dy'P(x'-x, y'-y)W_\mathrm{A}(x',y')=(\bar{P}\otimes W_\mathrm{A})(x,y)
 \end{equation}
-with $\bar{P}$ the reflected PSF $\bar{P}(x,y)=P(-x,-y)$.
+with $\bar{P}$ the reflected \gls{psf} $\bar{P}(x,y)=P(-x,-y)$.
 
 \noindent The algorithm then works as follows:
 \begin{enumerate}
     \item Choose a pre-seeing aperture function $\tilde{W}_\mathrm{A}$, which is going to be applied to all bands
-    \item Calculate the post-seeing aperture $W_\mathrm{A}^i$ by deconvolving the aperture function $\tilde{W}_\mathrm{A}$ by the reflected PSF $\bar{P}_i$, of band $i$; $W^i_\mathrm{A}=\tilde{W}_\mathrm{A}\otimes^{-1}\bar{P}_i$
+    \item Calculate the post-seeing aperture $W_\mathrm{A}^i$ by deconvolving the aperture function $\tilde{W}_\mathrm{A}$ by the reflected \gls{psf} $\bar{P}_i$, of band $i$; $W^i_\mathrm{A}=\tilde{W}_\mathrm{A}\otimes^{-1}\bar{P}_i$
     \item Calculate the aperture flux for each band using the post-seeing aperture function $W_\mathrm{A}^i$.
 \end{enumerate}
-The deconvolution can be calculated by examining \autoref{eq: weight convolution} in the frequency domain using the Fourier transform as a convolution in the \textbf{WHAT} domain becomes a multiplication in the frequency domain.
+The deconvolution can be computed by applying the Fourier transform to \autoref{eq: weight convolution} in the frequency domain, since a convolution in the \textbf{WHAT} domain corresponds to a multiplication in the frequency domain.
 
 \begin{equation}\label{eq: fourier domain}
     \mathcal{F}\{\tilde{W}_\mathrm{A}\}=\mathcal{F}\{\bar{P}_i\}\cdot\mathcal{F}\{W_\mathrm{A}^i\}
@@ -46,7 +46,7 @@ From \autoref{eq: fourier domain}, a direct formula for the post-seeing aperture
 \begin{equation}\label{eq: analytical deconvolution}
     W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_\mathrm{A}\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
 \end{equation}
-However, \autoref{eq: analytical deconvolution} has a division by the Fourier transform of the reflected PSF, which can be close to 0 at some points. A division by a small number results in inflation of the machine error in the calculation, giving inaccurate results. 
+However, \autoref{eq: analytical deconvolution} has a division by the Fourier transform of the reflected \gls{psf}, which can be close to 0 at some points. Division by a small number inflates the machine error in the calculation, leading to inaccurate results. 
 To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $K=10^{-16}$ is added
 
 \begin{equation}
@@ -130,12 +130,12 @@ Finally, if the pixels in the image are uncorrelated, the only non-zero element 
 \end{equation}
 
 \subsection{Noise from RMS}
-If the noise varies across the image, the assumption made in \autoref{subsec: Noise Estimation from background Noise} does not hold anymore. In this case, the only assumption made to find the covariance matrix is that the correlation between two pixels does not depend on the location in the image. So the covariance matrix can be approximated like
+If the noise varies across the image, the assumption made in \autoref{subsec: Noise Estimation from background Noise} does not hold anymore. In this case, the only assumption required to obtain the covariance matrix is that the correlation between two pixels does not depend on their spatial location within the image. So the covariance matrix can be approximated like
 
 \begin{equation}\label{eq: rms covariance}
     C(x,y;x',y') \approx \sigma(x,y)\rho(x-x',y-y')\sigma(x',y'),
 \end{equation}
-where $\sigma(x,y)$ is the standard deviation at position $(x,y)$ and $\rho(x-x',y-y')$ the correlation between the points $(x,y)$ and $(x',y')$. The values of $\sigma(x,y)$ are derived from the RMS map. To find the values for the correlation function, the covariance matrix $C(\Delta x, \Delta y)$ is used from \autoref{subsec: Noise Estimation from background Noise} by using 
+where $\sigma(x,y)$ is the standard deviation at position $(x,y)$ and $\rho(x-x',y-y')$ the correlation between the points $(x,y)$ and $(x',y')$. The values of $\sigma(x,y)$ are derived from the \gls{rms} map. To find the values for the correlation function, the covariance matrix $C(\Delta x, \Delta y)$ is used from \autoref{subsec: Noise Estimation from background Noise} by using 
 
 \begin{equation}
     \rho(x-x',y-y')=\frac{C(x-x',y-y')}{\max C(x-x',y-y')}
@@ -152,35 +152,44 @@ By defining $W(x,y)\sigma(x,y)=W'(x,y)$, \autoref{eq: rms variance} can be writt
 \begin{equation}\label{eq: variance rms correlated}
     \sigma^2=\sum_{x,y}W'(x,y)(\rho\otimes W')(x,y).
 \end{equation}
-In the case that the noise in the pixels are uncorrelated, the only non-zero element of the correlation function is $\rho(0,0)=1$. This results in the expression simplifying to
+In the case that the noise in the pixels is uncorrelated, the only non-zero element of the correlation function is $\rho(0,0)=1$. This results in the expression simplifying to
 \begin{equation}\label{eq: variance rms uncorrelated}
     \sigma^2=\sum_{x,y}W'^2(x,y).
 \end{equation}
 
 \section{Simulation Framework}
 
-We define a fiducial model. We simulate an image of 100 by 100 pixels. We chose an elliptical Gaussian for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian PSF with a standard deviation of 3 pixels. The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. To add noise to the image, we take Gaussian-distributed values with a variance of 0.01. This noise is uncorrelated, so for the next parts \autoref{eq: variance uncorrelated} can be used. 
+To test the effectivity of this method, simulated images are calculated. A fiducial model is defined of which various aspects are varied to test where the limitations of this method lay. The simulated images are 100 by 100 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
+
+\begin{equation}
+    I(x,y) \propto \exp\left(-\left(\frac{x^2}{10^2}\right)-\left(\frac{y^2}{5^2}\right)\right)
+\end{equation}
+The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian \gls{psf} with a standard deviation of 3 pixels.
+\begin{equation}
+    I(x,y) \propto \exp\left(-\left(\frac{x^2+y^2}{3^2}\right)\right)
+\end{equation}
+The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. To add noise to the image, we draw Gaussian-distributed values with a variance of 0.01.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.3\linewidth]{results/figures/simulation/fiducial_model.pdf}
-    \caption{The simulated fiducial model, PSF, background noise, and the simulated observation.}
+    \caption[Fiducial model]{The simulated fiducial model, PSF, background noise, and the simulated observation.}
     \label{fig: fiducial model}
 \end{figure}
 Next, each component of the fiducial model is varied individually to investigate the consequences of each part on the measured flux and the estimated error.  
 
 
-\subsection{Flux Accuracy}
+\subsection{Flux Accuracy}\label{subsec: flux accuracy}
 
-To test the accuracy of the GAAP method, the flux determined from the pre-seeing image with the pre-seeing weight function
+The flux determined from the pre-seeing image with the pre-seeing weight function
 
 \begin{equation}
     F_\mathrm{True} = \int dxdy I(x,y) \tilde{W}_\mathrm{A}(x,y)
 \end{equation}
-with the flux measured with the deconvolved weight and the observed image with noise. 
+is compared to the flux measured with the deconvolved weight and the observed image with noise
 
 \begin{equation}
-    F_\mathrm{Measured} = \int dxdy O(x,y) W_\mathrm{A}(x,y)
+    F_\mathrm{Measured} = \int dxdy O(x,y) W_\mathrm{A}(x,y).
 \end{equation}
 Gaussian noise is applied after the convolution and to find the variance on the flux \autoref{eq: variance correlated} is used. 
 This results in the observation being
@@ -188,28 +197,25 @@ This results in the observation being
 \begin{equation}
     O = P\otimes I + N
 \end{equation}
-where $P$ is the PSF, $I$ the intrinsic image, and $N$ the uncorrelated Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian PSFs and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
+where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian \glspl{psf} and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
 
 
 \subsection{Error Accuracy}
-To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors is used to compare with the true standard deviation. This is repeated for different combinations of weight and PSF sizes. 
+To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors $\sigma_\mathrm{Measured}=\mathrm{mean}(\sigma_i)$ is used to compare with the true standard deviation. This is repeated for different combinations of weight and \gls{psf} sizes in the same way as in \autoref{subsec: flux accuracy}.
 
-The same process is repeated for Poisson noise. 
-
-Next observations are created that include both Gaussian background noise and Poisson noise. The variances for both noise types are computed and summed to obtain the variance of the flux measurements. This is compared to the real variance of the flux values. 
 
 Up until this point, the noise in the simulations was uncorrelated. However, in real observations, this is rarely the case. To simulate correlated noise, uncorrelated noise is convolved with a Gaussian with a scale parameter called 'noise scale'. The accuracy of the correlated noise also depends on the lag chosen in \autoref{eq: variance correlated}. This lag can be estimated from the local covariance matrix, where $L$ is chosen to center the matrix at the point where the absolute sum of its values exceeds 99\% of the sum of the absolute values of the full local covariance matrix.
 
 
 
 \subsection{Aperture Shape}
-To test the aperture shape that maximizes the SNR, the flux SNR is calculated for various scale parameters in both the x- and y-directions. 
+To test the aperture shape that maximizes the \gls{snr}, the flux \gls{snr} is calculated for various scale parameters in both the x- and y-directions.
 
 
 
 
 \section{Observational Data}
-To apply the GAAP method to images from both Euclid and Rubin, several inputs are required: PSFs, noise squares, and weight functions.
+To apply the \gls{gaap} method to images from both Euclid and Rubin, several inputs are required: \glspl{psf}, noise squares, and weight functions.
 
 
 % \subsection{PSF Construction}
@@ -233,10 +239,11 @@ Find a square with the minimal variance. This square should contain no sources, 
 
 
 \subsection{Fitting Weights}
-To determine the weight that approximately maximizes the achievable SNR, a fit is performed for each source. We then use the deconvolution fit to determine the best original weight.  
+To determine the weight that approximately maximizes the achievable \gls{snr}, a fit is performed for each source. \textbf{FIND NEW METHOD TO DETERMINE THE OPTIMAL SNR}
 
 \subsection{Applying GAAP Algorithm}
+For each galaxy, an cutout around it is made to find the flux in that area. The 
 
 
 \section{Photometric Redshift Estimation}
-Eazy \citep{2008ApJ...686.1503B}
+Eazy \citep{brammer_eazy_2008}

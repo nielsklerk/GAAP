@@ -4,7 +4,7 @@ This chapter begins with simulation results that demonstrate the reliability and
 \section{Simulation}
 
 \subsection{Deconvolution}\label{subsec: Deconvolution}
-The deconvolution is stable when the weight is 'larger' than the PSF. In the simulation, this is easy to derive because they are both Gaussian, so comparing their scale factors yields a direct measure of their size. The convolution of two Gaussians gives a Gaussian with a variance that is the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a PSF with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the PSF. The deconvolution was tested using different Gaussian weights and fitting a Gaussian to the results to estimate the scale parameter. The results are shown in \autoref{fig: deconvolution relation}. 
+The deconvolution is stable when the weight is 'larger' than the PSF. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians gives a Gaussian with a variance that is the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a PSF with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the PSF. The deconvolution was tested with different Gaussian weights and with a Gaussian fit to the results to estimate the scale parameter. The results are shown in \autoref{fig: deconvolution relation}. 
 
 \begin{figure}[H]
     \centering
@@ -14,17 +14,7 @@ The deconvolution is stable when the weight is 'larger' than the PSF. In the sim
 \end{figure}
 \autoref{fig: deconvolution relation} shows that the measured scale factors of the deconvolved weights align with the predicted value for weights that are larger than the PSF. 
 
-Next, the stability of the deconvolution was tested for different image sizes. Due to the limited size of the images, larger weights compared to the image start to give artifacts in the deconvolution. Different weights were deconvolved for different image sizes. The deconvolution was then fitted, and the normalized RMS was calculated. The results are shown in \autoref{fig: deconvolution stability}. 
-
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/deconvolution_stability.pdf}
-    \caption{The normalized RMS for different Gaussian weights and image sizes. This is found by deconvolving the weights by a PSF and fitting a Gaussian to the result. Then the RMS of the difference between the deconvolution and the fit is calculated and divided by the \textbf{WHAT}.}
-    \label{fig: deconvolution stability}
-\end{figure}
-\autoref{fig: deconvolution stability} shows that the deconvolution becomes unstable when the weight function is $\lesssim 9\%$ of the size of the image.
+Next, the stability of the deconvolution was tested for different image sizes. Due to the limited image size, larger weights relative to the image size begin to introduce artifacts in the deconvolution. Different weights were deconvolved for different image sizes. The deconvolution was then fitted, and the normalized RMS was calculated.
 
 \begin{figure}
     \centering
@@ -35,12 +25,12 @@ Next, the stability of the deconvolution was tested for different image sizes. D
 
 \subsection{Flux Accuracy}
 
-The true flux values and the flux values of the observations were compared for different-sized PSFs and weights. The result is shown in \autoref{fig: flux accuracy}
+The true and observed flux values were compared across different PSF sizes and weights. The result is shown in \autoref{fig: flux accuracy}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/simulation/flux_weight_psf_size0.pdf}
-    \caption{The measured flux normalized by the true flux for different weights and PSF sizes. Flux measurements with weights smaller than the PSF are less accurate. The same holds for weights with a standard deviation $\lesssim 9\%$ of the image size. The latter is the same result found in \autoref{fig: deconvolution stability}. The yellow line denotes the border of 1$\%$ error}
+    \caption{The measured flux normalized by the true flux for different weights and PSF sizes. Flux measurements with weights smaller than the PSF are less accurate. The same holds for weights with a standard deviation $\lesssim 9\%$ of the image size. The yellow line denotes the border of 1$\%$ error}
     \label{fig: flux accuracy}
 \end{figure}
 The figure shows 2 regions where the measured flux values are inaccurate. The first region is the measurements taken with weights smaller than the PSF. This result is expected, as shown in \autoref{subsec: Deconvolution}. The second region comprises measurements above the PSF line and is $\gtrsim 10$ pixels wide. These incorrect measurements are due to the limited size of the weight function, leading to fringing. This can be mitigated by increasing the image size of the weight function.
@@ -81,7 +71,7 @@ The SNR for different weight function shapes was calculated. The results are sho
     \label{fig: best aperture}
 \end{figure}
 
-The best weight is approximately equal to the intrinsic shape of the galaxy. This holds for both circular and elliptical shapes. Thus, the weight that yields the highest SNR is the one that best fits the intrinsic image. This can be estimated by fitting to an observation in one field, preferably at the highest resolution, and then finding the corresponding pre-seeing weight to apply to all bands.
+The best weight is approximately equal to the intrinsic shape of the galaxy. This holds for both circular and elliptical shapes. Thus, the weight that yields the highest SNR is the one that best fits the intrinsic image. This can be estimated by fitting to an observation in a single field, preferably at the highest resolution, and then identifying the corresponding pre-seeing weight to apply to all bands.
 
 \section{Observation}
 The following analysis was done on the 53.00, -28.00 field. 
@@ -90,7 +80,7 @@ The following analysis was done on the 53.00, -28.00 field.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/observation/relation_pre_seeing_post_seeing.pdf}
-    \caption{Caption}
+    \caption{The relation between the size of the Gaussian weight function that maximizes some form of the SNR over all bands compared to the size of the source in the VIS field. }
     \label{fig: relation pre post seeing}
 \end{figure}
 
@@ -115,7 +105,7 @@ color color plot stars. gri using mer
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/observation/color_color_rubin.pdf}
-    \caption{Color-color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the Rubin filters g, r, and i. The sources in the image are those with a point-source probability> 90\%.}
+    \caption{Color-color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the Rubin filters g, r, and i. The sources in the image are the objects in the MER-catalog with a point-source probability >90\%.}
     \label{fig:color_color_rubin}
 \end{figure}
 
@@ -153,14 +143,7 @@ compared redshift statistics derived from GAAP flux to those derived from MER
     \label{fig: z phot comparison}
 \end{figure}
 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/analysis/3d_plot.png}
-    \caption{Caption}
-    \label{fig: 3d}
-\end{figure}
-
 spectroscopic redshift?
 
 
+\citep{brammer_eazy_2008}

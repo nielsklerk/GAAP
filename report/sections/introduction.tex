@@ -1,15 +1,53 @@
 \chapter{Introduction}
-cosmology
+role galaxies in LSS and the evolution of the universe
+Due to the expansion of the universe, the light emitted by galaxies gets stretched, cosmological redshift.
+importance redshift
 
-central problem
+\begin{equation}
+    z = \frac{\Delta\lambda}{\lambda_\mathrm{emitted}}=\frac{\lambda_\mathrm{observed}-\lambda_\mathrm{emitted}}{\lambda_\mathrm{emitted}}
+\end{equation}
+So redshift measurements are important to study the large-scale structures and the evolution of the universe. The most accurate measurements of the redshift are spectroscopic redshifts. This involves using spectroscopy to find the redshift directly, for example, looking at specific atomic lines. However, there is a problem with this method. It can only be applied to a handful of objects at a time. Thus, this method takes a considerably longer time to find the redshift for a large number of sources. Photometry can be use to find the redshift for a large number of sources.
 
+\section{Photometric colors}
 
+broadband filters
+\begin{equation}
+    F_\mathrm{obs}=\int S(\lambda)T(\lambda)d\lambda
+\end{equation}
+\begin{equation}
+    m_i=-2.5\log_{10}\left(F_i\right) + C
+\end{equation}
+ab vs vega
+\begin{equation}
+    m_i=-2.5\log\left(\frac{F_i}{F_i^\mathrm{Vega}}\right)
+\end{equation}
+magnitude
+\begin{equation}
+    (m_i-m_b)=-2.5\log_{10}\left(\frac{F_i}{F_b}\right)
+\end{equation}
+what it is
 
-redshift
--spectroscopic
--photometric
+\section{Photometric redshift}
+what it is
+advantages large survey
+for photo-z template fitting vs machine learning
+\section{Current technique}
+e.g. aperture photometry and model based photometry
+limitations
+
+\section{Motivation new technique}
+more accurate z
+\section{Overview new technique}
+why is it better and what problem does it solve
+\section{scope}
+What datasets, simulations, or surveys are used
+What aspects are addressed (method development, validation, comparison)
+What is not covered (to define boundaries clearly)
 
 \glspl{gc}
+\glspl{sed}
+\glspl{psf}
+\glspl{psf}
 sky surveys
 
 Euclid
@@ -17,8 +55,8 @@ Rubin
 
 \gls{lsst}
 \gls{desi}
-\si\msun
-
+\si\msun 
+\gls{sdss}
 The goal of this thesis is to explore a new method of determining the colors of objects, apply that technique to survey images of Euclid and Rubin, and determine the photometric redshift of objects. 
 
 First, the algorithm is explained. Subsequently, the method's limitations and accuracy are evaluated using simulations. Next, this method is applied to Euclid and Rubin images. Lastly, the colors determined with the GAAP method are used to fit the spectra and derive the photometric redshift. \gls{hst}, \gls{alma} \gls{vlt}, \gls{m31}
