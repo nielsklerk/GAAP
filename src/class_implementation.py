@@ -372,6 +372,12 @@ class NoiseModel:
         local_var = uniform_filter(image**2, size=box_size) - local_mean**2
         local_std = np.sqrt(np.maximum(local_var, 0))
 
+        signal_threshold = np.percentile(image, 10)
+        nonzero_fraction = uniform_filter((image > 0).astype(float), size=box_size)
+
+        mask = (local_mean < signal_threshold) | (nonzero_fraction < 0.5)
+        local_std[mask] = np.inf
+
         half = box_size // 2
         local_std[:half, :] = np.inf
         local_std[-half:, :] = np.inf
