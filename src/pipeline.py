@@ -8,25 +8,91 @@ from scipy.optimize import curve_fit
 from tqdm import tqdm
 import gc
 import pandas as pd
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from class_implementation import NoiseModel, PSFDeconvolver, GAAPPhotometry
+from tqdm import tqdm
+
 
 def find_best_size(x):
     return 0.06 * x * x + 4.3
 
-psf_size_dictionary = {'CFIS-R':47, 'CFIS-U':49, 'PANSTARRS-I':47, 'WISHES-G':49, 'WISHES-Z':49, 'NIR-Y': 33, 'NIR-J': 33, 'NIR-H':33, 'DES-G': 49, 'DES-R': 49, 'DES-I': 49, 'DES-Z': 49, 'VIS':21}
-pixel_scale_euclid = .1     #arcsec per pixel
-size = 128                  #cutout size
-lag = 8                     #max pixel distance in covariance
-data_folder = 'data'
-storage_folder = 'fluxes'
 
-tile_indeces = ['102159780']
+def process_filter(filter_):
+
+    # --- Image ---
+    file = glob.glob(f'{data_folder}/EUC_MER_BGSUB-MOSAIC-{filter_}_*.fits')[0]
+    with fits.open(file, memmap=True) as hdul:
+        hdu = hdul[0]
+        zeropoint = hdu.header["MAGZERO"]
+        image_conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
+        image = hdu.data
+        wcs = WCS(hdu.header)
+
+    centers = wcs.wcs_world2pix(
+        fluxes['ra'].values, fluxes['dec'].values, 0, ra_dec_order=True)
+
+    # --- RMS ---
+    file = glob.glob(f'{data_folder}/EUC_MER_MOSAIC-{filter_}-RMS_*.fits')[0]
+    with fits.open(file, memmap=True) as hdul:
+        hdu = hdul[0]
+        zeropoint = hdu.header["MAGZERO"]
+        rms_conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
+        rms = hdu.data
+
+    # --- PSF ---
+    file = glob.glob(f'{data_folder}/EUC_MER_CATALOG-PSF-{filter_}_*.fits')[0]
+    with fits.open(file, memmap=True) as hdul:
+        psf_grid = hdul[1].data
+
+    psf = create_psf_from_psf_grid(psf_grid, psf_size_dictionary[filter_], 40)
+    deconvolver = PSFDeconvolver(psf)
+    deconvolver.prepare([size, size])
+
+    noise = NoiseModel(
+        image=image,
+        rms=rms,
+        image_conversion_factor=image_conversion_factor,
+        rms_conversion_factor=rms_conversion_factor,
+    )
+    noise.find_noise_square(80, image[:3400, :3400])
+    noise.set_noise_covariance(lag)
+
+    phot = GAAPPhotometry(
+        image=image,
+        centers=np.asarray(centers),
+        sigmas=sigma_binned,
+        pixel_scale=PIXEL_SCALE_EUCLID,
+        image_conversion_factor=image_conversion_factor,
+    )
+
+    phot.measure(size, lag, noise, deconvolver,
+                 uncorrelated=False, show_progress=False)
+
+    return filter_, phot.flux, np.sqrt(phot.variance)
+
+
+psf_size_dictionary = {'CFIS-R': 47, 'CFIS-U': 49, 'PANSTARRS-I': 47, 'WISHES-G': 49, 'WISHES-Z': 49,
+                       'NIR-Y': 33, 'NIR-J': 33, 'NIR-H': 33, 'DES-G': 49, 'DES-R': 49, 'DES-I': 49, 'DES-Z': 49, 'VIS': 21}
+
+data_folder = '/net/vdesk/data2/deklerk/GAAP_data/temp'
+storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files'
+filename_file = '/home/deklerk/GAAP/src/EUCLID_ARCHIVE_files.pkl'
+
+
+PIXEL_SCALE_EUCLID = .1  # arcsec per pixel
+size = 128  # cutout size
+lag = 8  # max pixel distance in covariance
+max_workers = 4
+
+filenames = pd.read_pickle(filename_file)
+tile_indeces = filenames.index.tolist()
+
 for tile_index in tile_indeces:
     """
     Dowloading files
     """
-    filters = download_archive_files(tile_index, data_folder=data_folder)
-
+    filters = download_archive_files(
+        tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers)
 
     """
     Load catalog for coordinates
@@ -54,7 +120,8 @@ for tile_index in tile_indeces:
         ny = hdu.header["NAXIS2"]
 
     # Pixel coordinates
-    x_c, y_c = wcs.wcs_world2pix(fluxes['ra'], fluxes['dec'], 0, ra_dec_order=True)
+    x_c, y_c = wcs.wcs_world2pix(
+        fluxes['ra'], fluxes['dec'], 0, ra_dec_order=True)
 
     # Initial guess for fitting
     initial_guess = [np.mean(image[:1000, :1000]), .2]
@@ -80,12 +147,14 @@ for tile_index in tile_indeces:
         y, x = np.mgrid[y_min:y_max, x_min:x_max]
         try:
             popt, _ = curve_fit(
-                lambda xy, A, s: gaussian_2d(xy, A, s, x_center_cutout, y_center_cutout),
+                lambda xy, A, s: gaussian_2d(
+                    xy, A, s, x_center_cutout, y_center_cutout),
                 (x, y),
                 cutout.ravel(),
                 p0=initial_guess
             )
-            aperture_size[i] = find_best_size(np.abs(popt[1])) * pixel_scale_euclid # convert to arcsec
+            aperture_size[i] = find_best_size(
+                np.abs(popt[1])) * PIXEL_SCALE_EUCLID  # convert to arcsec
             if i % 5000 == 0:
                 gc.collect()
         except RuntimeError:
@@ -94,7 +163,8 @@ for tile_index in tile_indeces:
     """
     Binning the fitted sizes to prevent unstable deconvolution
     """
-    bins = np.linspace(.7, 1.1, 100)
+    bins = np.linspace(.7, size * 0.09 * PIXEL_SCALE_EUCLID,
+                       100)  # Bin between max PSF size and 9% cutout size
     bin_centers = 0.5 * (bins[:-1] + bins[1:])
 
     # prepare array
@@ -113,59 +183,20 @@ for tile_index in tile_indeces:
     """
     Calculate flux for each filter
     """
-    for filter in filters:
-        print(f'Analyzing: {filter}')
-        file = glob.glob(f'{data_folder}/EUC_MER_BGSUB-MOSAIC-{filter}_*.fits')[0]
-        with fits.open(file, memmap=True) as hdul:
-            hdu = hdul[0]
-            zeropoint = hdu.header["MAGZERO"]
-            image_conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
-            image = hdu.data
-            wcs = WCS(hdu.header)
+    results = []
 
-        centers = wcs.wcs_world2pix(
-                fluxes['ra'], fluxes['dec'], 0, ra_dec_order=True
-                )
-        
-        file = glob.glob(f'{data_folder}/EUC_MER_MOSAIC-{filter}-RMS_*.fits')[0]
-        with fits.open(file, memmap=True) as hdul:
-            hdu = hdul[0]
-            zeropoint = hdu.header["MAGZERO"]
-            rms_conversion_factor = 10 ** ((8.90 - zeropoint) / 2.5) * 1e9
-            rms = hdu.data
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(process_filter, f) for f in filters]
 
-        file = glob.glob(f'{data_folder}/EUC_MER_CATALOG-PSF-{filter}_*.fits')[0]
-        with fits.open(file, memmap=True) as hdul:
-            psf_grid = hdul[1].data
+        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing filters"):
+            results.append(future.result())
 
-        psf = create_psf_from_psf_grid(psf_grid, psf_size_dictionary[filter], 40)
-        deconvolver = PSFDeconvolver(psf)
-        deconvolver.prepare([size, size])
-
-        noise = NoiseModel(
-            image=image,
-            rms=rms,
-            image_conversion_factor=image_conversion_factor,
-            rms_conversion_factor=rms_conversion_factor,
-        )
-        noise.find_noise_square(80, image[:3400, :3400])
-        noise.set_noise_covariance(lag)
-
-        phot = GAAPPhotometry(
-            image=image,
-            centers=np.asarray(centers),
-            sigmas=sigma_binned,
-            pixel_scale=pixel_scale_euclid,
-            image_conversion_factor=image_conversion_factor,
-        )
-
-        phot.measure(size, lag, noise, deconvolver, uncorrelated=False)
-        fluxes[f'{filter}'] = phot.flux
-        fluxes[f'{filter}_sigma'] = np.sqrt(phot.variance)
+    for filter_, flux, sigma in results:
+        fluxes[f'{filter_}'] = flux
+        fluxes[f'{filter_}_sigma'] = sigma
 
     """
     Store the data into a csv file
     """
     df = pd.DataFrame(fluxes)
     df.to_csv(f'{storage_folder}/{tile_index}_fluxes.csv', index=False)
-        
