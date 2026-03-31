@@ -368,34 +368,43 @@ class NoiseModel:
         """
         image = self.image if image is None else image
 
-        local_mean = uniform_filter(image, size=box_size)
-        local_var = uniform_filter(image**2, size=box_size) - local_mean**2
-        local_std = np.sqrt(np.maximum(local_var, 0))
-
-        signal_threshold = np.percentile(image, 10)
-        nonzero_fraction = uniform_filter((image > 0).astype(float), size=box_size)
-
-        mask = (local_mean < signal_threshold) | (nonzero_fraction < 0.5)
-        local_std[mask] = np.inf
-
-        half = box_size // 2
-        local_std[:half, :] = np.inf
-        local_std[-half:, :] = np.inf
-        local_std[:, :half] = np.inf
-        local_std[:, -half:] = np.inf
-
-        cy, cx = np.unravel_index(
-            np.nanargmin(local_std),
-            local_std.shape,
-        )
-
         ny, nx = image.shape
-        y0 = max(0, cy - half)
-        x0 = max(0, cx - half)
-        y1 = min(ny, y0 + box_size)
-        x1 = min(nx, x0 + box_size)
 
-        self.noise_square = image[y0:y1, x0:x1]
+        best_std = np.inf
+        best_square = None
+
+        # define smaller square size and step
+        step = box_size  # or smaller (e.g. box_size // 2 for overlap)
+
+        for y in range(0, ny - box_size + 1, step):
+            for x in range(0, nx - box_size + 1, step):
+
+                square = image[y:y+box_size, x:x+box_size]
+
+                # compute statistics for this square
+                local_mean = np.mean(square)
+                local_var = np.var(square)
+                local_std = np.sqrt(local_var)
+
+                signal_threshold = np.percentile(square, 10)
+                nonzero_fraction = np.count_nonzero(square) / square.size
+
+                # reject "bad" squares
+                # if local_mean >= signal_threshold:
+                #     continue
+                if nonzero_fraction < 0.5:
+                    continue
+
+                # keep the best (lowest noise)
+                if local_std < best_std:
+                    best_std = local_std
+                    best_square = square
+
+        # fallback if nothing found
+        if best_square is None:
+            raise ValueError("No suitable noise square found")
+
+        self.noise_square = best_square
 
     def create_poisson_image(self) -> None:
         """
