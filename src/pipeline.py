@@ -1,6 +1,7 @@
 from utils import download_archive_files, gaussian_2d, create_psf_from_psf_grid
 import numpy as np
 import glob
+from numpy.polynomial import Polynomial
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.table import Table
@@ -11,10 +12,6 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from class_implementation import NoiseModel, PSFDeconvolver, GAAPPhotometry
 from tqdm import tqdm
-
-
-def find_best_size(x):
-    return 0.06 * x * x + 4.3
 
 
 def process_filter(filter_):
@@ -70,8 +67,9 @@ def process_filter(filter_):
 
     return filter_, phot.flux, np.sqrt(phot.variance)
 
-
-psf_size_dictionary = {'CFIS-R': 47, 'CFIS-U': 49, 'PANSTARRS-I': 47, 'WISHES-G': 49, 'WISHES-Z': 49,
+coeffs = [-5.90661928e-05,  2.18985870e-03, -3.19578589e-02,  2.41491336e-01, -1.25279768e-01,  4.11357033e+00]
+find_best_size = Polynomial(coeffs[::-1])
+psf_size_dictionary = {'CFIS-R': 49, 'CFIS-U': 47, 'PANSTARRS-I': 47, 'WISHES-G': 49, 'WISHES-Z': 49,
                        'NIR-Y': 33, 'NIR-J': 33, 'NIR-H': 33, 'DES-G': 49, 'DES-R': 49, 'DES-I': 49, 'DES-Z': 49, 'VIS': 21}
 
 data_folder = '/net/vdesk/data2/deklerk/GAAP_data/temp'
@@ -92,6 +90,7 @@ except FileNotFoundError:
 PIXEL_SCALE_EUCLID = .1  # arcsec per pixel
 size = 128  # cutout size
 lag = 8  # max pixel distance in covariance
+max_workers_download = 6
 max_workers = 4
 
 filenames = pd.read_pickle(filename_file)
@@ -106,7 +105,7 @@ for tile_index in tile_indeces:
         """
         Dowloading files
         """
-        filters = download_archive_files(tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers)
+        filters = download_archive_files(tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers_download)
         #filters = filenames.loc[tile_index]['FILTER']
         """
         Load catalog for coordinates
@@ -194,6 +193,7 @@ for tile_index in tile_indeces:
         # assign binned values
         sigma_binned[mask] = bin_centers[bin_idx]
 
+        fluxes['weight_size'] = sigma_binned
         """
         Calculate flux for each filter
         """
