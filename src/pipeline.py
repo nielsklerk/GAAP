@@ -69,7 +69,7 @@ def process_filter(filter_):
 
 coeffs = [-5.90661928e-05,  2.18985870e-03, -3.19578589e-02,  2.41491336e-01, -1.25279768e-01,  4.11357033e+00]
 find_best_size = Polynomial(coeffs[::-1])
-psf_size_dictionary = {'CFIS-R': 49, 'CFIS-U': 47, 'PANSTARRS-I': 47, 'WISHES-G': 49, 'WISHES-Z': 49,
+psf_size_dictionary = {'CFIS-R': 47, 'CFIS-U': 49, 'PANSTARRS-I': 47, 'WISHES-G': 47, 'WISHES-Z': 49,
                        'NIR-Y': 33, 'NIR-J': 33, 'NIR-H': 33, 'DES-G': 49, 'DES-R': 49, 'DES-I': 49, 'DES-Z': 49, 'VIS': 21}
 
 data_folder = '/net/vdesk/data2/deklerk/GAAP_data/temp'
