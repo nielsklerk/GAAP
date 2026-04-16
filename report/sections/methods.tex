@@ -1,5 +1,5 @@
 \chapter{Methods}\label{ch: Methods}
-In this chapter, the GAAP algorithm is explained and tested on simulated observations. Next, the technique is applied to real observations for different filters made using Rubin, Euclid, and Decam. The fluxes and their errors are used to fit spectra with Eazy. This gives the photometric redshifts of the sources in the image. 
+In this chapter, the GAAP algorithm is explained and tested on simulated observations. Next, the technique is applied to real observations for different filters made using Rubin, Euclid, and \gls{decam}. The fluxes and their errors are used to fit spectra with Eazy. This gives the photometric redshifts of the sources in the image. 
 
 \section{GAAP}
 
@@ -18,7 +18,7 @@ where $O(x,y)$ is the observed data and $W_\mathrm{A}(x,y)$ some weight function
 \begin{equation}
     F_\mathrm{A} = \int dxdy\int dx'dy'P(x-x', y-y')I(x',y')W_\mathrm{A}(x,y).
 \end{equation}
-Changing the order of integration, and changing the primed coordinates to the unprimed coordinates gives
+Changing the order of integration and changing the primed coordinates to the unprimed coordinates gives
 
 \begin{equation}
     F_\mathrm{A} = \int dxdyI(x,y)\tilde{W}_\mathrm{A}(x,y),
@@ -154,7 +154,7 @@ By defining $W(x,y)\sigma(x,y)=W'(x,y)$, \autoref{eq: rms variance} can be writt
 \end{equation}
 In the case that the noise in the pixels is uncorrelated, the only non-zero element of the correlation function is $\rho(0,0)=1$. This results in the expression simplifying to
 \begin{equation}\label{eq: variance rms uncorrelated}
-    \sigma^2=\sum_{x,y}W'^2(x,y).
+    \sigma^2=\sum_{x,y}W'^2(x,y) =\sum_{x,y}\sigma^2(x,y)W^2(x,y).
 \end{equation}
 
 \section{Simulation Framework}
@@ -164,6 +164,7 @@ To test the effectivity of this method, simulated images are calculated. A fiduc
 \begin{equation}
     I(x,y) \propto \exp\left(-\left(\frac{x^2}{10^2}\right)-\left(\frac{y^2}{5^2}\right)\right)
 \end{equation}
+where the origin is in the center of the image.
 The sum of the pixel values of this intrinsic image of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian \gls{psf} with a standard deviation of 3 pixels.
 \begin{equation}
     I(x,y) \propto \exp\left(-\left(\frac{x^2+y^2}{3^2}\right)\right)
@@ -198,11 +199,18 @@ This results in the observation being
     O = P\otimes I + N
 \end{equation}
 where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian \glspl{psf} and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
+Using this information, the relative error on the flux measurements is computed using
+\begin{equation}
+    \epsilon_F=\left|\frac{F_\mathrm{True} - F_\mathrm{Measured}}{F_\mathrm{True}}\right|.
+\end{equation}
 
 
 \subsection{Error Accuracy}
-To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors $\sigma_\mathrm{Measured}=\mathrm{mean}(\sigma_i)$ is used to compare with the true standard deviation. This is repeated for different combinations of weight and \gls{psf} sizes in the same way as in \autoref{subsec: flux accuracy}.
-
+To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors $\sigma_\mathrm{Measured}=\mathrm{mean}(\sigma_i)$ is used to compute the relative error on the error of the flux
+\begin{equation}
+    \epsilon_\sigma = \left|\frac{\sigma_\mathrm{True} - \sigma_\mathrm{Measured}}{\sigma_\mathrm{True}}\right|.
+\end{equation}
+This is repeated for different combinations of weight and \gls{psf} sizes in the same way as in \autoref{subsec: flux accuracy}.
 
 Up until this point, the noise in the simulations was uncorrelated. However, in real observations, this is rarely the case. To simulate correlated noise, uncorrelated noise is convolved with a Gaussian with a scale parameter called 'noise scale'. The accuracy of the correlated noise also depends on the lag chosen in \autoref{eq: variance correlated}. This lag can be estimated from the local covariance matrix, where $L$ is chosen to center the matrix at the point where the absolute sum of its values exceeds 99\% of the sum of the absolute values of the full local covariance matrix.
 
@@ -237,12 +245,15 @@ To apply the \gls{gaap} method to images from both Euclid and Rubin, several inp
 
 Find a square with the minimal variance. This square should contain no sources, so it should be only background noise. This noise square is used to calculate the local covariance matrix $C(\Delta x, \Delta y)$.
 
+\subsection{PSF Construction}
+
+
 
 \subsection{Fitting Weights}
-To determine the weight that approximately maximizes the achievable \gls{snr}, a fit is performed for each source. \textbf{FIND NEW METHOD TO DETERMINE THE OPTIMAL SNR}
+The 
 
 \subsection{Applying GAAP Algorithm}
-For each galaxy, an cutout around it is made to find the flux in that area. The 
+For each galaxy, a cutout is made around it to determine the flux in that region. The 
 
 
 \section{Photometric Redshift Estimation}
