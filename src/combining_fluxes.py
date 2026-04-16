@@ -53,10 +53,10 @@ else:
     all_fluxes = pd.read_pickle(f'{storage_folder}/all_fluxes.pkl')
     gc.collect()
 
-filter_1 = 'NIR-J'   # e.g., master_table column name
-filter_2 = 'NIR-H'
-filter_3 = 'VIS'
-filter_4 = 'NIR-Y'
+filter_1 = 'DES-G'   # e.g., master_table column name
+filter_2 = 'NIR-J'
+filter_3 = 'NIR-J'
+filter_4 = 'NIR-H'
 
 plot_error = True
 
@@ -75,14 +75,14 @@ yerr = 2.5 / np.log(10) * np.sqrt(
 )
 
 gaap_error = xerr**2 + yerr**2
-point_like_cutoff = 0.80
-gaap_error_cutoff = 1
+point_like_cutoff = 0.9
+gaap_error_cutoff = 0.5
 bins = 500
 plot_extended = True
-plot_pointlike = False
-left, right, bottom, top = -1, 2, -1, 3.5
+plot_pointlike = True
+left, right, bottom, top = -1, 6, -.5, 1
 
-base_mask = (np.isfinite(x_color)) & (np.isfinite(y_color)) & (gaap_error < gaap_error_cutoff) & (
+base_mask = (np.isfinite(x_color)) & (np.isfinite(y_color)) & (gaap_error < gaap_error_cutoff**2) & (
     x_color > left) & (x_color < right) & (y_color > bottom) & (y_color < top)
 
 plt.figure(figsize=(10, 6))
@@ -120,6 +120,6 @@ plt.ylabel(f'{filter_3} - {filter_4}')
 plt.xlim(left, right)
 plt.ylim(bottom, top)
 plt.tight_layout()
-plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_3[-1]}{filter_4[-1]}.pdf',
+plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_4[-1]}error_cutoff{str(gaap_error_cutoff)}.pdf',
             bbox_inches='tight')
 # all_fluxes.to_pickle(f'{storage_folder}/all_fluxes.pkl')
