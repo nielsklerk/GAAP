@@ -1,16 +1,22 @@
 \chapter{Introduction}
 role galaxies in LSS and the evolution of the universe
 Due to the expansion of the universe, the light emitted by galaxies gets stretched, cosmological redshift.
-importance redshift
 
 \begin{equation}
     z = \frac{\Delta\lambda}{\lambda_\mathrm{emitted}}=\frac{\lambda_\mathrm{observed}-\lambda_\mathrm{emitted}}{\lambda_\mathrm{emitted}}
 \end{equation}
-So redshift measurements are important to study the large-scale structures and the evolution of the universe. The most accurate measurements of the redshift are spectroscopic redshifts. This involves using spectroscopy to find the redshift directly, for example, looking at specific atomic lines. However, there is a problem with this method. It can only be applied to a handful of objects at a time. Thus, this method takes a considerably longer time to find the redshift for a large number of sources. Photometry can be use to find the redshift for a large number of sources.
+So redshift measurements are important to study the large-scale structures and the evolution of the universe. The most accurate measurements of the redshift are spectroscopic redshifts. This involves using spectroscopy to find the redshift directly, for example, by looking at specific atomic lines or spectral features. However, there is a problem with this method. It can only be applied to a handful of objects at a time. Thus, this method takes a considerably longer time to find the redshift for a large number of sources. Photometry can be used to find the redshift for a large number of sources at the same time. Photometry is, in essence, spectroscopy with a really low resolution.
 
 \section{Photometric colors}
+Photometric colors are a method to determine the brightness of galaxies in 
+The colors are derived by combining the flux measurements in different broadband filters, where the filter response curves is the amount of light the filter lets through for each wavelength. 
 
-broadband filters
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/papers/Euclid.EOL.2020.pdf}
+    \caption[Filter response curve for Euclid]{The filter response curves for the photometric (solid lines) and spectroscopic bands (dashed lines) on board Euclid. The VIS band is part of the VIS instrument, whereas the Y-, J-, and H-bands are part of \gls{nisp}.  \citep{scaramella_euclid_2021}}
+    \label{fig: Euclid filter response}
+\end{figure}
 \begin{equation}
     F_\mathrm{obs}=\int S(\lambda)T(\lambda)d\lambda
 \end{equation}
@@ -31,14 +37,17 @@ what it is
 what it is
 advantages large survey
 for photo-z template fitting vs machine learning
+
 \section{Current technique}
 e.g. aperture photometry and model based photometry
 limitations
 
 \section{Motivation new technique}
-more accurate z
+more accurate colors
+
 \section{Overview new technique}
 why is it better and what problem does it solve
+
 \section{scope}
 What datasets, simulations, or surveys are used
 What aspects are addressed (method development, validation, comparison)
@@ -48,15 +57,12 @@ What is not covered (to define boundaries clearly)
 \glspl{sed}
 \glspl{psf}
 \glspl{psf}
-sky surveys
-
-Euclid
-Rubin
 
 \gls{lsst}
 \gls{desi}
 \si\msun 
 \gls{sdss}
+\gls{des}
 The goal of this thesis is to explore a new method of determining the colors of objects, apply that technique to survey images of Euclid and Rubin, and determine the photometric redshift of objects. 
 
-First, the algorithm is explained. Subsequently, the method's limitations and accuracy are evaluated using simulations. Next, this method is applied to Euclid and Rubin images. Lastly, the colors determined with the GAAP method are used to fit the spectra and derive the photometric redshift. \gls{hst}, \gls{alma} \gls{vlt}, \gls{m31}
+First, the algorithm is explained. Subsequently, the method's limitations and accuracy are evaluated using simulations. Next, this method is applied to Euclid and Rubin images. Lastly, the colors determined with the GAAP method are used to fit the spectra and derive the photometric redshift. \gls{hst}, \gls{alma} \gls{vlt}, \gls{m31}, \gls{hsc}, \gls{panstarrs}, \gls{cfis}, \gls{wishes}
