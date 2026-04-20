@@ -9,16 +9,16 @@ The deconvolution is stable when the weight is 'larger' than the PSF. In the sim
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
-    \caption{The deconvolution of Gaussian weight functions of different sizes by a Gaussian PSF. The deconvolved weights are fitted to find their standard deviation. This is compared to the expected result $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$.}
+    \caption{The deconvolution of Gaussian weight functions of different sizes by a Gaussian \gls{psf}. The deconvolved weights are fitted to find their standard deviation. This is compared to the expected result $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$.}
     \label{fig: deconvolution relation}
 \end{figure}
-\autoref{fig: deconvolution relation} shows that the measured scale factors of the deconvolved weights align with the predicted value for weights that are larger than the PSF. 
+\autoref{fig: deconvolution relation} shows that the measured scale factors of the deconvolved weights align with the predicted value for weights that are larger than the \gls{psf}. 
 
-Next, the stability of the deconvolution was tested for different image sizes. Due to the limited image size, larger weights relative to the image size begin to introduce artifacts in the deconvolution. Different weights were deconvolved for different image sizes. The deconvolution was then fitted, and the normalized RMS was calculated.
+Next, the stability of the deconvolution was tested for different image sizes. Due to the limited image size, larger weights relative to the image size begin to introduce artifacts in the deconvolution. Different weights were deconvolved for different image sizes. The deconvolution was then fitted, and the normalized \gls{rms} was calculated.
 
-\begin{figure}
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/2_regimes.pdf}
+    \includegraphics[width=0.9\linewidth]{results/figures/simulation/2_regimes.pdf}
     \caption[Three regimes of deconvolution]{The three regimes of the deconvolution of a Gaussian weight function by a Gaussian \gls{psf}. The case where the weight function is smaller than the \gls{psf} (Left). The case where the weight function deconvolves correctly (middle). The case where the weight function is too large compared to the image size, which results in fringing (right).}
     \label{fig: 2 regimes}
 \end{figure}
@@ -74,7 +74,7 @@ The SNR for different weight function shapes was calculated. The results are sho
 The best weight is approximately equal to the intrinsic shape of the galaxy. This holds for both circular and elliptical shapes. Thus, the weight that yields the highest SNR is the one that best fits the intrinsic image. This can be estimated by fitting to an observation in a single field, preferably at the highest resolution, and then identifying the corresponding pre-seeing weight to apply to all bands.
 
 \section{Observation}
-The following analysis was done on the 53.00, -28.00 field. 
+ 
 
 \subsection{Preprocessing}
 \begin{figure}[H]
@@ -98,13 +98,13 @@ color color plot stars. gri using mer
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/analysis/GRI.pdf}
-    \caption{Color-color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the DECam filters G, R, I. The sources in the image are those with a point-source probability> 90\%.}
+    \caption{Color-color diagram of the point-like sources. The colors are derived from the flux in the DECam filters G, R, I. The sources in the image are those with a point-source probability > 90\%.}
     \label{fig:color_color_euclid}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/analysis/GJH.pdf}
+    \includegraphics[width=0.8\linewidth]{results/figures/analysis/GJHerror_cutoff0.1.pdf}
     \caption{Color-color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the Rubin filters g, r, and i. The sources in the image are the objects in the MER catalog with a point-source probability >90\%.}
     \label{fig:color_color_rubin}
 \end{figure}
@@ -112,14 +112,14 @@ color color plot stars. gri using mer
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison_uncorrelated.pdf}
-    \caption{Comparison of flux measurements from GAAP and the MER catalog for all catalog filters. The dashed line denotes equal SNR.}
+    \caption{Comparison of flux measurements from GAAP and the MER catalog for all catalog filters. The dashed line denotes equal \gls{snr}.}
     \label{fig: snr comparison uncorrelated}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\linewidth]{results/figures/observation/snr_comparison_correlated.pdf}
-    \caption{Comparison of flux measurements from GAAP and the MER catalog for all catalog filters. The dashed line denotes equal SNR.}
+    \caption{Comparison of flux measurements from GAAP and the MER catalog for all catalog filters. The dashed line denotes equal \gls{snr}.}
     \label{fig: snr comparison correlated}
 \end{figure}
 
