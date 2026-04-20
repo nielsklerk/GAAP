@@ -32,7 +32,7 @@ total = 0
 
 fig, axs = plt.subplots(
     3, 5,
-    figsize=(16, 8),
+    figsize=(12, 6),
     sharex=True,
     sharey=True,
     gridspec_kw={'wspace': 0, 'hspace': 0}
@@ -68,15 +68,11 @@ for outer_i, tile_index in enumerate(processed):
             ax = axs[1, j]
             ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
                        s=.1, rasterized=True, c='b')
-            ax.plot([cutoff_snr*0.1 + 1e-6, 1e5],
-                    [cutoff_snr*0.1 + 1e-6, 1e5], 'r--')
+            ax.plot([cutoff_snr*0.1 + 1e-6, 1e6],
+                    [cutoff_snr*0.1 + 1e-6, 1e6], 'r--')
             ax.text(0.05, 0.95, f'DES-{flt}', transform=ax.transAxes,
-                    ha='left', va='top', fontsize=10,
+                    ha='left', va='top', fontsize=15,
                     bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
-            ax.set_xscale('log')
-            ax.set_yscale('log')
-            ax.set_xlim(cutoff_snr*0.1 + 1e-6, 1e5)
-            ax.set_ylim(cutoff_snr*0.1, 1e5)
             print('des, ', tile_index)
             DES_PLOTTED = True
     except:
@@ -94,15 +90,11 @@ for outer_i, tile_index in enumerate(processed):
             ax = axs[0, j]
             ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
                        s=.1, rasterized=True, c='b')
-            ax.plot([cutoff_snr*0.1 + 1e-6, 1e5],
-                    [cutoff_snr*0.1 + 1e-6, 1e5], 'r--')
+            ax.plot([cutoff_snr*0.1 + 1e-6, 1e6],
+                    [cutoff_snr*0.1 + 1e-6, 1e6], 'r--')
             ax.text(0.05, 0.95, f'{columns[flt]}', transform=ax.transAxes,
-                    ha='left', va='top', fontsize=10,
+                    ha='left', va='top', fontsize=15,
                     bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
-            ax.set_xscale('log')
-            ax.set_yscale('log')
-            ax.set_xlim(cutoff_snr*0.1 + 1e-6, 1e5)
-            ax.set_ylim(cutoff_snr*0.1, 1e5)
             print('other, ', tile_index)
             OTHER_PLOTTED = True
 
@@ -118,15 +110,11 @@ for outer_i, tile_index in enumerate(processed):
             ax = axs[2, j]
             ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
                        s=.1, rasterized=True, c='b')
-            ax.plot([cutoff_snr*0.1 + 1e-6, 1e5],
-                    [cutoff_snr*0.1 + 1e-6, 1e5], 'r--')
+            ax.plot([cutoff_snr*0.1 + 1e-6, 1e6],
+                    [cutoff_snr*0.1 + 1e-6, 1e6], 'r--')
             ax.text(0.05, 0.95, f'NIR-{flt}', transform=ax.transAxes,
-                    ha='left', va='top', fontsize=10,
+                    ha='left', va='top', fontsize=15,
                     bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
-            ax.set_xscale('log')
-            ax.set_yscale('log')
-            ax.set_xlim(cutoff_snr*0.1 + 1e-6, 1e5)
-            ax.set_ylim(cutoff_snr*0.1, 1e5)
 
         # VIS
         snr_meer = cat[f'FLUX_VIS_{FWHM}FWHM_APER'] / \
@@ -142,12 +130,12 @@ for outer_i, tile_index in enumerate(processed):
         ax.plot([cutoff_snr*0.1 + 1e-16, 1e6],
                 [cutoff_snr*0.1 + 1e-16, 1e6], 'r--')
         ax.text(0.05, 0.95, f'VIS', transform=ax.transAxes,
-                ha='left', va='top', fontsize=10,
+                ha='left', va='top', fontsize=15,
                 bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
         ax.set_xscale('log')
         ax.set_yscale('log')
         ax.set_xlim(cutoff_snr*0.1 + 1e-6, 1e6)
-        ax.set_ylim(cutoff_snr*0.1, 1e5)
+        ax.set_ylim(cutoff_snr*0.1 + 1e-6, 1e6)
 
 
 # Labels only on outer axes
