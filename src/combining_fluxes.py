@@ -54,9 +54,9 @@ else:
     gc.collect()
 
 filter_1 = 'DES-G'   # e.g., master_table column name
-filter_2 = 'NIR-J'
-filter_3 = 'NIR-J'
-filter_4 = 'NIR-H'
+filter_2 = 'DES-R'
+filter_3 = 'DES-R'
+filter_4 = 'DES-I'
 
 plot_error = True
 
@@ -78,9 +78,9 @@ gaap_error = xerr**2 + yerr**2
 point_like_cutoff = 0.9
 gaap_error_cutoff = 0.5
 bins = 500
-plot_extended = True
+plot_extended = False
 plot_pointlike = True
-left, right, bottom, top = -1, 6, -.5, 1
+left, right, bottom, top = -.5, 2.5, -.5, 2.5
 
 base_mask = (np.isfinite(x_color)) & (np.isfinite(y_color)) & (gaap_error < gaap_error_cutoff**2) & (
     x_color > left) & (x_color < right) & (y_color > bottom) & (y_color < top)
@@ -120,6 +120,6 @@ plt.ylabel(f'{filter_3} - {filter_4}')
 plt.xlim(left, right)
 plt.ylim(bottom, top)
 plt.tight_layout()
-plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_4[-1]}error_cutoff{str(gaap_error_cutoff)}.pdf',
+plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_4[-1]}.pdf',
             bbox_inches='tight')
 # all_fluxes.to_pickle(f'{storage_folder}/all_fluxes.pkl')
