@@ -386,7 +386,7 @@ def plot_residual(filters):
     fig, ax = plt.subplots()
     FWHM = '4'
     cutoff_snr = 1e-3
-    DES_PLOTTED = False
+    color_vs_color = True
     OTHER_PLOTTED = False
     processed = ['102022978', '102158274']
     for outer_i, tile_index in enumerate(processed):
@@ -397,9 +397,6 @@ def plot_residual(filters):
             f'{catalog_folder}/EUC_MER_FINAL-CAT_TILE{tile_index}*.fits')[0]
         with fits.open(catalog_file, memmap=True) as hdul:
             cat = Table(hdul[1].data)
-
-        if DES_PLOTTED and OTHER_PLOTTED:
-            break
 
         fluxes = pd.read_csv(f'{storage_folder}/{tile_index}_fluxes.csv')
 
