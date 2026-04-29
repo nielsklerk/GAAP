@@ -6,12 +6,12 @@ This chapter begins with simulation results that demonstrate the reliability and
 \subsection{Deconvolution}\label{subsec: Deconvolution}
 The deconvolution is stable when the weight is 'larger' than the PSF. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians gives a Gaussian with a variance that is the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a PSF with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the PSF. The deconvolution was tested with different Gaussian weights and with a Gaussian fit to the results to estimate the scale parameter. The results are shown in \autoref{fig: deconvolution relation}. 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
-    \caption{The deconvolution of Gaussian weight functions of different sizes by a Gaussian \gls{psf}. The deconvolved weights are fitted to find their standard deviation. This is compared to the expected result $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$.}
-    \label{fig: deconvolution relation}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
+%     \caption{The deconvolution of Gaussian weight functions of different sizes by a Gaussian \gls{psf}. The deconvolved weights are fitted to find their standard deviation. This is compared to the expected result $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$.}
+%     \label{fig: deconvolution relation}
+% \end{figure}
 \autoref{fig: deconvolution relation} shows that the measured scale factors of the deconvolved weights align with the predicted value for weights that are larger than the \gls{psf}. 
 
 Next, the stability of the deconvolution was tested for different image sizes. Due to the limited image size, larger weights relative to the image size begin to introduce artifacts in the deconvolution. Different weights were deconvolved for different image sizes. The deconvolution was then fitted, and the normalized \gls{rms} was calculated.
@@ -97,15 +97,15 @@ color color plot stars. gri using mer
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/analysis/GRI.pdf}
-    \caption{Color-color diagram of the point-like sources. The colors are derived from the flux in the DECam filters G, R, I. The sources in the image are those with a point-source probability > 90\%.}
+    \includegraphics[width=0.9\linewidth]{results/figures/analysis/GRRI_gaap_catalog_cutoff_0.1.pdf}
+    \caption{Color-color diagram of the point-like sources. The colors are derived from the flux in the \gls{des} filters G, R, and I. The sources in the image are those with a point-source probability > 90\% given by the \gls{mer} catalog.}
     \label{fig:color color gri}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/analysis/GJHerror_cutoff0.1.pdf}
-    \caption{Color-color diagram of the stars in the field 53.00 -28.00. The colors are derived from the flux in the Rubin filters g, r, and i. The sources in the image are the objects in the MER catalog with a point-source probability >90\%.}
+    \includegraphics[width=0.9\linewidth]{results/figures/analysis/GJJH_gaap_catalog_cutoff_0.1.pdf}
+    \caption{Color-color diagram of the point-like sources and extended sources. The colors are derived from the flux in the \gls{desi} filter G, and the \gls{nisp} filters J, and H. The point-like sources in the image are the objects in the MER catalog with a point-source probability >90\% given by the MER catalog nd the extended sources are those $\leq$90\%.}
     \label{fig:color_color_rubin}
 \end{figure}
 
@@ -117,19 +117,19 @@ color color plot stars. gri using mer
 \end{figure}
 
 
-\subsection{Observation Results: Photometric Redshift}
-parameters explained
+% \subsection{Observation Results: Photometric Redshift}
+% parameters explained
 
-compared redshift statistics derived from GAAP flux to those derived from MER
+% compared redshift statistics derived from GAAP flux to those derived from MER
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/analysis/z_distribution.pdf}
-    \caption{Distribution of photometric redshifts in the field 53.00 -28.00.}
-    \label{fig: z distribution}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.5\linewidth]{results/figures/analysis/z_distribution.pdf}
+%     \caption{Distribution of photometric redshifts in the field 53.00 -28.00.}
+%     \label{fig: z distribution}
+% \end{figure}
 
-spectroscopic redshift?
+% spectroscopic redshift?
 
 
-\citep{brammer_eazy_2008}
+% \citep{brammer_eazy_2008}

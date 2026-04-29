@@ -265,12 +265,9 @@ As the centers of the objects are not exactly in the center of the pixel, biline
 
 Defining the fractional coordinates as
 \begin{equation}
-    dx = x - \lfloor x\rfloor
+    dx = x - \lfloor x\rfloor,\;dy = y - \lfloor y\rfloor.
 \end{equation}
-and
-\begin{equation}
-    dy = y - \lfloor y\rfloor.
-\end{equation}
+
 The weight function is applied to the four pixels adjacent to the center of the source in the image, and the flux is then calculated using the interpolated value between the four corners
 \begin{equation}\label{eq: bilinear interpolation big}
     \begin{split}
