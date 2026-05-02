@@ -17,11 +17,17 @@ Furthermore, due to the limited image size, larger weights relative to the image
 \newpage
 \subsection{Flux Accuracy}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/simulation/center_accuracy.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
 The true and observed flux values were compared across different \gls{psf} sizes and weights. The result is shown in \autoref{fig: flux accuracy}. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\linewidth]{results/figures/simulation/flux_weight_psf_size0.pdf}
+    \includegraphics[width=0.6\linewidth]{results/figures/simulation/flux_accuracy.pdf}
     \caption{The measured flux normalized by the true flux for different weights and \gls{psf} sizes. Flux measurements with weights smaller than the \gls{psf} are less accurate. The same holds for weights with a standard deviation $\lesssim 9\%$ of the image size. The yellow line denotes the border of 1$\%$ error.}
     \label{fig: flux accuracy}
 \end{figure}
@@ -32,7 +38,7 @@ For each combination of the \gls{psf} and weight size, 10000 simulations were ru
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/error_weight_psf_size.pdf}
+    \includegraphics[width=0.8\linewidth]{results/figures/simulation/sigma_accuracy.pdf}
     \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: error PSF}
 \end{figure}
@@ -52,7 +58,14 @@ Next, the 1000 simulations are ran with different lag and correlation.
     \label{fig: error covariance}
 \end{figure}
 
+\subsection{PSF shape}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/simulation/psf_dependence.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
 \subsection{Aperture Shape}
 The \gls{snr} for different weight function shapes was calculated. The results are shown in \autoref{fig: best aperture}.
 
