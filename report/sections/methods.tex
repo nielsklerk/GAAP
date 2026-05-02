@@ -165,12 +165,14 @@ Assuming that the sources in the images can be modeled as a Gaussian, we can fin
 \end{equation}
 where $A$ is some normalization constant, $d$ is the distance between the center of the source and the center of the weight function, and $a$ is the scale parameter of the source.
 By measuring the flux at different weight sizes, and fitting \autoref{eq: point-source detector} to this, the value of $a$ can be used to find a measure of how close the object is to being a point-source.
+
+
 \section{Simulation Framework}
 
-To test the effectiveness of this method, simulated images are calculated. A fiducial model is defined, of which various aspects are varied to test where the limitations of this method lie. The simulated images are 100 by 100 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
+Observations are simulated to test the effectiveness of this method. A fiducial model is defined, of which various aspects are varied to test where the limitations of this method lie. The simulated images are 128 by 128 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
 
 \begin{equation}
-    I(x,y) \propto \exp\left(-\left(\frac{x^2}{10^2}\right)-\left(\frac{y^2}{5^2}\right)\right)
+    I(x,y) \propto \exp\left(-\frac{1}{2}\left(\frac{x^2}{10^2}-\frac{y^2}{5^2}\right)\right)
 \end{equation}
 where the origin is in the center of the image.
 The sum of the pixel values of this intrinsic image $I$ of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian \gls{psf} $P$ with a standard deviation of 3 pixels.
