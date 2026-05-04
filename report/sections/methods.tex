@@ -167,7 +167,7 @@ where $A$ is some normalization constant, $d$ is the distance between the center
 By measuring the flux at different weight sizes, and fitting \autoref{eq: point-source detector} to this, the value of $a$ can be used to find a measure of how close the object is to being a point-source.
 
 
-\section{Simulation Framework}
+\section{Simulation Framework}\label{sec: Simulation Framework}
 
 Observations are simulated to test the effectiveness of this method. A fiducial model is defined, of which various aspects are varied to test where the limitations of this method lie. The simulated images are 128 by 128 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
 
@@ -210,14 +210,14 @@ This results in the observation being
 where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian \glspl{psf} and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
 Using this information, the relative error on the flux measurements is computed using
 \begin{equation}
-    \epsilon_F=\frac{F_\mathrm{True} - F_\mathrm{Measured}}{F_\mathrm{True}}.
+    \epsilon_F=\frac{F_\mathrm{Measured}- F_\mathrm{True}}{F_\mathrm{True}}.
 \end{equation}
 
 
 \subsection{Error Accuracy}
 To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors $\sigma_\mathrm{Measured}=\mathrm{mean}(\sigma_i)$ is used to compute the relative error on the error of the flux
 \begin{equation}
-    \epsilon_\sigma = \frac{\sigma_\mathrm{True} - \sigma_\mathrm{Measured}}{\sigma_\mathrm{True}}.
+    \epsilon_\sigma = \frac{\sigma_\mathrm{Measured}- \sigma_\mathrm{True}}{\sigma_\mathrm{True}}.
 \end{equation}
 This is repeated for different combinations of weight and \gls{psf} sizes in the same way as in \autoref{subsec: flux accuracy}.
 
