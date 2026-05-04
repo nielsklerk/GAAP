@@ -205,19 +205,19 @@ is compared to the flux measured with the deconvolved weight and the observed im
 \begin{equation}
     F_\mathrm{Measured} = \int dxdy O(x,y) W_\mathrm{A}(x,y).
 \end{equation}
-Gaussian noise is applied after the convolution and to find the variance on the flux \autoref{eq: variance correlated} is used. 
+Gaussian noise is applied after the convolution, and to find the variance on the flux \autoref{eq: variance correlated} is used. 
 This results in the observation being
 where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian \glspl{psf} and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
 Using this information, the relative error on the flux measurements is computed using
 \begin{equation}
-    \epsilon_F=\left|\frac{F_\mathrm{True} - F_\mathrm{Measured}}{F_\mathrm{True}}\right|.
+    \epsilon_F=\frac{F_\mathrm{True} - F_\mathrm{Measured}}{F_\mathrm{True}}.
 \end{equation}
 
 
 \subsection{Error Accuracy}
 To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors $\sigma_\mathrm{Measured}=\mathrm{mean}(\sigma_i)$ is used to compute the relative error on the error of the flux
 \begin{equation}
-    \epsilon_\sigma = \left|\frac{\sigma_\mathrm{True} - \sigma_\mathrm{Measured}}{\sigma_\mathrm{True}}\right|.
+    \epsilon_\sigma = \frac{\sigma_\mathrm{True} - \sigma_\mathrm{Measured}}{\sigma_\mathrm{True}}.
 \end{equation}
 This is repeated for different combinations of weight and \gls{psf} sizes in the same way as in \autoref{subsec: flux accuracy}.
 
@@ -264,7 +264,7 @@ To find the pre-seeing weight function, a Gaussian is fitted to the objects in t
 Now that there is a semi-empirical relation between the size of the source and the optimal weight size, a Gaussian is fitted to the sources in the VIS band. Following this, the pre-seeing size is estimated by using the size of the \gls{psf} of the VIS band $\sigma_\mathrm{fit}^2\approx\sigma_\mathrm{intrinsic}^2+\sigma_\mathrm{VIS-PSF}^2$. The intrinsic size is then converted to a weight function size by using the polynomial.
 
 \subsection{Applying GAAP Algorithm}
-For each galaxy, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the MER mosaic, which corresponds to 12.8". To get the same physical size for the Rubin images, the cutout is 64 pixels. 
+For each galaxy, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the \gls{mer} mosaic, which corresponds to 12.8". To get the same physical size for the Rubin images, the cutout is 64 pixels. 
 
 As the centers of the objects are not exactly in the center of the pixel, bilinear interpolation is used to find the flux of the object. 
 
