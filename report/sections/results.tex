@@ -6,84 +6,101 @@ This chapter begins with simulation results that demonstrate the reliability and
 
 The \gls{gaap} method was tested on simulated images as specified in \autoref{sec: Simulation Framework}. The results of these simulations are shown and discussed in this section.
 
+
 \subsection{Deconvolution}\label{subsec: Deconvolution}
-Before the \gls{gaap} method can be applied, the deconvolution method must be tested to ensure it yields an accurate result. The deconvolution is stable when the weight is 'larger' than the \gls{psf}. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians yields a Gaussian with a variance equal to the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a \gls{psf} with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconvolution}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the \gls{psf}, as this would result in a negative variance. To test whether the deconvolution works, weight functions of different sizes are deconvolved with the \gls{psf}. A Gaussian is fitted to the resulting weight function, and the scale parameter of the fit is compared to the expected scale parameter.  
+
+Before the \gls{gaap} method can be applied, the deconvolution method must be tested to ensure it yields an accurate result. The deconvolution is stable when the weight is 'larger' than the \gls{psf}. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians yields a Gaussian with a variance equal to the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a \gls{psf} with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconvolution}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the \gls{psf}, as this would result in a negative variance. 
+
+To test whether the deconvolution works, weight functions of different sizes are deconvolved with the \gls{psf}. A Gaussian is fitted to the resulting weight function, and the scale parameter of the fit is compared to the expected scale parameter (\autoref{fig: deconvolution}).  
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
-    \caption[Three regimes of deconvolution]{Relation between the deconvolved size of the weight function and the size of the weight function before deconvolving it.}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
+    \caption[Three regimes of deconvolution]{Relation between the size of the weight function after deconvolution and the size before deconvolution. The deconvolution follows the theoretical relation for the weight functions that are larger than the \gls{psf}, but start to fail when the weight function is similar in size to or smaller than the \gls{psf}. }
     \label{fig: deconvolution}
 \end{figure}
 The measured size of the deconvolved weight function aligns well with the expected result for weight sizes that are larger than the \gls{psf}. When the size of the weight function comes close to the size of the \gls{psf}, the results start to deviate slightly from the theoretical value, and when the weight function is smaller than the \gls{psf}, the deconvolution starts to fail. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/2_regimes.pdf}
+    \includegraphics[width=0.9\linewidth]{results/figures/simulation/2_regimes.pdf}
     \caption[Three regimes of deconvolution]{The three regimes of the deconvolution of a Gaussian weight function by a Gaussian \gls{psf}. The case where the weight function is smaller than the \gls{psf} (Left). The case where the weight function is the same size as the \gls{psf} (middle). The case where the weight function is larger than the \gls{psf}, and deconvolves correctly (right).}
     \label{fig: 2 regimes}
 \end{figure}
+\autoref{fig: 2 regimes} shows that when the weight function is smaller than the \gls{psf}, the resulting deconvolved weight function has an oscillatory effect in it. Even when the weight function is the same size as he \gls{psf}, there are still some of these effects. However, in the case that the weight function is bigger than the \gls{psf}, it deconvolves to the correct Gaussian shape. 
 
 
-\newpage
 \subsection{Flux Accuracy}
 
+The \gls{gaap} method is applied to the simulated observation to assess the effectiveness. First, the method is applied to different locations in the observation, and the result is compared to the true flux at that location. This is done to both look at the accuracy of the method as well as the interpolation method described in \textbf{REFERENCE INTERPOLATION SUBSECTION}.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/simulation/center_accuracy.pdf}
-    \caption{Caption}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/center_accuracy.pdf}
+    \caption{The fractional error on the measured flux compared to the true flux at different positions in the simulated image. The yellow line denotes the border of 1$\%$ absolute error. The measured flux is most accurate near the center of the image, i.e., the galaxy. Further from the center, the flux measurements are less accurate due to the effects of the noise in the observation.}
     \label{fig: center accuracy}
 \end{figure}
-The true and observed flux values were compared across different \gls{psf} sizes and weights. The result is shown in \autoref{fig: flux accuracy}. 
+The flux measurements are accurate near the center of the simulated observation where the galaxy resides. Further outwards, the measurements become less accurate as these regions are dominated by noise. \textbf{DISCUSS THE INTERPOLATION}.
+The effectiveness of the \gls{gaap} method is tested for different combination of the weight size and the size of the \gls{psf}. The measured flux values are compared to the true flux values, where the weight function is centered at the middle of the image, i.e., the galaxy.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\linewidth]{results/figures/simulation/flux_accuracy.pdf}
-    \caption{The measured flux normalized by the true flux for different weights and \gls{psf} sizes. Flux measurements with weights smaller than the \gls{psf} are less accurate. The same holds for weights with a standard deviation $\lesssim 9\%$ of the image size. The yellow line denotes the border of 1$\%$ error.}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/flux_accuracy.pdf}
+    \caption{The fractional error on the measured flux compared to the true flux for different combinations of weights and \gls{psf} sizes. The solid yellow line denotes the border of 1$\%$ absolute error, and the dashed red line shows where the weight function and the \gls{psf} have the same size. The measured flux is accurate when the weight function is bigger than the \gls{psf}. However, the measurements become unstable when the weight function is smaller than the \gls{psf}.}
     \label{fig: flux accuracy}
 \end{figure}
-The figure shows 2 regions where the measured flux values are inaccurate. The first region is the measurements taken with weights smaller than the \gls{psf}. This result is expected, as shown in \autoref{subsec: Deconvolution}. The second region comprises measurements above the \gls{psf} line and is $\gtrsim10$ pixels wide. These incorrect measurements are due to the limited size of the weight function, leading to fringing. This can be mitigated by increasing the image size of the weight function.
+\autoref{fig: flux accuracy} shows two different regimes. The first region is the measurements taken with weights smaller than the \gls{psf}, where the measured flux values are inaccurate. This result is expected as the deconvolution of the weight function, where the \gls{psf} is larger, results in artifacts, as shown in \autoref{subsec: Deconvolution}. In the region where the weight function is larger than the \gls{psf}, the flux measurements are correct. 
+
 
 \subsection{Flux Error Accuracy}
-For each combination of the \gls{psf} and weight size, 10000 simulations were run to find the true error and the estimated error. 
+
+10000 different observations are simulated with different instances of noise, and the flux and error on the flux are estimated from these observations. The standard deviation of the flux is compared to the mean of the estimated standard deviation of the flux. First, the errors are calculated using the background noise to estimate the error on the flux (as described in \autoref{subsec: Noise Estimation from background Noise}). 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/sigma_accuracy.pdf}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/sigma_accuracy.pdf}
     \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
-    \label{fig: error PSF}
+    \label{fig: background error PSF}
 \end{figure}
-The error is accurate and does not depend on the PSF size or the weight.
+The relative error on the standard deviation shown in \autoref{fig: background error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. Next, the accuracy of the errors calculated using the \gls{rms} is tested (as described in \autoref{subsec: Noise from RMS})
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/rms_accuracy.pdf}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/rms_accuracy.pdf}
     \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: rms error PSF}
 \end{figure}
+The relative error on the standard deviation shown in \autoref{fig: rms error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. 
+
 
 \subsection{PSF shape}
 
+In the previous subsections, the \gls{psf} used for the deconvolution of the weight function was exactly the same as the \gls{psf} used to generate the images. However, in real observations, this is unlikely to be the case. To examine this, the flux measurements for different combinations of the Gaussian \gls{psf} used for the generation of the simulated observation and the Gaussian \gls{psf} used for the deconvolution are compared. For this, a weight function with a scale parameter of 20 pixels is used.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/simulation/psf_dependence.pdf}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/psf_dependence.pdf}
     \caption{Caption}
     \label{fig: psf shape}
 \end{figure}
+\autoref{fig: psf shape} shows that the \gls{psf} used for the deconvolution must be close to the \gls{psf} used for the generation of the observation to give the most accurate results for the measurements of the flux. In the case that the \gls{psf} for the generation of the observation becomes large, the \gls{psf} used for the deconvolution has to be closer to the size of the true \gls{psf} to achieve the same accuracy. 
+
+
 \subsection{Aperture Shape}
+
 The \gls{snr} for different weight function shapes was calculated. The results are shown in \autoref{fig: best aperture}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/weight_accuracy.pdf}
-    \caption{The SNR for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/weight_accuracy.pdf}
+    \caption{The \gls{snr} for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
     \label{fig: weight accuracy}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/weight_size_snr.pdf}
-    \caption{The SNR for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
+    \includegraphics[width=0.7\linewidth]{results/figures/simulation/weight_size_snr.pdf}
+    \caption{The \gls{snr} for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
     \label{fig: best aperture}
 \end{figure}
 
