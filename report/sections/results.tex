@@ -1,27 +1,38 @@
 \chapter{Results}
 This chapter begins with simulation results that demonstrate the reliability and limitations of the \gls{gaap} algorithm for determining the flux values of different sources. Following this, the flux measurements of the \gls{mer} tiles are discussed and compared to the fluxes in the \gls{mer} catalog.
 
+
 \section{Simulation}
 
-\subsection{Deconvolution}\label{subsec: Deconvolution}
-The deconvolution is stable when the weight is 'larger' than the \gls{psf}. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians gives a Gaussian with a variance that is the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a \gls{psf} with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconv}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the \gls{psf}. 
+The \gls{gaap} method was tested on simulated images as specified in \autoref{sec: Simulation Framework}. The results of these simulations are shown and discussed in this section.
 
-Furthermore, due to the limited image size, larger weights relative to the image size begin to introduce artifacts in the deconvolution. To prevent these artifacts, the size of the image can be temporarily increased for the deconvolution and then again truncated to the correct size. 
+\subsection{Deconvolution}\label{subsec: Deconvolution}
+Before the \gls{gaap} method can be applied, the deconvolution method must be tested to ensure it yields an accurate result. The deconvolution is stable when the weight is 'larger' than the \gls{psf}. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians yields a Gaussian with a variance equal to the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a \gls{psf} with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconvolution}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the \gls{psf}, as this would result in a negative variance. To test whether the deconvolution works, weight functions of different sizes are deconvolved with the \gls{psf}. A Gaussian is fitted to the resulting weight function, and the scale parameter of the fit is compared to the expected scale parameter.  
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
+    \caption[Three regimes of deconvolution]{Relation between the deconvolved size of the weight function and the size of the weight function before deconvolving it.}
+    \label{fig: deconvolution}
+\end{figure}
+The measured size of the deconvolved weight function aligns well with the expected result for weight sizes that are larger than the \gls{psf}. When the size of the weight function comes close to the size of the \gls{psf}, the results start to deviate slightly from the theoretical value, and when the weight function is smaller than the \gls{psf}, the deconvolution starts to fail. 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/simulation/2_regimes.pdf}
-    \caption[Three regimes of deconvolution]{The three regimes of the deconvolution of a Gaussian weight function by a Gaussian \gls{psf}. The case where the weight function is smaller than the \gls{psf} (Left). The case where the weight function deconvolves correctly (middle). The case where the weight function is too large compared to the image size, which results in fringing (right).}
+    \caption[Three regimes of deconvolution]{The three regimes of the deconvolution of a Gaussian weight function by a Gaussian \gls{psf}. The case where the weight function is smaller than the \gls{psf} (Left). The case where the weight function is the same size as the \gls{psf} (middle). The case where the weight function is larger than the \gls{psf}, and deconvolves correctly (right).}
     \label{fig: 2 regimes}
 \end{figure}
+
+
 \newpage
 \subsection{Flux Accuracy}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/center_accuracy.pdf}
     \caption{Caption}
-    \label{fig:placeholder}
+    \label{fig: center accuracy}
 \end{figure}
 The true and observed flux values were compared across different \gls{psf} sizes and weights. The result is shown in \autoref{fig: flux accuracy}. 
 
@@ -44,12 +55,12 @@ For each combination of the \gls{psf} and weight size, 10000 simulations were ru
 \end{figure}
 The error is accurate and does not depend on the PSF size or the weight.
 
-+ poisson noise
-
-+ both Gaussian and Poisson noise
-
-Next, the 1000 simulations are ran with different lag and correlation. 
-\textbf{MAYBE EXAMPLES OF WHAT THE NOISE LOOKS LIKE FOR DIFFERENT NOISE SIZES}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/simulation/rms_accuracy.pdf}
+    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
+    \label{fig: rms error PSF}
+\end{figure}
 
 \subsection{PSF shape}
 
@@ -57,14 +68,21 @@ Next, the 1000 simulations are ran with different lag and correlation.
     \centering
     \includegraphics[width=0.5\linewidth]{results/figures/simulation/psf_dependence.pdf}
     \caption{Caption}
-    \label{fig:placeholder}
+    \label{fig: psf shape}
 \end{figure}
 \subsection{Aperture Shape}
 The \gls{snr} for different weight function shapes was calculated. The results are shown in \autoref{fig: best aperture}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/aperture_size.pdf}
+    \includegraphics[width=0.8\linewidth]{results/figures/simulation/weight_accuracy.pdf}
+    \caption{The SNR for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
+    \label{fig: weight accuracy}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/simulation/weight_size_snr.pdf}
     \caption{The SNR for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
     \label{fig: best aperture}
 \end{figure}
@@ -75,7 +93,7 @@ The best weight is approximately equal to the intrinsic shape of the galaxy. Thi
  
 
 \subsection{Preprocessing}
-The \glspl{psf} of tile \textbf{TILEINDEX} is used to find a relation between the size of the source in the VIS band and the size of the weight function that optimizes the \gls{snr} of the flux in all the bands. A Gaussian object is simulated with Gaussian noise. Different sizes of weight functions are used to find the \gls{snr} for each of the \glspl{psf}. For each of the \glspl{psf}, the curve is divided by the maximum, and then they are added together to get a single curve capturing the combined \gls{snr} for all the \glspl{psf}. The size of the weight function where this curve is maximized is combined with the size of the source. This is repeated for different sizes of the source, resulting in a relation between the size of the source and the size of the weight function that maximizes the \gls{snr}. A 5th-order polynomial is fitted to the measurements. The result is shown in \autoref{fig: relation pre post seeing}. 
+The \glspl{psf} of tile \textbf{TILEINDEX} is used to determine the relationship between the source size in the VIS band and the weight-function size that optimizes the \gls{snr} of the flux across all bands. A Gaussian object is simulated with Gaussian noise. Different sizes of weight functions are used to find the \gls{snr} for each of the \glspl{psf}. For each of the \glspl{psf}, the curve is divided by its maximum, and the results are summed to obtain a single curve that captures the combined \gls{snr} across all the \glspl{psf}. The size of the weight function where this curve is maximized is combined with the size of the source. This is repeated for different sizes of the source, resulting in a relation between the size of the source and the size of the weight function that maximizes the \gls{snr}. A 5th-order polynomial is fitted to the measurements. The result is shown in \autoref{fig: relation pre post seeing}. 
 
 \begin{figure}[H]
     \centering
