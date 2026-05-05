@@ -80,7 +80,7 @@ In the previous subsections, the \gls{psf} used for the deconvolution of the wei
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{results/figures/simulation/psf_dependence.pdf}
-    \caption{Caption}
+    \caption{The relative error on the flux for different combinations of the \gls{psf} used for the deconvolution and the \gls{psf} used to generate the observation. When the \gls{psf} used for the deconvolution is larger than the \gls{psf} used for the generation of the observation, the flux is underestimated. The reverse is true when the \gls{psf} used for the deconvolution is smaller than the \gls{psf} used for the generation of the observation. }
     \label{fig: psf shape}
 \end{figure}
 \autoref{fig: psf shape} shows that the \gls{psf} used for the deconvolution must be close to the \gls{psf} used for the generation of the observation to give the most accurate results for the measurements of the flux. In the case that the \gls{psf} for the generation of the observation becomes large, the \gls{psf} used for the deconvolution has to be closer to the size of the true \gls{psf} to achieve the same accuracy. 
@@ -88,14 +88,15 @@ In the previous subsections, the \gls{psf} used for the deconvolution of the wei
 
 \subsection{Aperture Shape}
 
-The \gls{snr} for different weight function shapes was calculated. The results are shown in \autoref{fig: best aperture}.
+The shape of the weight function also has an effect on the measured flux and the error in the measurement. In this section, the shape of the size of the weight function is varied both in the x- and the y-direction, without rotating the weight function. 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{results/figures/simulation/weight_accuracy.pdf}
-    \caption{The \gls{snr} for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
+    \caption{The relative error on the flux measurement for different shapes of the weight function. The error is close to 0 when the size of the weight function is larger than the size of the \gls{psf} in both directions.}
     \label{fig: weight accuracy}
 \end{figure}
+The flux measurement of the elliptical weight function is accurate, as shown in \autoref{fig: weight accuracy}, as long as the scale parameter in both directions is larger than the size of the \gls{psf}. When measuring the flux from a source, the \gls{snr} is important to get the most accurate results. 
 
 \begin{figure}[H]
     \centering
@@ -103,11 +104,10 @@ The \gls{snr} for different weight function shapes was calculated. The results a
     \caption{The \gls{snr} for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
     \label{fig: best aperture}
 \end{figure}
+The maximum \gls{snr} of a circular Gaussian weight function in \autoref{fig: best aperture} is slightly lower than the \gls{snr} compared to the maximum \gls{snr} for the elliptical Gaussian weight functions. Therefore, the size can be optimized to give a higher \gls{snr} for each source in an image. However, there is a computational disadvantage to this, as such an elliptical Gaussian weight function requires 3 parameters; it is unlikely that different sources have the same weight function that optimizes the \gls{snr}, whereas circular Gaussian weight functions only require 1 parameter, so more of the deconvolved weight functions can be used for different sources. 
 
-The best weight is approximately equal to the intrinsic shape of the galaxy. This holds for both circular and elliptical shapes. Thus, the weight that yields the highest \gls{snr} is the one that best fits the intrinsic image. This can be estimated by fitting to an observation in a single field, preferably at the highest resolution, and then identifying the corresponding pre-seeing weight to apply to all bands.
 \newpage
 \section{Observation}
- 
 
 \subsection{Preprocessing}
 The \glspl{psf} of tile \textbf{TILEINDEX} is used to determine the relationship between the source size in the VIS band and the weight-function size that optimizes the \gls{snr} of the flux across all bands. A Gaussian object is simulated with Gaussian noise. Different sizes of weight functions are used to find the \gls{snr} for each of the \glspl{psf}. For each of the \glspl{psf}, the curve is divided by its maximum, and the results are summed to obtain a single curve that captures the combined \gls{snr} across all the \glspl{psf}. The size of the weight function where this curve is maximized is combined with the size of the source. This is repeated for different sizes of the source, resulting in a relation between the size of the source and the size of the weight function that maximizes the \gls{snr}. A 5th-order polynomial is fitted to the measurements. The result is shown in \autoref{fig: relation pre post seeing}. 

@@ -273,28 +273,11 @@ Defining the fractional coordinates as
     dx = x - \lfloor x\rfloor,\;dy = y - \lfloor y\rfloor.
 \end{equation}
 
-The weight function is applied to the four pixels adjacent to the center of the source in the image, and the flux is then calculated using the interpolated value between the four corners
-\begin{equation}\label{eq: bilinear interpolation big}
-    \begin{split}
-        F = \sum_{x,y}&(1 - dx)(1 - dy)\, O(x,y)W(x, y)\\
-        &+ dx(1 - dy)\, O(x,y)W(x, y+1)\\
-        &+ (1 - dx)dy\, O(x,y)W(x+1, y)\\
-        &+ dx dy\, O(x,y)W(x+1, y+1)
-    \end{split}
+The weight function has to be shifted to the correct sub-pixel position. This can be done by multiplying the Fourier transform of the weight function by a phase factor that depends on the shift of the weight function. By modifying \autoref{eq: numerical deconvolution}, the new weight function becomes
+\begin{equation}\label{eq: numerical deconvolution v2}
+    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\cdot\exp(-2\pi i(k_xdx+k_ydx))\right\}.
 \end{equation}
-This equation can be simplified by defining a shifted weight function $W_\mathrm{shifted}$
-\begin{equation}
-    \begin{split}
-        W_\mathrm{shifted}(x,y)= &(1 - dx)(1 - dy)\, W(x, y)\\
-        &+ dx(1 - dy)\, W(x, y+1)\\
-        &+ (1 - dx)dy\, W(x+1, y)\\
-        &+ dx dy\, W(x+1, y+1)
-    \end{split}
-\end{equation}
-So \autoref{eq: bilinear interpolation big} reduces to
-\begin{equation}
-    F = \sum_{x,y}O(x,y)W_\mathrm{shifted}(x,y)
-\end{equation}
+
 
 % \section{Photometric Redshift Estimation}
 % Eazy \citep{brammer_eazy_2008}
