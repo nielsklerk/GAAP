@@ -59,7 +59,7 @@ The effectiveness of the \gls{gaap} method is tested for different combination o
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{results/figures/simulation/sigma_accuracy.pdf}
-    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
+    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. The error in the flux is measured using the background noise. The yellow solid line denotes the border of 1\%. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: background error PSF}
 \end{figure}
 The relative error on the standard deviation shown in \autoref{fig: background error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. Next, the accuracy of the errors calculated using the \gls{rms} is tested (as described in \autoref{subsec: Noise from RMS})
@@ -67,7 +67,7 @@ The relative error on the standard deviation shown in \autoref{fig: background e
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{results/figures/simulation/rms_accuracy.pdf}
-    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. This error is calculated for different PSF sizes. The PSF size and weight do not affect the accuracy of the error.}
+    \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. The error in the flux is measured using the \gls{rms} and the correlation function derived from the background noise. The yellow solid line denotes the border of 1\%. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: rms error PSF}
 \end{figure}
 The relative error on the standard deviation shown in \autoref{fig: rms error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. 
@@ -118,6 +118,33 @@ The \glspl{psf} of tile \textbf{TILEINDEX} is used to determine the relationship
     \caption{The relation between the size of the Gaussian weight function that maximizes some form of the \gls{snr} over all bands compared to the size of the source in the VIS field. }
     \label{fig: relation pre post seeing}
 \end{figure}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l c}
+\hline
+\textbf{Survey / Band} & \textbf{PSF Scale (arcsec)} \\
+\hline
+CFIS-R      & 0.36 \\
+CFIS-U      & 0.38 \\
+PANSTARRS-I & 0.52 \\
+WISHES-G    & 0.35 \\
+WISHES-Z    & 0.23 \\
+NIR-Y       & 0.20 \\
+NIR-J       & 0.22 \\
+NIR-H       & 0.23 \\
+DES-G       & 0.58 \\
+DES-R       & 0.50 \\
+DES-I       & 0.45 \\
+DES-Z       & 0.46 \\
+VIS         & 0.09 \\
+\hline
+\end{tabular}
+\caption{Point Spread Function (PSF) scale parameters for different surveys and bands.}
+\label{tab:psf_scales}
+\end{table}
+
+
 Next, a Gaussian is fitted to the sources in the \gls{mer} tiles, which is used to find the best weight size to optimize the \gls{snr}. The coordinates in the \gls{mer} catalog are used to set the centers of the object, which will also be used for the flux measurements. The distribution of the fitted sizes of the sources is shown in \textbf{LINK FIGURE}.
 
 \textbf{FIGURE WITH THE DISTRIBUTION OF THE SIZES OF THE OBJECTS IN THE IMAGES}
