@@ -176,8 +176,40 @@ def compute_phase(kx, ky, dx, dy):
     return np.exp(-1j * twopi * (ky * dy + kx * dx))
 
 
+@njit
+def bilinear_shift(weight: np.ndarray, dx: float, dy: float) -> np.ndarray:
+    """
+    Creates a shifted version of the weight function
+    that captures the bilinear interpolation
+
+    Parameters
+    ----------
+    weight: np.ndarray
+        Weight function that needs to be shifted
+    dx: float
+        Fractional part of the x coordinate (0 <= dx <= 1)
+    dy: float
+        Fractional part of the y coordinate (0 <= dy <= 1)
+
+    Returns
+    -------
+    np.ndarray
+        Bilinear interpolated weight function
+
+    Raises
+    ------
+    ValueError
+        Description of when this error is raised
+    """
+    W_shifted = (1 - dx) * (1 - dy) * weight[:-1, :-1] \
+        + dx * (1 - dy) * weight[:-1, 1:] \
+        + (1 - dx) * dy * weight[1:, :-1] \
+        + dx * dy * weight[1:, 1:]
+    return W_shifted
+
+
 def flux(image, centers, psfdeconvolver, weight_sizes,
-         noise_model=None, cutout_size=128, image_conversion_factor=1):
+         noise_model=None, cutout_size=128, image_conversion_factor=1, bilinear_interpolation=False):
 
     centers = np.atleast_2d(centers)
     ws = np.asarray(weight_sizes)
@@ -233,7 +265,7 @@ def flux(image, centers, psfdeconvolver, weight_sizes,
         sort_idx = np.argsort(ws[:, 0])
     else:
         sort_idx = np.array([0])
-    for j in range(max(Nc, Nw)):
+    for j in tqdm(range(max(Nc, Nw)), desc='Measuring FLux'):
 
         i_w = sort_idx[j] if j < Nw else sort_idx[0]
 
@@ -265,6 +297,10 @@ def flux(image, centers, psfdeconvolver, weight_sizes,
             )
             weight_fft = psfdeconvolver.psf_prefactor * FT
             last_weight = current_weight
+            if bilinear_interpolation:
+                in_array[:] = weight_fft
+                ifft()
+                weight_rescale_unshifted = out_array
 
         # ---- extract cutout ----
         cutout, (cx_cut, cy_cut) = padded_cutout_with_center(
@@ -278,10 +314,15 @@ def flux(image, centers, psfdeconvolver, weight_sizes,
         dx = cx_cut - ix
         dy = cy_cut - iy
 
-        phase = compute_phase(kx, ky, dx, dy)
-        in_array[:] = weight_fft * phase
-        ifft()
-        weight_rescale = out_array
+        if bilinear_interpolation:
+            weight_rescale = bilinear_shift(weight_rescale_unshifted, dx, dy)
+            cutout = cutout[:-1, :-1]
+        else:
+            phase = compute_phase(kx, ky, dx, dy)
+            #in_array[:] = weight_fft * phase
+            #ifft()
+            #weight_rescale = np.abs(out_array)
+            weight_rescale = fft.irfft2(weight_fft * phase)
 
         # ---- flux ----
         fluxes[out_idx] = calc_flux(weight_rescale, cutout)
@@ -539,7 +580,8 @@ def process_filter(filter_):
     with fits.open(file, memmap=True) as hdul:
         psf_grid = hdul[1].data
 
-    psf = create_psf_from_psf_grid(psf_grid, psf_size_dictionary[filter_], 40)
+    psf = create_psf_from_psf_grid(
+        psf_grid, psf_size_dictionary[filter_], 100)
     measured_fluxes, variances = GAAP_flux(image, psf, np.asarray(centers).T, sigma_binned/PIXEL_SCALE_EUCLID, rms,
                                            image_conversion_factor=image_conversion_factor, rms_conversion_factor=rms_conversion_factor)
 
@@ -571,7 +613,7 @@ except FileNotFoundError:
 PIXEL_SCALE_EUCLID = .1  # arcsec per pixel
 size = 128  # cutout size
 max_workers_download = 6
-max_workers = 5
+max_workers = 4
 
 filenames = pd.read_pickle(filename_file)
 tile_indeces = filenames.index.tolist()
@@ -588,6 +630,7 @@ for tile_index in tile_indeces:
         # filters = download_archive_files(
         #     tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers_download)
         filters = filenames.loc[tile_index]['FILTER']
+        filters = ['DES-G', 'DES-R', 'DES-I']
         """
         Load catalog for coordinates
         """
@@ -621,14 +664,14 @@ for tile_index in tile_indeces:
             fluxes['ra'], fluxes['dec'], 0, ra_dec_order=True)
 
         # Initial guess for fitting
-        initial_guess = [10, .2]
-        aperture_size = np.full(len(x_c), np.nan)
+        # initial_guess = [10, .2]
+        # aperture_size = np.full(len(x_c), np.nan)
 
-        # Fitting each object
-        def model(coords, A, sigma):
-            x, y = coords
-            r2 = (x - x_center)**2 + (y - y_center)**2
-            return (A * np.exp(-r2 / (2*sigma**2))).ravel()
+        # # Fitting each object
+        # def model(coords, A, sigma):
+        #     x, y = coords
+        #     r2 = (x - x_center)**2 + (y - y_center)**2
+        #     return (A * np.exp(-r2 / (2*sigma**2))).ravel()
 
         # for i, (x_center, y_center) in enumerate(tqdm(zip(x_c, y_c), total=len(x_c), desc='Fitting Sources', disable=False)):
         #     x0 = int(x_center)
@@ -670,18 +713,17 @@ for tile_index in tile_indeces:
         #             gc.collect()
         #     except RuntimeError:
         #         continue
-        fluxes = pd.read_csv(
-            f'/net/vdesk/data2/deklerk/GAAP_data/flux_files_new/102018213_fluxes.csv')
 
         # Store size
         # fluxes['size'] = aperture_size * PIXEL_SCALE_EUCLID
-        weight_size = find_best_size(
-            fluxes['size']/PIXEL_SCALE_EUCLID) * PIXEL_SCALE_EUCLID
+        weight_size = cat['FWHM']
+
+        # weight_size = np.zeros_like(x_c)
 
         """
         Binning the fitted sizes
         """
-        bins = np.linspace(.7, 20 * PIXEL_SCALE_EUCLID,
+        bins = np.linspace(.7, 10 * PIXEL_SCALE_EUCLID,
                            100)  # Bin between max PSF size and 9% cutout size
         bin_centers = 0.5 * (bins[:-1] + bins[1:])
 
@@ -721,10 +763,10 @@ for tile_index in tile_indeces:
         df = pd.DataFrame(fluxes)
         df.to_csv(f'{storage_folder}/{tile_index}_fluxes.csv', index=False)
 
-        with open(processed_file, "a") as f:
-            f.write(tile_index_str + "\n")
+        # with open(processed_file, "a") as f:
+        #     f.write(tile_index_str + "\n")
 
-        processed.add(tile_index_str)
+        # processed.add(tile_index_str)
     except Exception as e:
         print(f"Error on {tile_index}: {e}")
         continue
