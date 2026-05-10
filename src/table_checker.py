@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 warnings.filterwarnings("ignore")
 
-snr_cutoff = 5
+snr_cutoff = 3
 point_source_probability_cutoff_lower = 0.0
 point_source_probability_cutoff_upper = 1
 
@@ -35,7 +35,7 @@ yerr = 2.5 / np.log(10) * np.sqrt(
 
 # Select star based on MER catalog
 mask = (fluxes[filter_1]/fluxes[f'{filter_1}_sigma'] > snr_cutoff) & (fluxes[filter_2]/fluxes[f'{filter_2}_sigma'] > snr_cutoff) & (
-    fluxes[filter_3]/fluxes[f'{filter_3}_sigma'] > snr_cutoff) & (fluxes[filter_4]/fluxes[f'{filter_4}_sigma'] > snr_cutoff) & (fluxes['point_source_probability_mer'] >= point_source_probability_cutoff_lower) & (fluxes['point_source_probability_mer'] < point_source_probability_cutoff_upper)
+    fluxes[filter_3]/fluxes[f'{filter_3}_sigma'] > snr_cutoff) & (fluxes[filter_4]/fluxes[f'{filter_4}_sigma'] > snr_cutoff) #& (fluxes['point_source_probability_mer'] >= point_source_probability_cutoff_lower) & (fluxes['point_source_probability_mer'] < point_source_probability_cutoff_upper)
 
 print(np.sum(mask))
 
