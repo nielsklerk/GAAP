@@ -2,6 +2,8 @@ import numpy as np
 from numba import njit
 
 # @njit(fastmath=True)
+
+
 def padded_cutout_with_center(image: np.ndarray,
                               cx: float,
                               cy: float,
@@ -75,6 +77,7 @@ def padded_cutout_with_center(image: np.ndarray,
 
     return cutout, (cx_c, cy_c)
 
+
 @njit(fastmath=True)
 def calc_flux(weight: np.ndarray,
               image: np.ndarray) -> float:
@@ -109,6 +112,7 @@ def calc_flux(weight: np.ndarray,
             s += weight[i, j] * image[i, j]
 
     return s
+
 
 @njit(fastmath=True)
 def calc_flux_shift(weight: np.ndarray,
@@ -146,23 +150,25 @@ def calc_flux_shift(weight: np.ndarray,
     if not 0 <= dx <= 1 or not 0 <= dy <= 1:
         raise ValueError("Fractional coordinates must be between 0 and 1")
     h, w = weight.shape
+    shifted = np.zeros_like(weight)
 
     a = (1 - dx) * (1 - dy)
     b = (1 - dx) * dy
     c = dx * (1 - dy)
     d = dx * dy
 
-
     s = 0.0
     for i in range(h - 1):
         for j in range(w - 1):
-            s += image[i, j] * (
-                    a * weight[i, j] +
-                    b * weight[i, j + 1] +
-                    c * weight[i + 1, j] +
-                    d * weight[i + 1, j + 1]
+            shifted[i, j] = (
+                a * weight[i, j]
+                + b * weight[i, j + 1]
+                + c * weight[i + 1, j]
+                + d * weight[i + 1, j + 1]
             )
-    return s
+            s += image[i, j] * shifted[i, j]
+    return s, shifted
+
 
 @njit(fastmath=True)
 def gaussian_2d(x: np.ndarray,
@@ -220,10 +226,10 @@ def gaussian_2d(x: np.ndarray,
 @njit(fastmath=True)
 def fourier_gaussian_2d(kx: np.ndarray,
                         ky: np.ndarray,
-                        sigma_x: float=1.0,
-                        sigma_y: float=1.0,
-                        theta: float=0.0,
-                        amplitude: float=1.0,
+                        sigma_x: float = 1.0,
+                        sigma_y: float = 1.0,
+                        theta: float = 0.0,
+                        amplitude: float = 1.0,
                         fourier_gaussian: np.ndarray | None = None) -> np.ndarray:
     """
     Calculate the Fourier Transform of a 2d Gaussian centered at (0, 0)
@@ -278,7 +284,67 @@ def fourier_gaussian_2d(kx: np.ndarray,
 
     return fourier_gaussian
 
+
 @njit(fastmath=True)
 def compute_phase(kx, ky, dx, dy):
     twopi = 2.0 * np.pi
     return np.exp(-1j * twopi * (ky * dy + kx * dx))
+
+
+@njit
+def find_best_square_coords(image, box_size):
+    ny, nx = image.shape
+
+    best_std = 1e30
+
+    best_y = -1
+    best_x = -1
+
+    found = False
+
+    for y in range(0, ny - box_size + 1, box_size):
+
+        for x in range(0, nx - box_size + 1, box_size):
+
+            total = 0.0
+            nonzero = 0
+
+            for j in range(box_size):
+                for i in range(box_size):
+
+                    value = image[y + j, x + i]
+
+                    total += value
+
+                    if value != 0:
+                        nonzero += 1
+
+            size = box_size * box_size
+
+            nonzero_fraction = nonzero / size
+
+            if nonzero_fraction < 0.5:
+                continue
+
+            mean = total / size
+
+            var = 0.0
+
+            for j in range(box_size):
+                for i in range(box_size):
+
+                    value = image[y + j, x + i]
+
+                    diff = value - mean
+
+                    var += diff * diff
+
+            std = np.sqrt(var / size)
+
+            if std < best_std:
+                best_std = std
+                best_y = y
+                best_x = x
+                found = True
+
+    return best_y, best_x, found

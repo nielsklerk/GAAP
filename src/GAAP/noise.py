@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import fftconvolve
-from .utils import padded_cutout_with_center
+from .utils import padded_cutout_with_center, find_best_square_coords
 
 
 class NoiseModel:
@@ -22,7 +22,6 @@ class NoiseModel:
         self.noise_square = None
         self.noise_covariance = None
         self.poisson_image = None
-        self.ac = None
         self.kernel = None
 
     def find_noise_square(self,
@@ -51,40 +50,26 @@ class NoiseModel:
         best_square = None
 
         # define smaller square size and step
-        step = box_size  # or smaller (e.g. box_size // 2 for overlap)
+        y, x, found = find_best_square_coords(
+            image.astype(np.float32),
+            box_size,
+        )
 
-        for y in range(0, ny - box_size + 1, step):
-            for x in range(0, nx - box_size + 1, step):
+        if not found:
+            raise RuntimeError(
+                "No valid square found."
+            )
 
-                square = image[y:y+box_size, x:x+box_size]
-
-                # compute statistics for this square
-                local_mean = np.mean(square)
-                local_var = np.var(square)
-                local_std = np.sqrt(local_var)
-
-                signal_threshold = np.percentile(square, 10)
-                nonzero_fraction = np.count_nonzero(square) / square.size
-
-                # reject "bad" squares
-                # if local_mean >= signal_threshold:
-                #     continue
-                if nonzero_fraction < 0.5:
-                    continue
-
-                # keep the best (lowest noise)
-                if local_std < best_std:
-                    best_std = local_std
-                    best_square = square
-
-        # fallback if nothing found
-        if best_square is None:
-            raise ValueError("No suitable noise square found")
+        best_square = image[
+            y:y+box_size,
+            x:x+box_size,
+        ]
 
         if box_size == cutout_size:
             self.noise_square = best_square
         else:
-            self.noise_square, _ = padded_cutout_with_center(best_square, box_size/2, box_size/2, cutout_size)
+            self.noise_square, _ = padded_cutout_with_center(
+                best_square, box_size/2, box_size/2, cutout_size)
 
     def set_noise_square(self, noise_square):
         self.noise_square = noise_square
@@ -96,7 +81,7 @@ class NoiseModel:
         """
 
         image = self.noise_square * self.image_conversion_factor
-        self._covariance_fft2d(image)
+        self.noise_covariance = self._covariance_fft2d(image)
 
     def _covariance_fft2d(self, noise_image: np.ndarray) -> None:
         """
@@ -112,8 +97,9 @@ class NoiseModel:
         h, w = img.shape
         img -= np.mean(img)
 
-        self.noise_covariance = fftconvolve(img, img[::-1, ::-1], mode="same")
-        self.noise_covariance /= (h * w)
+        self.ac = fftconvolve(img, img[::-1, ::-1], mode="same")
+        self.ac /= (h * w)
+        return self.ac
 
     def calc_error(self, weight, xc, yc, size):
         if self.rms is None:
@@ -134,7 +120,7 @@ class NoiseModel:
 
     def rms_error(self, weight, xc, yc, size):
         if self.kernel is None:
-            self.kernel = self.ac / np.max(self.ac)
+            self.kernel = self.noise_covariance / np.max(self.noise_covariance)
 
         rms_cutout, _ = padded_cutout_with_center(self.rms, xc, yc, size)
         weight_prime = rms_cutout * weight * self.rms_conversion_factor

@@ -1,10 +1,30 @@
 import numpy as np
 import pyfftw.interfaces.numpy_fft as fft
+import pyfftw
 from tqdm import tqdm
 from .utils import padded_cutout_with_center, fourier_gaussian_2d, compute_phase, calc_flux, calc_flux_shift
 
-def flux(image, centers, psfdeconvolver, weight_sizes,
-         noise_model=None, cutout_size: int = 128, image_conversion_factor: int = 1, bilinear_interpolation: bool = False, show_progress: bool = True):
+pyfftw.interfaces.cache.enable()
+
+
+def flux(image,
+         centers,
+         psfdeconvolver,
+         weight_sizes,
+         noise_model=None,
+         cutout_size: int = 128,
+         image_conversion_factor: int = 1,
+         bilinear_interpolation: bool = False,
+         show_progress: bool = True):
+
+    complex_in = pyfftw.empty_aligned(
+        (cutout_size, cutout_size // 2 + 1),
+        dtype="complex64",
+    )
+
+    irfft2 = pyfftw.builders.irfft2(
+        complex_in
+    )
 
     centers = np.atleast_2d(centers)
     ws = np.asarray(weight_sizes)
@@ -94,7 +114,8 @@ def flux(image, centers, psfdeconvolver, weight_sizes,
             weight_fft = psfdeconvolver.psf_prefactor * FT
             last_weight = current_weight
             if bilinear_interpolation:
-                weight_rescale_unshifted = fft.irfft2(weight_fft)
+                complex_in[:] = weight_fft
+                weight_rescale_unshifted = irfft2()
 
         # ---- extract cutout ----
         cutout, (cx_cut, cy_cut) = padded_cutout_with_center(
@@ -109,16 +130,20 @@ def flux(image, centers, psfdeconvolver, weight_sizes,
         dy = cy_cut - iy
 
         if bilinear_interpolation:
-            fluxes[out_idx] = calc_flux_shift(weight_rescale_unshifted, cutout, dx, dy)
+            fluxes[out_idx], weight_rescale = calc_flux_shift(
+                weight_rescale_unshifted, cutout, dx, dy)
+
         else:
             phase = compute_phase(kx, ky, dx, dy)
-            weight_rescale = fft.irfft2(weight_fft * phase)
+            complex_in[:] = weight_fft * phase
+            weight_rescale = irfft2()
             fluxes[out_idx] = calc_flux(weight_rescale, cutout)
 
         # ---- variance ----
         if noise_model is not None:
             if noise_model.rms is None:
-                wf = fft.irfft2(weight_fft)
+                complex_in[:] = weight_fft
+                wf = irfft2()
             else:
                 wf = weight_rescale
 
