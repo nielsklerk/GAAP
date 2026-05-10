@@ -285,10 +285,24 @@ def fourier_gaussian_2d(kx: np.ndarray,
     return fourier_gaussian
 
 
+TWOPI = 2.0*np.pi
+@njit
+def prepare_phase_coordinates(kx, ky):
+    return -TWOPI * kx, -TWOPI * ky
+
 @njit(fastmath=True)
-def compute_phase(kx, ky, dx, dy):
-    twopi = 2.0 * np.pi
-    return np.exp(-1j * twopi * (ky * dy + kx * dx))
+def compute_phase(kx_scale, ky_scale, dx, dy):
+    ax = kx_scale * dx
+    ay = ky_scale * dy
+
+    sx = np.sin(ax)
+    cx = np.cos(ax)
+
+    sy = np.sin(ay)
+    cy = np.cos(ay)
+
+    # (cx + i sx)(cy + i sy)
+    return (cx * cy - sx * sy) + 1j * (sx * cy + cx * sy)
 
 
 @njit

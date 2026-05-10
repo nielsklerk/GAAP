@@ -2,7 +2,7 @@ import numpy as np
 import pyfftw.interfaces.numpy_fft as fft
 import pyfftw
 from tqdm import tqdm
-from .utils import padded_cutout_with_center, fourier_gaussian_2d, compute_phase, calc_flux, calc_flux_shift
+from .utils import padded_cutout_with_center, fourier_gaussian_2d, prepare_phase_coordinates, compute_phase, calc_flux, calc_flux_shift
 
 pyfftw.interfaces.cache.enable()
 
@@ -65,6 +65,7 @@ def flux(image,
     H = W = cutout_size
     ky = fft.fftfreq(H)[:, None]
     kx = fft.rfftfreq(W)[None, :]
+    kx_scaled, ky_scaled = prepare_phase_coordinates(kx, ky)
 
     fluxes = np.empty(max(Nc, Nw))
     variances = None if noise_model is None else np.empty(max(Nc, Nw))
@@ -134,8 +135,8 @@ def flux(image,
                 weight_rescale_unshifted, cutout, dx, dy)
 
         else:
-            phase = compute_phase(kx, ky, dx, dy)
-            complex_in[:] = weight_fft * phase
+            phase = compute_phase(kx_scaled, ky_scaled, dx, dy)
+            np.multiply(weight_fft, phase, out=complex_in)
             weight_rescale = irfft2()
             fluxes[out_idx] = calc_flux(weight_rescale, cutout)
 
