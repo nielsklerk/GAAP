@@ -71,7 +71,7 @@ max_workers = 4
 
 filenames = pd.read_pickle(filename_file)
 tile_indeces = filenames.index.tolist()
-tile_indeces = ['102044185']
+# tile_indeces = ['102070144']
 for tile_index in tile_indeces:
     # try:
     tile_index_str = str(tile_index)
@@ -83,7 +83,11 @@ for tile_index in tile_indeces:
     """
     filters = download_archive_files(
         tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers_download)
-    # filters = filenames.loc[tile_index]['FILTER']
+    if len(filters) >= 9:
+        max_workers = 5
+    else:
+        max_workers = 4
+    filters = filenames.loc[tile_index]['FILTER']
     # filters = ['DES-G', 'DES-R', 'DES-I']
     """
     Load catalog for coordinates
@@ -105,11 +109,12 @@ for tile_index in tile_indeces:
     Fitting the Gaussians to sources
     """
     weight_size = cat['FWHM']
+    print(weight_size)
 
     """
     Binning the fitted sizes above the maximum PSF size
     """
-    bins = np.arange(.7, np.max(weight_size), 0.01)
+    bins = np.arange(.3, np.nanmax(weight_size), 0.01)
     bin_centers = 0.5 * (bins[:-1] + bins[1:])
 
     # prepare array
@@ -148,12 +153,11 @@ for tile_index in tile_indeces:
     df = pd.DataFrame(fluxes)
     df.to_csv(f'{storage_folder}/{tile_index}_fluxes.csv', index=False)
 
-    # with open(processed_file, "a") as f:
-    #     f.write(tile_index_str + "\n")
+    with open(processed_file, "a") as f:
+        f.write(tile_index_str + "\n")
 
-    # processed.add(tile_index_str)
+    processed.add(tile_index_str)
     # except Exception as e:
     #     print(f"Error on {tile_index}: {e}")
     #     continue
-    # gc.collect()
-    break
+    gc.collect()

@@ -10,10 +10,10 @@ point_source_probability_cutoff_upper = 1
 
 
 fluxes = pd.read_csv(
-    f'/net/vdesk/data2/deklerk/GAAP_data/flux_files_new/102044185_fluxes.csv')
+    f'/net/vdesk/data2/deklerk/GAAP_data/flux_files_new/102019128_fluxes.csv')
 
 filter_1 = 'DES-G'   # e.g., master_table column name
-filter_2 = 'NIR-J'
+filter_2 = 'VIS'
 filter_3 = 'NIR-J'
 filter_4 = 'NIR-H'
 
@@ -35,7 +35,7 @@ yerr = 2.5 / np.log(10) * np.sqrt(
 
 # Select star based on MER catalog
 mask = (fluxes[filter_1]/fluxes[f'{filter_1}_sigma'] > snr_cutoff) & (fluxes[filter_2]/fluxes[f'{filter_2}_sigma'] > snr_cutoff) & (
-    fluxes[filter_3]/fluxes[f'{filter_3}_sigma'] > snr_cutoff) & (fluxes[filter_4]/fluxes[f'{filter_4}_sigma'] > snr_cutoff) #& (fluxes['point_source_probability_mer'] >= point_source_probability_cutoff_lower) & (fluxes['point_source_probability_mer'] < point_source_probability_cutoff_upper)
+    fluxes[filter_3]/fluxes[f'{filter_3}_sigma'] > snr_cutoff) & (fluxes[filter_4]/fluxes[f'{filter_4}_sigma'] > snr_cutoff) & (fluxes['point_source_probability_mer'] >= point_source_probability_cutoff_lower) & (fluxes['point_source_probability_mer'] <= point_source_probability_cutoff_upper)
 
 print(np.sum(mask))
 
@@ -46,7 +46,7 @@ plt.errorbar(
 )
 plt.xlabel(f'{filter_1} - {filter_2}')
 plt.ylabel(f'{filter_3} - {filter_4}')
-plt.xlim(-.5, 6)
-plt.ylim(-.5, 1)
+#plt.xlim(-.5, 6)
+plt.ylim(-1, 1)
 plt.grid(True)
 plt.show()
