@@ -19,9 +19,9 @@ plt.rcParams['legend.fontsize'] = 14
 plt.rcParams['image.origin'] = "lower"
 plt.rcParams['image.cmap'] = 'magma'
 
-MAKE_NEW_COMBINED_FILE = False
+MAKE_NEW_COMBINED_FILE = True
 
-storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files'
+storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files_new'
 catalog_folder = '/net/vdesk/data2/deklerk/GAAP_data/catalog_files'
 processed_file = "/net/vdesk/data2/deklerk/GAAP_data/processed.txt"
 
@@ -34,19 +34,13 @@ if MAKE_NEW_COMBINED_FILE:
     total = 0
     for i, tile_index in enumerate(processed):
         print(i)
-        catalog_file = glob.glob(
-            f'{catalog_folder}/EUC_MER_FINAL-CAT_TILE{tile_index}*.fits')[0]
-        with fits.open(catalog_file, memmap=True) as hdul:
-            cat = Table(hdul[1].data)['POINT_LIKE_PROB']
         if i > stop_index:
             break
         if all_fluxes is None:
             all_fluxes = pd.read_csv(
                 f'{storage_folder}/{tile_index}_fluxes.csv')
-            all_fluxes['point_like_prob_mer'] = np.array(cat.data, dtype='<f8')
         else:
             fluxes = pd.read_csv(f'{storage_folder}/{tile_index}_fluxes.csv')
-            fluxes['point_like_prob_mer'] = np.array(cat.data, dtype='<f8')
             all_fluxes = pd.concat([all_fluxes, fluxes], ignore_index=True)
         gc.collect()
 else:
@@ -87,7 +81,7 @@ base_mask = (np.isfinite(x_color)) & (np.isfinite(y_color)) & (gaap_error < gaap
 
 plt.figure(figsize=(10, 6))
 if plot_pointlike:
-    mask = (all_fluxes['point_like_prob_mer'] >= point_like_cutoff) & base_mask
+    mask = (all_fluxes['point_source_probability_mer'] >= point_like_cutoff) & base_mask
     H, xedges, yedges = np.histogram2d(x_color[mask], y_color[mask], bins=bins)
     im = plt.imshow(
         H.T,
@@ -102,7 +96,7 @@ if plot_pointlike:
     cbar.set_label("Number of Point-Like Sources")
 
 if plot_extended:
-    mask = (all_fluxes['point_like_prob_mer'] < point_like_cutoff) & base_mask
+    mask = (all_fluxes['point_source_probability_mer'] < point_like_cutoff) & base_mask
     H, xedges, yedges = np.histogram2d(x_color[mask], y_color[mask], bins=bins)
     im = plt.imshow(
         H.T,
@@ -120,6 +114,7 @@ plt.ylabel(f'{filter_3} - {filter_4}')
 plt.xlim(left, right)
 plt.ylim(bottom, top)
 plt.tight_layout()
-plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_4[-1]}.pdf',
-            bbox_inches='tight')
-# all_fluxes.to_pickle(f'{storage_folder}/all_fluxes.pkl')
+plt.show()
+# plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_4[-1]}.pdf',
+#             bbox_inches='tight')
+all_fluxes.to_pickle(f'{storage_folder}/all_fluxes.pkl')
