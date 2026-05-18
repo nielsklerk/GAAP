@@ -19,8 +19,21 @@ plt.rcParams['legend.fontsize'] = 14
 plt.rcParams['image.origin'] = "lower"
 plt.rcParams['image.cmap'] = 'magma'
 
+axes_labels = {'CFIS-U': r'$u$',
+        'WISHES-G': r'$g$',
+        'CFIS-R': r'$r$',
+        'PANSTARRS-I': r'$i$',
+        'WISHES-Z': r'$z$',
+        'DES-G': r'$g$',
+        'DES-R': r'$r$',
+        'DES-I': r'$i$',
+        'DES-Z': r'$z$',
+        'NIR-Y': r'$Y_\mathrm{E}$',
+        'NIR-J': r'$J_\mathrm{E}$',
+        'NIR-H': r'$H_\mathrm{E}$',
+        'VIS': r'$I_\mathrm{E}$'}
 
-def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.9, error_cutoff=0.1, bins=500,
+def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.7, error_cutoff=5, bins=500,
                 plot_extended=True,
                 plot_pointlike=True):
     # Compute colors from master_table fluxes
@@ -39,14 +52,14 @@ def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.9, error_cuto
         (all_fluxes[f'{filters[3]}_sigma'] / all_fluxes[filters[3]])**2
     )
 
-    gaap_error = xerr**2 + yerr**2
+    snr_mask = (all_fluxes[filters[0]] / all_fluxes[f'{filters[0]}_sigma'] > error_cutoff) & (all_fluxes[filters[1]] / all_fluxes[f'{filters[1]}_sigma'] > error_cutoff) & (all_fluxes[filters[2]] / all_fluxes[f'{filters[2]}_sigma'] > error_cutoff) & (all_fluxes[filters[3]] / all_fluxes[f'{filters[3]}_sigma'] > error_cutoff)
 
     base_mask = (np.isfinite(x_color)) & (np.isfinite(
-        y_color)) & (gaap_error < error_cutoff**2)
+        y_color)) & snr_mask
 
     images = {}
     if plot_pointlike:
-        mask = (all_fluxes['point_like_prob_mer']
+        mask = (all_fluxes['point_source_probability_mer']
                 >= point_like_cutoff) & base_mask
         H, xedges, yedges = np.histogram2d(
             x_color[mask], y_color[mask], bins=bins)
@@ -65,7 +78,7 @@ def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.9, error_cuto
         images['pointlike_im'] = (im, np.sum(mask))
 
     if plot_extended:
-        mask = (all_fluxes['point_like_prob_mer']
+        mask = (all_fluxes['point_source_probability_mer']
                 < point_like_cutoff) & base_mask
         H, xedges, yedges = np.histogram2d(
             x_color[mask], y_color[mask], bins=bins)
@@ -83,15 +96,15 @@ def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.9, error_cuto
         print(np.sum(mask))
         images['extended_im'] = (im, np.sum(mask))
 
-    ax.set_xlabel(f'{filters[0]} - {filters[1]}')
-    ax.set_ylabel(f'{filters[2]} - {filters[3]}')
+    ax.set_xlabel(f'{axes_labels[filters[0]]} - {axes_labels[filters[1]]}')
+    ax.set_ylabel(f'{axes_labels[filters[2]]} - {axes_labels[filters[3]]}')
     return images
 
 
-def plot_gaap(filters: list, ax, point_like_cutoff=0.9, error_cutoff=0.1, bins=500,
+def plot_gaap(filters: list, ax, point_like_cutoff=0.7, error_cutoff=20, bins=500,
               plot_extended=True,
               plot_pointlike=True,
-              storage_folder='/net/vdesk/data2/deklerk/GAAP_data/flux_files'):
+              storage_folder='/net/vdesk/data2/deklerk/GAAP_data/flux_files_new'):
     all_fluxes = pd.read_pickle(f'{storage_folder}/all_fluxes.pkl')
     images = plot_colors(filters, all_fluxes, ax, point_like_cutoff, error_cutoff, bins,
                          plot_extended,
@@ -99,7 +112,7 @@ def plot_gaap(filters: list, ax, point_like_cutoff=0.9, error_cutoff=0.1, bins=5
     return images
 
 
-def plot_catalog(filters: list, ax, FWHM='4', stop_index=10, point_like_cutoff=0.9, error_cutoff=0.1, bins=500,
+def plot_catalog(filters: list, ax, FWHM='1', stop_index=10, point_like_cutoff=0.7, error_cutoff=20, bins=500,
                  plot_extended=True,
                  plot_pointlike=True,
                  processed_file="/net/vdesk/data2/deklerk/GAAP_data/processed.txt", catalog_folder='/net/vdesk/data2/deklerk/GAAP_data/catalog_files'):
@@ -140,7 +153,7 @@ def plot_catalog(filters: list, ax, FWHM='4', stop_index=10, point_like_cutoff=0
                 cat[f'FLUX_{filter_to_catalog_name[filter]}_{FWHM}FWHM_APER'].data, dtype='<f8')
             df[filter + '_sigma'] = np.array(
                 cat[f'FLUXERR_{filter_to_catalog_name[filter]}_{FWHM}FWHM_APER'].data, dtype='<f8')
-        df['point_like_prob_mer'] = np.array(
+        df['point_source_probability_mer'] = np.array(
             cat['POINT_LIKE_PROB'].data, dtype='<f8')
 
         if all_fluxes is None:
@@ -155,7 +168,7 @@ def plot_catalog(filters: list, ax, FWHM='4', stop_index=10, point_like_cutoff=0
     return images
 
 
-def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=0.1,
+def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=5,
                                  stop_index=400,
                                  plot_extended=True,
                                  plot_pointlike=True,
@@ -186,7 +199,7 @@ def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=0.1,
         for ax in axs:
             ax.xaxis.set_major_locator(ticker.MaxNLocator(5))
 
-        axs[0].set_title('GAAP')
+        axs[0].set_title('PCA-phot')
         axs[1].set_title('MER')
         fig.tight_layout()
         plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_3[-1]}{filter_4[-1]}_gaap_catalog_cutoff_{error_cutoff}.pdf',
@@ -198,7 +211,7 @@ def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=0.1,
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
         ax.xaxis.set_major_locator(ticker.MaxNLocator(5))
-        ax.set_title('GAAP')
+        ax.set_title('PCA-phot')
         fig.tight_layout()
         plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_3[-1]}{filter_4[-1]}_gaap_cutoff_{error_cutoff}.pdf',
                     bbox_inches='tight')
@@ -216,7 +229,7 @@ def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=0.1,
 
 
 def plot_snr_comparison():
-    storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files'
+    storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files_new'
     catalog_folder = '/net/vdesk/data2/deklerk/GAAP_data/catalog_files'
     processed_file = "/net/vdesk/data2/deklerk/GAAP_data/processed.txt"
 
@@ -234,7 +247,7 @@ def plot_snr_comparison():
         sharey=True,
         gridspec_kw={'wspace': 0, 'hspace': 0}
     )
-    FWHM = '4'
+    FWHM = '1'
     cutoff_snr = 1e-3
     DES_PLOTTED = False
     OTHER_PLOTTED = False
@@ -349,7 +362,7 @@ def plot_snr_comparison():
 
     # Single shared labels centered on the figure
     fig.supxlabel('MER SNR')
-    fig.supylabel('GAAP SNR')
+    fig.supylabel('PCA-phot SNR')
 
     # Ensure zero spacing (in case tight_layout reintroduces gaps)
     fig.subplots_adjust(wspace=0, hspace=0)
@@ -376,7 +389,7 @@ def plot_residual(filters):
         'NIR-H': 'H',
         'VIS': 'VIS'
     }
-    storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files'
+    storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files_new'
     catalog_folder = '/net/vdesk/data2/deklerk/GAAP_data/catalog_files'
     processed_file = "/net/vdesk/data2/deklerk/GAAP_data/processed.txt"
 
@@ -452,10 +465,13 @@ def plot_residual(filters):
 def main():
     # plot_color_color_gaap_vs_mer(
     #     ['DES-G', 'DES-R', 'DES-R', 'DES-I'], [-.5, 2.5, -0.5, 2.5], 500, plot_extended=False)
+    # plt.show()
     # plot_color_color_gaap_vs_mer(
     #     ['DES-G', 'NIR-J', 'NIR-J', 'NIR-H'], [-1, 6, -0.5, 1], 500)
-    # plot_snr_comparison()
-    plot_residual(['NIR-J', 'NIR-H'])
+    # plt.show()
+    plot_snr_comparison()
+    plt.show()
+    # plot_residual(['NIR-J', 'NIR-H'])
 
 
 if __name__ == '__main__':
