@@ -1,7 +1,7 @@
 \chapter{Methods}\label{ch: Methods}
-In this chapter, the \gls{gaap} algorithm is explained and tested on simulated observations. Next, the technique is applied to real observations in different broadband filters made by Rubin, Euclid, and \gls{decam}. 
+In this chapter, the \gls{pca-phot} algorithm is explained and tested on simulated observations. Next, the technique is applied to real observations in different broadband filters made by Rubin, Euclid, and \gls{decam}. 
 
-\section{GAAP}
+\section{PCA-phot}
 \subsection{Flux Measurement}
 Aperture photometry uses a weight function to find the flux of objects in an observation. In general, it can be written in the following way
 
@@ -48,7 +48,7 @@ From \autoref{eq: fourier domain}, a direct formula for the post-seeing aperture
     W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_\mathrm{A}\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
 \end{equation}
 However, \autoref{eq: analytical deconvolution} has a division by the Fourier transform of the reflected \gls{psf}, which can be close to 0 at certain points. Division by a small number inflates the machine error in the calculation, leading to inaccurate results. 
-To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $K=10^{-8}$ is added to the equation to stabilize it 
+To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $\varepsilon=10^{-8}$ is added to the equation to stabilize it 
 
 \begin{equation}\label{eq: numerical deconvolution}
     W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\right\}.
@@ -56,7 +56,7 @@ To improve the numerical stability of \autoref{eq: analytical deconvolution}, a 
 If the weight matrix is the same for different sources, except for a shift. The aperture flux becomes 
 
 \begin{equation}
-    F_\mathrm{A}(x',y') = \int dxdyO(x,y)W_\mathrm{A}(x-x',y-y') = (O \otimes \bar{W}_\mathrm{A})(x',y'),
+    F_\mathrm{A}(x',y') = \int dxdy\;O(x,y)W_\mathrm{A}(x-x',y-y') = (O \otimes \bar{W}_\mathrm{A})(x',y'),
 \end{equation}
 with $\bar{W}_A(x,y)=W_A(-x,-y)$.
 
@@ -158,7 +158,7 @@ In the case that the noise in the pixels is uncorrelated, the only non-zero elem
     \sigma^2=\sum_{x,y}W'^2(x,y) =\sum_{x,y}\sigma^2(x,y)W^2(x,y).
 \end{equation}
 
-\section{GAAP as Point-Source Detector}
+\section{PCA-phot as Point-Source Detector}
 Assuming that the sources in the images can be modeled as a Gaussian, we can find the flux for different pre-seeing weight sizes $\sigma$ as
 \begin{equation}\label{eq: point-source detector}
     F(\sigma)=\frac{A\sigma^2}{a^2+\sigma^2}\exp\left\{-\frac{d^2}{2(a^2+\sigma^2)}\right\},
@@ -233,14 +233,14 @@ To test the aperture shape that maximizes the \gls{snr}, the flux \gls{snr} is c
 \newpage
 
 \section{Observational Data}
-To apply the \gls{gaap} method to images from both Euclid and Rubin, several inputs are required: \glspl{psf}, noise squares, and weight functions.
+To apply the \gls{pca-phot} method to images from both Euclid and Rubin, several inputs are required: \glspl{psf}, noise squares, and weight functions.
 
 \subsection{PSF}
-The \glspl{psf} of the Rubin filters are already in a form that can be directly used for the measurement of the fluxes. The MER catalog has a \gls{psf} grid. This can be used to find a more accurate \gls{psf} for each part of the image by interpolating between grid points. However, in \gls{gaap} this is computationally expensive as the prefactor in \autoref{eq: numerical deconvolution} then needs to be recalculated for every single source. Instead of that approach, the \glspl{psf} in the grid are averaged to find a single \gls{psf} representing the seeing in the entire image.
+The \glspl{psf} of the Rubin filters are already in a form that can be directly used for the measurement of the fluxes. The MER catalog has a \gls{psf} grid. This can be used to find a more accurate \gls{psf} for each part of the image by interpolating between grid points. However, in \gls{pca-phot} this is computationally expensive as the prefactor in \autoref{eq: numerical deconvolution} then needs to be recalculated for every single source. Instead of that approach, the \glspl{psf} in the grid are averaged to find a single \gls{psf} representing the seeing in the entire image.
 
 % \subsection{PSF Construction}
 
-% The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before GAAP can be applied to its images.
+% The PSFs of the Rubin images are readily available, but the PSFs of the Euclid images are not. So those need to be created before pca-phot can be applied to its images.
 
 % For this, the Source EXtractor \citep{1996A&AS..117..393B} is used to find the fluxes and full-width half-maxima (FWHM) of different sources in the image. Taking the natural logarithm of both sides and plotting the results yields the image shown in \autoref{fig: Chimney}. 
 
@@ -259,11 +259,11 @@ Find a square with the minimal variance. This square should contain no sources, 
 
 
 \subsection{Fitting Weights}
-To find the pre-seeing weight function, a Gaussian is fitted to the objects in the image. This is done in the VIS as this band has the highest resolution and quality. Next, Gaussian-shaped galaxies with different scales are simulated and convolved with the different \gls{psf} of all the filters in \autoref{tab:mer filters}. \gls{gaap} is applied to the images using differently sized pre-seeing weight functions, which gives the \gls{snr} over the different sizes of weight functions. These curves are normalized by dividing by the maximum and then added together to get a single curve that represents the \gls{snr} across all filters. The maximum of this curve is linked to the size of the Gaussian in the pre-seeing image. This gives a relation between the pre-seeing image size and the optimal pre-seeing weight function size to maximize the \gls{snr} across the different filters. A 6th-order polynomial is fitted to this relation. 
+To find the pre-seeing weight function, a Gaussian is fitted to the objects in the image. This is done in the VIS as this band has the highest resolution and quality. Next, Gaussian-shaped galaxies with different scales are simulated and convolved with the different \gls{psf} of all the filters in \autoref{tab:mer filters}. \gls{pca-phot} is applied to the images using differently sized pre-seeing weight functions, which gives the \gls{snr} over the different sizes of weight functions. These curves are normalized by dividing by the maximum and then added together to get a single curve that represents the \gls{snr} across all filters. The maximum of this curve is linked to the size of the Gaussian in the pre-seeing image. This gives a relation between the pre-seeing image size and the optimal pre-seeing weight function size to maximize the \gls{snr} across the different filters. A 6th-order polynomial is fitted to this relation. 
 
 Now that there is a semi-empirical relation between the size of the source and the optimal weight size, a Gaussian is fitted to the sources in the VIS band. Following this, the pre-seeing size is estimated by using the size of the \gls{psf} of the VIS band $\sigma_\mathrm{fit}^2\approx\sigma_\mathrm{intrinsic}^2+\sigma_\mathrm{VIS-PSF}^2$. The intrinsic size is then converted to a weight function size by using the polynomial.
 
-\subsection{Applying GAAP Algorithm}
+\subsection{Applying PCA-phot Algorithm}
 For each galaxy, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the \gls{mer} mosaic, which corresponds to 12.8". To get the same physical size for the Rubin images, the cutout is 64 pixels. 
 
 As the centers of the objects are not exactly in the center of the pixel, bilinear interpolation is used to find the flux of the object. 
