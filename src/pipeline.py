@@ -6,6 +6,7 @@ from astropy.wcs import WCS
 from astropy.table import Table
 from tqdm import tqdm
 import gc
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 from GAAP import gaap_flux
@@ -50,7 +51,7 @@ psf_size_dictionary = {'CFIS-R': 47, 'CFIS-U': 49, 'PANSTARRS-I': 47, 'WISHES-G'
                        'NIR-Y': 33, 'NIR-J': 33, 'NIR-H': 33, 'DES-G': 49, 'DES-R': 49, 'DES-I': 49, 'DES-Z': 49, 'VIS': 21}
 
 data_folder = '/net/vdesk/data2/deklerk/GAAP_data/temp'
-storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files_new'
+storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files'
 filename_file = '/home/deklerk/GAAP/src/EUCLID_ARCHIVE_files.pkl'
 processed_file = "/net/vdesk/data2/deklerk/GAAP_data/processed.txt"
 
@@ -71,93 +72,93 @@ max_workers = 4
 
 filenames = pd.read_pickle(filename_file)
 tile_indeces = filenames.index.tolist()
-# tile_indeces = ['102070144']
+# tile_indeces = ['102044185']
 for tile_index in tile_indeces:
-    # try:
-    tile_index_str = str(tile_index)
+    try:
+        tile_index_str = str(tile_index)
 
-    if tile_index_str in processed:
+        if tile_index_str in processed:
+            continue
+        start_time = time.time()
+        """
+        Dowloading files
+        """
+        filters = download_archive_files(
+            tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers_download)
+        if len(filters) >= 9:
+            max_workers = 5
+        else:
+            max_workers = 4
+        mid_time = time.time()
+        # filters = filenames.loc[tile_index]['FILTER']
+        """
+        Load catalog for coordinates
+        """
+        # Load catalog file for coordinates
+        catalog_file = glob.glob(f'{data_folder}/EUC_MER_FINAL-CAT_*.fits')[0]
+        with fits.open(catalog_file, memmap=True) as hdul:
+            cat = Table(hdul[1].data)
+
+        fluxes = {}
+        fluxes['id'] = cat['OBJECT_ID']
+        fluxes['tile_index'] = tile_index
+        fluxes['ra'] = cat['RIGHT_ASCENSION']
+        fluxes['dec'] = cat['DECLINATION']
+        fluxes['FWHM'] = cat['FWHM']
+        fluxes['point_source_probability_mer'] = cat['POINT_LIKE_PROB']
+
+
+        """
+        Binning the fitted sizes above the maximum PSF size
+        """
+        bins = np.arange(.1, 5 * np.nanmax(fluxes['FWHM']), 0.01)
+        bin_centers = 0.5 * (bins[:-1] + bins[1:])
+
+        # prepare array
+        sigma_binned = np.full_like(fluxes['FWHM'], np.nan, dtype=float)
+
+        # mask valid (non-NaN) entries
+        mask = ~np.isnan(fluxes['FWHM'])
+
+        for i in [0.5, 1, 2]:
+            weight_size = i * fluxes['FWHM']
+            # digitize only valid entries
+            bin_idx = np.digitize(weight_size[mask], bins) - 1
+            bin_idx = np.clip(bin_idx, 0, len(bin_centers) - 1)
+
+            # assign binned values
+            sigma_binned[mask] = bin_centers[bin_idx]
+
+            """
+            Calculate flux for each filter
+            """
+            results = []
+
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = [executor.submit(process_filter, f) for f in filters]
+
+                for future in tqdm(as_completed(futures), total=len(futures), desc="Processing filters"):
+                    results.append(future.result())
+
+            for filter_, flux, sigma in results:
+                fluxes[f'FLUX_{filter_}_{i}FWHM'] = flux
+                fluxes[f'FLUXERR_{filter_}_{i}FWHM'] = sigma
+
+        """
+        Store the data into a csv file
+        """
+        df = pd.DataFrame(fluxes)
+        df.to_csv(f'{storage_folder}/{tile_index}_fluxes.csv', index=False)
+
+        with open(processed_file, "a") as f:
+            f.write(tile_index_str + "\n")
+
+        processed.add(tile_index_str)
+        gc.collect()
+        end_time = time.time()
+        print('Time to download:', mid_time-start_time)
+        print('Time to compute all fluxes:', end_time-mid_time)
+    except Exception as e:
+        print(f"Error on {tile_index}: {e}")
         continue
-    """
-    Dowloading files
-    """
-    filters = download_archive_files(
-        tile_index, filename_file=filename_file, data_folder=data_folder, max_workers=max_workers_download)
-    if len(filters) >= 9:
-        max_workers = 5
-    else:
-        max_workers = 4
-    filters = filenames.loc[tile_index]['FILTER']
-    # filters = ['DES-G', 'DES-R', 'DES-I']
-    """
-    Load catalog for coordinates
-    """
-    # Load catalog file for coordinates
-    catalog_file = glob.glob(f'{data_folder}/EUC_MER_FINAL-CAT_*.fits')[0]
-    with fits.open(catalog_file, memmap=True) as hdul:
-        cat = Table(hdul[1].data)
-
-    fluxes = {}
-    fluxes['id'] = cat['OBJECT_ID']
-    fluxes['tile_index'] = tile_index
-    fluxes['ra'] = cat['RIGHT_ASCENSION']
-    fluxes['dec'] = cat['DECLINATION']
-    fluxes['FWHM'] = cat['FWHM']
-    fluxes['point_source_probability_mer'] = cat['POINT_LIKE_PROB']
-
-    """
-    Fitting the Gaussians to sources
-    """
-    weight_size = cat['FWHM']
-    print(weight_size)
-
-    """
-    Binning the fitted sizes above the maximum PSF size
-    """
-    bins = np.arange(.3, np.nanmax(weight_size), 0.01)
-    bin_centers = 0.5 * (bins[:-1] + bins[1:])
-
-    # prepare array
-    sigma_binned = np.full_like(weight_size, np.nan, dtype=float)
-
-    # mask valid (non-NaN) entries
-    mask = ~np.isnan(weight_size)
-
-    # digitize only valid entries
-    bin_idx = np.digitize(weight_size[mask], bins) - 1
-    bin_idx = np.clip(bin_idx, 0, len(bin_centers) - 1)
-
-    # assign binned values
-    sigma_binned[mask] = bin_centers[bin_idx]
-
-    fluxes['weight_size'] = sigma_binned
-
-    """
-    Calculate flux for each filter
-    """
-    results = []
-
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(process_filter, f) for f in filters]
-
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing filters"):
-            results.append(future.result())
-
-    for filter_, flux, sigma in results:
-        fluxes[f'{filter_}'] = flux
-        fluxes[f'{filter_}_sigma'] = sigma
-
-    """
-    Store the data into a csv file
-    """
-    df = pd.DataFrame(fluxes)
-    df.to_csv(f'{storage_folder}/{tile_index}_fluxes.csv', index=False)
-
-    with open(processed_file, "a") as f:
-        f.write(tile_index_str + "\n")
-
-    processed.add(tile_index_str)
-    # except Exception as e:
-    #     print(f"Error on {tile_index}: {e}")
-    #     continue
-    gc.collect()
+        

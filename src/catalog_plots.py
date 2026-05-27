@@ -73,7 +73,10 @@ def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.7, error_cuto
             norm=LogNorm(),
             rasterized=True
         )
-
+        cmap = plt.get_cmap('magma')
+        middle_color = cmap(0.5)
+        ax.text(0.05, 0.95, r'N$_\mathrm{point}$='+f'{np.sum(mask)}', transform=ax.transAxes, color=middle_color,
+                        ha='left', va='top', fontsize=15)
         print(np.sum(mask))
         images['pointlike_im'] = (im, np.sum(mask))
 
@@ -93,6 +96,10 @@ def plot_colors(filters: list, all_fluxes, ax, point_like_cutoff=0.7, error_cuto
             rasterized=True,
             cmap='viridis'
         )
+        cmap = plt.get_cmap('viridis')
+        middle_color = cmap(0.5)
+        ax.text(0.05, 0.9, r'N$_\mathrm{extended}$='+f'{np.sum(mask)}', transform=ax.transAxes, color=middle_color,
+                        ha='left', va='top', fontsize=15)
         print(np.sum(mask))
         images['extended_im'] = (im, np.sum(mask))
 
@@ -466,11 +473,11 @@ def main():
     # plot_color_color_gaap_vs_mer(
     #     ['DES-G', 'DES-R', 'DES-R', 'DES-I'], [-.5, 2.5, -0.5, 2.5], 500, plot_extended=False)
     # plt.show()
-    # plot_color_color_gaap_vs_mer(
-    #     ['DES-G', 'NIR-J', 'NIR-J', 'NIR-H'], [-1, 6, -0.5, 1], 500)
-    # plt.show()
-    plot_snr_comparison()
+    plot_color_color_gaap_vs_mer(
+        ['DES-G', 'NIR-J', 'NIR-J', 'NIR-H'], [-1, 6, -0.5, 1.2], 500)
     plt.show()
+    # plot_snr_comparison()
+    # plt.show()
     # plot_residual(['NIR-J', 'NIR-H'])
 
 
