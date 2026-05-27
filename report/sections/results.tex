@@ -107,7 +107,7 @@ The flux measurement of the elliptical weight function is accurate, as shown in 
 The maximum \gls{snr} of a circular Gaussian weight function in \autoref{fig: best aperture} is slightly lower than the \gls{snr} compared to the maximum \gls{snr} for the elliptical Gaussian weight functions. Therefore, the size can be optimized to give a higher \gls{snr} for each source in an image. However, there is a computational disadvantage to this, as such an elliptical Gaussian weight function requires 3 parameters; it is unlikely that different sources have the same weight function that optimizes the \gls{snr}, whereas circular Gaussian weight functions only require 1 parameter, so more of the deconvolved weight functions can be used for different sources. 
 
 \newpage
-\section{Observation}
+\section{Flux Measurement}
 
 \subsection{Preprocessing}
 The \glspl{psf} of tile \textbf{TILEINDEX} is used to determine the relationship between the source size in the VIS band and the weight-function size that optimizes the \gls{snr} of the flux across all bands. A Gaussian object is simulated with Gaussian noise. Different sizes of weight functions are used to find the \gls{snr} for each of the \glspl{psf}. For each of the \glspl{psf}, the curve is divided by its maximum, and the results are summed to obtain a single curve that captures the combined \gls{snr} across all the \glspl{psf}. The size of the weight function where this curve is maximized is combined with the size of the source. This is repeated for different sizes of the source, resulting in a relation between the size of the source and the size of the weight function that maximizes the \gls{snr}. A 5th-order polynomial is fitted to the measurements. 
@@ -158,28 +158,29 @@ The sizes of the weight function are clipped between 0.7" and 1.2". The lower bo
 
 
 \subsection{Observation Results: Flux Measurements}
-Using the fitted weight size, the flux of the objects in the \gls{mer} tiles is calculated, and the error on the measurements is estimated.
+Using the FWHM of the \gls{mer} catalogue, fluxes for objects in the \gls{mer} tiles are calculated, and measurement errors are estimated from the \gls{rms} maps. A selection of the sources is made based on the \gls{snr}, considering only sources that have a \gls{snr} greater than 5 in each of the bands considered. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{results/figures/analysis/GRRI_gaap_catalog_cutoff_0.1.pdf}
-    \caption{Color-color diagram of the point-like sources. The colors are derived from the flux in the \gls{des} filters G, R, and I. The sources in the image are those with a point-source probability > 90\% given by the \gls{mer} catalog.}
+    \includegraphics[width=0.9\linewidth]{results/figures/analysis/GRRI_gaap_catalog_cutoff_5.pdf}
+    \caption{Color-color diagram of the point-like sources. The colors are derived from the flux in the \gls{des} filters G, R, and I. The sources in the image are those with a point-source probability $\geq$70\% given by the \gls{mer} catalog.}
     \label{fig:color color gri}
 \end{figure}
-
+The flux measurements of the point sources in the fields, where the number of sources that have a \gls{snr} greater than 5 in the \gls{mer} catalog is larger than that of the \gls{pca-phot}. In both cases, the distribution is narrower towards the blue (bottom left) than towards the redder end (top right). Furthermore, there is a streak of objects that are much bluer than most other objects. These are most likely \glspl{qso}. 
 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{results/figures/analysis/GJJH_gaap_catalog_cutoff_0.1.pdf}
-    \caption{Color-color diagram of the point-like sources and extended sources. The colors are derived from the flux in the \gls{desi} filter G, and the \gls{nisp} filters J and H. The point-like sources in the image are the objects in the \gls{mer} catalog with a point-source probability >90\% given by the \gls{mer} catalog, and the extended sources are those with a point-source probability $\leq$90\%.}
-    \label{fig:color_color_rubin}
+    \includegraphics[width=0.9\linewidth]{results/figures/analysis/GJJH_gaap_catalog_cutoff_5.pdf}
+    \caption{Color-color diagram of point-like and extended sources. The colors are derived from the flux in the \gls{desi} filter G, and the \gls{nisp} filters J and H. The point-like sources in the image are the objects in the \gls{mer} catalog with a point-source probability $\geq$70\% given by the \gls{mer} catalog, and the extended sources are those with a point-source probability <70\%.}
+    \label{fig:color color gHHJ}
 \end{figure}
+Again, the number of sources in the selection of MER sources is larger than that of the \gls{pca-phot}. There appear to be 2 large distributions of sources. A group that concentrated towards the bottom. These are largely objects that have a point-source probability $\geq$70\%. However, there is also contamination of sources that have a lower point-source probability. In the upper group of sources, there is a smaller group of sources that branches from the main population of sources with a point-source probability <70\%.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{results/figures/analysis/snr_comparison.pdf}
-    \caption{Comparison of \gls{snr} from \gls{pca-phot} and the \gls{mer} catalog for all catalog filters. The dashed line denotes equal \gls{snr}. The measurements are from tiles \textbf{TILEINDEX} (top row), \textbf{TILEINDEX} (middle row), and \textbf{TILEINDEX} (bottom row).}
+    \caption{Comparison of \gls{snr} from \gls{pca-phot} and the \gls{mer} catalog for all catalog filters. The dashed line denotes equal \gls{snr}. The measurements are from tiles 102022978 (top row), 102158274 (middle row), and 102158274 (bottom row).}
     \label{fig: snr comparison correlated}
 \end{figure}
 
@@ -200,3 +201,29 @@ Using the fitted weight size, the flux of the objects in the \gls{mer} tiles is 
 
 
 % \citep{brammer_eazy_2008}
+\section{Classification}
+Following a similar procedure as in \cite{SourceNeeded}, the colors of the objects in the \gls{mer} tiles are used to classify the objects. 
+
+\subsection{Splitting Sources}
+Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. All possible combinations of the colors are input into the model and then reduced to a 2-dimensional dataset. The resulting space is then divided into two regions. One region has colors that correspond to stellar colors, and the other has colors that correspond to objects that have a color that resembles the color of a galaxy. This is done for the tiles in the \gls{edfn} and for the tiles in \gls{edff} and \gls{edfs}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Sterrewacht.pdf}
+    \caption{UMAP dimensions of the colors in \gls{edfn} (left) and \gls{edff}/\gls{edfs} (right). }
+    \label{fig: Splitting}
+\end{figure}
+
+\subsection{Galaxy-like Objects}
+\subsubsection{\gls{edfn}}
+\subsubsection{\gls{edff}/\gls{edfs}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/weird_branch.pdf}
+    \caption{Caption}
+    \label{fig: interesting branch}
+\end{figure}
+
+\subsection{Star-like Objects}
+\subsubsection{\gls{edfn}}
+\subsubsection{\gls{edff}/\gls{edfs}}
