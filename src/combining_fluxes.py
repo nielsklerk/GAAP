@@ -19,14 +19,14 @@ plt.rcParams['legend.fontsize'] = 14
 plt.rcParams['image.origin'] = "lower"
 plt.rcParams['image.cmap'] = 'magma'
 
-MAKE_NEW_COMBINED_FILE = False
+MAKE_NEW_COMBINED_FILE = True
 
 storage_folder = '/net/vdesk/data2/deklerk/GAAP_data/flux_files'
 catalog_folder = '/net/vdesk/data2/deklerk/GAAP_data/catalog_files'
 processed_file = "/net/vdesk/data2/deklerk/GAAP_data/processed.txt"
 filename_file = '/home/deklerk/GAAP/src/EUCLID_ARCHIVE_files.pkl'
 
-filter = 'DES-G'
+filter = 'WISHES-G'
 if MAKE_NEW_COMBINED_FILE:
     with open(processed_file, "r") as f:
         processed = set(line.strip() for line in f)
@@ -51,7 +51,7 @@ if MAKE_NEW_COMBINED_FILE:
         gc.collect()
     all_fluxes.to_pickle(f'{storage_folder}/all_fluxes_DES.pkl')
 else:
-    all_fluxes = pd.read_pickle(f'{storage_folder}/all_fluxes_DES.pkl')
+    all_fluxes = pd.read_pickle(f'{storage_folder}/all_fluxes_WISHES.pkl')
     # gc.collect()
     print(len(all_fluxes['tile_index']))
 
