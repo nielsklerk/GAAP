@@ -26,7 +26,7 @@ catalog_folder = '/net/vdesk/data2/deklerk/GAAP_data/catalog_files'
 processed_file = "/net/vdesk/data2/deklerk/GAAP_data/processed.txt"
 filename_file = '/home/deklerk/GAAP/src/EUCLID_ARCHIVE_files.pkl'
 
-filter = 'WISHES-G'
+filter = 'DES-G'
 if MAKE_NEW_COMBINED_FILE:
     with open(processed_file, "r") as f:
         processed = set(line.strip() for line in f)
@@ -37,7 +37,7 @@ if MAKE_NEW_COMBINED_FILE:
     filenames = pd.read_pickle(filename_file)
     tile_indeces = filenames.index.tolist()
     for i, tile_index in enumerate(processed):
-        if filter not in filenames.loc[tile_index]['FILTER']:
+        if ('DES-G' in filenames.loc[tile_index]['FILTER']) or ('WISHES-G' in filenames.loc[tile_index]['FILTER']):
             continue
         print(i)
         if i > stop_index:
@@ -49,9 +49,9 @@ if MAKE_NEW_COMBINED_FILE:
             fluxes = pd.read_csv(f'{storage_folder}/{tile_index}_fluxes.csv')
             all_fluxes = pd.concat([all_fluxes, fluxes], ignore_index=True)
         gc.collect()
-    all_fluxes.to_pickle(f'{storage_folder}/all_fluxes_DES.pkl')
+    all_fluxes.to_pickle(f'{storage_folder}/all_fluxes_rest.pkl')
 else:
-    all_fluxes = pd.read_pickle(f'{storage_folder}/all_fluxes_WISHES.pkl')
+    all_fluxes = pd.read_pickle(f'{storage_folder}/all_fluxes_rest.pkl')
     # gc.collect()
     print(len(all_fluxes['tile_index']))
 
