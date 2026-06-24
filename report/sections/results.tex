@@ -172,7 +172,7 @@ The flux measurements of the point sources in the fields, where the number of so
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\linewidth]{results/figures/analysis/GJJH_gaap_catalog_cutoff_5.pdf}
-    \caption{Color-color diagram of point-like and extended sources. The colors are derived from the flux in the \gls{desi} filter G, and the \gls{nisp} filters J and H. The point-like sources in the image are the objects in the \gls{mer} catalog with a point-source probability $\geq$70\% given by the \gls{mer} catalog, and the extended sources are those with a point-source probability <70\%.}
+    \caption{Color-color diagram of point-like and extended sources. The colors are derived from the flux in the \gls{desi} filter g, and the \gls{nisp} filters J$_E$ and H$_E$. The point-like sources in the image are the objects in the \gls{mer} catalog with a point-source probability $\geq$70\% given by the \gls{mer} catalog, and the extended sources are those with a point-source probability <70\%.}
     \label{fig:color color gHHJ}
 \end{figure}
 Again, the number of sources in the selection of MER sources is larger than that of the \gls{pca-phot}. There appear to be 2 large distributions of sources. A group that concentrated towards the bottom. These are largely objects that have a point-source probability $\geq$70\%. However, there is also contamination of sources that have a lower point-source probability. In the upper group of sources, there is a smaller group of sources that branches from the main population of sources with a point-source probability <70\%.
@@ -209,21 +209,147 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Sterrewacht.pdf}
+    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
     \caption{UMAP dimensions of the colors in \gls{edfn} (left) and \gls{edff}/\gls{edfs} (right). }
     \label{fig: Splitting}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Figure of the gJJH colors for both \gls{edfn} and \gls{edff}/\gls{edfs} showing the separation of the two groups and what those groups then say}
+    \label{fig: Color-color split}
+\end{figure}
+
 \subsection{Galaxy-like Objects}
 \subsubsection{\gls{edfn}}
-\subsubsection{\gls{edff}/\gls{edfs}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{UMAP + CLASSIFICATION}
+    \label{fig: galaxy grouping edfs umap}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{CLASSES + COLORCOLOR }
+    \label{fig: galaxy grouping edfs}
+\end{figure}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/observation/weird_branch.pdf}
-    \caption{Caption}
+    \caption{Objects in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
     \label{fig: interesting branch}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Objects not in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: off interesting branch}
+\end{figure}
+
+\subsubsection{\gls{edff}/\gls{edfs}}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{UMAP + CLASSIFICATION}
+    \label{fig: galaxy grouping edfs umap}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{CLASSES + COLORCOLOR }
+    \label{fig: galaxy grouping edfs}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/weird_branch.pdf}
+    \caption{Objects in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: interesting branch}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Objects not in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: off interesting branch}
 \end{figure}
 
 \subsection{Star-like Objects}
 \subsubsection{\gls{edfn}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{UMAP + CLASSIFICATION}
+    \label{fig: galaxy grouping edfs umap}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{CLASSES + COLORCOLOR }
+    \label{fig: galaxy grouping edfs}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/weird_branch.pdf}
+    \caption{Objects in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: interesting branch}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Objects not in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: off interesting branch}
+\end{figure}
+
 \subsubsection{\gls{edff}/\gls{edfs}}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{UMAP + CLASSIFICATION}
+    \label{fig: galaxy grouping edfs umap}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{CLASSES + COLORCOLOR }
+    \label{fig: galaxy grouping edfs}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/weird_branch.pdf}
+    \caption{Objects in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: interesting branch}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Objects not in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
+    \label{fig: off interesting branch}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/stars.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/extended_stars.pdf}
+    \caption{Caption}
+    \label{fig:placeholder}
+\end{figure}
