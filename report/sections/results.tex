@@ -209,33 +209,94 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
-    \caption{UMAP dimensions of the colors in \gls{edfn} (left) and \gls{edff}/\gls{edfs} (right). }
-    \label{fig: Splitting}
+
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{First image}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Second image}
+        \label{fig:img2}
+    \end{subfigure}
+    
+    \caption{UMAP splitting into star-like and galaxy-like colors. }
+    \label{fig:combined}
 \end{figure}
 
+Using these classifcations to split the object into star-like  and galaxy-like objects.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
-    \caption{Figure of the gJJH colors for both \gls{edfn} and \gls{edff}/\gls{edfs} showing the separation of the two groups and what those groups then say}
-    \label{fig: Color-color split}
+
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{First image}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Second image}
+        \label{fig:img2}
+    \end{subfigure}
+    
+    \caption{COLOR COLOR OF THE SPLITS}
+    \label{fig: color splitting}
 \end{figure}
 
 \subsection{Galaxy-like Objects}
-\subsubsection{\gls{edfn}}
+After the splitting of the sources based on the colors derived from the  1\gls{fwhm} flux, the colors of both 0.5 \gls{fwhm} and the 2 \gls{fwhm} are used to split the sources further. As stated in \ref{WHERE EXPLAINED HOW POINTSOURCES DETECTED}, the colors derived using different weight sizes should give information about the physicsal size of the source in the image and thus can help to differentiate the \glspl{qso} from the galaxies. As before, UMAP is used to separate the objects using the colors. 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
-    \caption{UMAP + CLASSIFICATION}
-    \label{fig: galaxy grouping edfs umap}
+
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{First image}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Second image}
+        \label{fig:img2}
+    \end{subfigure}
+    
+    \caption{UMAP + CLUSTERING OF THE STARLIKE OBJECTS WITH THE LABELS}
+    \label{fig:combined}
 \end{figure}
+
+The clustering shows 3 groups for \gls{edfn} and 2 for \gls{edff}/\gls{edfs}. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
-    \caption{CLASSES + COLORCOLOR }
-    \label{fig: galaxy grouping edfs}
+    
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{First image}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Second image}
+        \label{fig:img2}
+    \end{subfigure}
+    
+    \caption{COLOR COLOR DIAGRAM OF THE STARLIKE OBJECTS WITH THE LABELS AND THE POINT SOURCE PROBABILITY FROM THE MER CATALOG}
+    \label{fig:combined}
 \end{figure}
+
+This shows that for both \gls{edfn} and \gls{edff}/\gls{edfs} there are sources that have a high point-source-probability. Notably, \gls{edfn} has a third group with different behavior. However, this group only contains objects that are from 3 tiles. This group will be discussed in \autoref{subsec: Tiles with Different Colors}. 
 
 \begin{figure}[H]
     \centering
@@ -251,8 +312,6 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
     \label{fig: off interesting branch}
 \end{figure}
 
-\subsubsection{\gls{edff}/\gls{edfs}}
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
@@ -265,6 +324,46 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
     \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
     \caption{CLASSES + COLORCOLOR }
     \label{fig: galaxy grouping edfs}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+
+    % First row
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 1}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 2}
+        \label{fig:img2}
+    \end{subfigure}
+
+    \vspace{0.5cm}
+
+    % Second row
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 3}
+        \label{fig:img3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 4}
+        \label{fig:img4}
+    \end{subfigure}
+
+    \caption{IMAGES OF THE OBJECT IN THIS CLASSIFICATION, BOTH LABELS AND BOTH NORTH AND SOUTH}
+    \label{fig:grid}
 \end{figure}
 
 \begin{figure}[H]
@@ -282,27 +381,88 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
 \end{figure}
 
 \subsection{Star-like Objects}
-\subsubsection{\gls{edfn}}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
-    \caption{UMAP + CLASSIFICATION}
-    \label{fig: galaxy grouping edfs umap}
+    
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{First image}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Second image}
+        \label{fig:img2}
+    \end{subfigure}
+    
+    \caption{UMAP + CLUSTERING OF THE STARLIKE OBJECTS WITH THE LABELS}
+    \label{fig:combined}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
-    \caption{CLASSES + COLORCOLOR }
-    \label{fig: galaxy grouping edfs}
+    
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{First image}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Second image}
+        \label{fig:img2}
+    \end{subfigure}
+    
+    \caption{COLOR COLOR DIAGRAM OF THE STARLIKE OBJECTS WITH THE LABELS AND THE POINT SOURCE PROBABILITY FROM THE MER CATALOG}
+    \label{fig:combined}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/observation/weird_branch.pdf}
-    \caption{Objects in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
-    \label{fig: interesting branch}
+
+    % First row
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 1}
+        \label{fig:img1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 2}
+        \label{fig:img2}
+    \end{subfigure}
+
+    \vspace{0.5cm}
+
+    % Second row
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 3}
+        \label{fig:img3}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+        \caption{Image 4}
+        \label{fig:img4}
+    \end{subfigure}
+
+    \caption{IMAGES OF THE OBJECT IN THIS CLASSIFICATION, BOTH LABELS AND BOTH NORTH AND SOUTH}
+    \label{fig:grid}
 \end{figure}
+
 
 \begin{figure}[H]
     \centering
@@ -311,7 +471,6 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
     \label{fig: off interesting branch}
 \end{figure}
 
-\subsubsection{\gls{edff}/\gls{edfs}}
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
@@ -332,6 +491,7 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
     \caption{Objects in the branch that is shown in \autoref{fig: galaxy grouping edfs}. These objects are located in \textbf{TILEINDEX} and the size of the cutout is \textbf{CUTOUT SIZE IN "}}
     \label{fig: interesting branch}
 \end{figure}
+
 
 \begin{figure}[H]
     \centering
@@ -347,9 +507,37 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
     \caption{Caption}
     \label{fig:placeholder}
 \end{figure}
+
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/observation/extended_stars.pdf}
-    \caption{Caption}
+    \includegraphics[width=0.8\linewidth]{results/figures/observation/non_weird_branch.pdf}
+    \caption{}
     \label{fig:placeholder}
 \end{figure}
+
+A part of the objects that have colors similar to stars according to the UMAP clustering have a low point-source-probability following the \gls{mer} catalog. Visually examining (\autoref{fig: Extended stars}), these objects show that they are close to bright stars. As the weight function is bigger than the biggest \gls{psf} of the filters considered, the star-like becomes a considerable portion of the flux measured. So the flux is dominated by the star that is close to the object, resulting in star-like colors. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Caption}
+    \label{fig: Extended stars}
+\end{figure}
+
+\subsection{Tiles With Different Colors}\label{subsec: Tiles with Different Colors}
+Three tiles show a different color compared to the other tiles when it comes to the galaxy-like colors of the objects: 102021578, 102021579, and 102021579.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{report/layout/figures/leidenuniv_logos/Observatory.pdf}
+    \caption{Caption}
+    \label{fig: Distribution of Flux}
+\end{figure}
+
+Here, the distribution of the measured fluxes in the WISHES-Z band for these tiles deviates from the fluxes in all the other tiles. 
+\textbf{REASON WHY DO THESE TILES DEVIATE?}
+
+
+
+\section{Little Red Dots}
