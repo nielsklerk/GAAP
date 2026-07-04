@@ -1,14 +1,14 @@
 \chapter{Methods}\label{ch: Methods}
-In this chapter, the \gls{pca-phot} algorithm is explained and tested on simulated observations. Next, the technique is applied to real observations in different broadband filters made by Rubin, Euclid, and \gls{decam}. 
+In this chapter, the \gls{pca-phot} algorithm is explained and tested on simulated observations. Next, the technique is applied to Euclid Q1 observations. 
 
-\section{PCA-phot}
+\section{PCA-PHOT}
 \subsection{Flux Measurement}
-Aperture photometry uses a weight function to find the flux of objects in an observation. In general, it can be written in the following way
+Aperture photometry uses a weight function to find the flux of objects in observations. In general, it can be expressed in the following way
 
 \begin{equation}\label{eq: aperture photometry}
-    F_\mathrm{A} = \int dxdyO(x,y)W_\mathrm{A}(x,y)
+    F_\mathrm{A} = \int dxdyO(x,y)W_\mathrm{A}(x,y),
 \end{equation}
-where $O(x,y)$ is the observed image and $W_\mathrm{A}(x,y)$ some weight function. For example, in circular aperture photometry, this weight function is 1 for points within a given radius and 0 outside that radius. The observed image $O(x,y)$ is the convolution of an intrinsic image with the \gls{psf} with noise added to it.
+where $O(x,y)$ is the observed image and $W_\mathrm{A}(x,y)$ some weight function. For example, in circular aperture photometry, this weight function is 1 for pixels within a given radius and 0 outside that radius. The observed image $O(x,y)$ is the convolution of an intrinsic image with the \gls{psf}, with noise added to it
 
 \begin{equation}\label{eq: observation convolution}
     O(x,y)=(P\otimes I)(x,y)+N(x,y) = \int dx'dy'P(x-x', y-y')I(x',y')+N(x,y).
@@ -18,7 +18,7 @@ where $O(x,y)$ is the observed image and $W_\mathrm{A}(x,y)$ some weight functio
 \begin{equation}
     F_\mathrm{A} = \int dxdy\int dx'dy'P(x-x', y-y')I(x',y')W_\mathrm{A}(x,y),
 \end{equation}
-where it is assumed that the integral over the noise weighted by the weight function is 0 $\int dxdyN(x,y)W_\mathrm{A}(x,y)=0$.
+where it is assumed that the integral over the noise weighted by the weight function is 0.
 Changing the order of integration and changing the primed coordinates to the unprimed coordinates gives
 
 \begin{equation}
@@ -30,8 +30,8 @@ where
     \tilde{W}_\mathrm{A}(x,y) = \int dx'dy'P(x'-x, y'-y)W_\mathrm{A}(x',y')=(\bar{P}\otimes W_\mathrm{A})(x,y)
 \end{equation}
 is the pre-seeing weight function with $\bar{P}$ the reflected \gls{psf} $\bar{P}(x,y)=P(-x,-y)$.
-\newline
-\noindent The algorithm then works as follows:
+
+\noindent The \gls{pca-phot} algorithm then works as follows:
 \begin{enumerate}
     \item Choose a pre-seeing aperture function $\tilde{W}_\mathrm{A}$, which is going to be applied to all bands
     \item Calculate the post-seeing aperture $W_\mathrm{A}^i$ by deconvolving the aperture function $\tilde{W}_\mathrm{A}$ by the reflected \gls{psf} $\bar{P}_i$, of band $i$; $W^i_\mathrm{A}=\tilde{W}_\mathrm{A}\otimes^{-1}\bar{P}_i$
@@ -51,14 +51,14 @@ However, \autoref{eq: analytical deconvolution} has a division by the Fourier tr
 To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $\varepsilon=10^{-8}$ is added to the equation to stabilize it 
 
 \begin{equation}\label{eq: numerical deconvolution}
-    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\right\}.
+    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+\varepsilon}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\right\}.
 \end{equation}
 If the weight matrix is the same for different sources, except for a shift. The aperture flux becomes 
 
 \begin{equation}
     F_\mathrm{A}(x',y') = \int dxdy\;O(x,y)W_\mathrm{A}(x-x',y-y') = (O \otimes \bar{W}_\mathrm{A})(x',y'),
 \end{equation}
-with $\bar{W}_A(x,y)=W_A(-x,-y)$.
+with $\bar{W}_A(x,y)=W_A(-x,-y)$ being the reflected weight function.
 
 \noindent As the image has discrete pixels, the formula for the aperture flux becomes
 
@@ -103,7 +103,7 @@ Filling this approximation into \autoref{eq: variance}, the expression simplifie
 \begin{equation}\label{eq: local variance}
     \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_\mathrm{A}(x,y)C(\Delta x, \Delta y)W_\mathrm{A}(x+\Delta x,y + \Delta y).
 \end{equation}
-The local covariance matrix $C(\Delta x, \Delta y)$ can be calculated using the formula \citep{SourceNeeded}
+The local covariance matrix $C(\Delta x, \Delta y)$ can be calculated using the formula
 
 \begin{equation}
     C(\Delta x, \Delta y) = \left\langle \tilde{N}(x,y)\tilde{N}(x+\Delta x,y+\Delta y)\right\rangle.
@@ -136,7 +136,7 @@ If the noise varies across the image, the assumption made in \autoref{subsec: No
 \begin{equation}\label{eq: rms covariance}
     C(x,y;x',y') \approx \sigma(x,y)\rho(x-x',y-y')\sigma(x',y'),
 \end{equation}
-where $\sigma(x,y)$ is the standard deviation at position $(x,y)$ and $\rho(x-x',y-y')$ the correlation between the points $(x,y)$ and $(x',y')$. The values of $\sigma(x,y)$ are derived from the \gls{rms} map. To find the values for the correlation function, the covariance matrix $C(\Delta x, \Delta y)$ is used from \autoref{subsec: Noise Estimation from background Noise} by using 
+where $\sigma(x,y)$ is the standard deviation at position $(x,y)$ and $\rho(x-x',y-y')$ the correlation between the points $(x,y)$ and $(x',y')$. The values of $\sigma(x,y)$ are derived from the \gls{rms} map. To estimate the matrix elements for the correlation function, the covariance matrix $C(\Delta x, \Delta y)$ is used from \autoref{subsec: Noise Estimation from background Noise} by using 
 
 \begin{equation}
     \rho(x-x',y-y')=\frac{C(x-x',y-y')}{\max C(x-x',y-y')}
@@ -158,18 +158,18 @@ In the case that the noise in the pixels is uncorrelated, the only non-zero elem
     \sigma^2=\sum_{x,y}W'^2(x,y) =\sum_{x,y}\sigma^2(x,y)W^2(x,y).
 \end{equation}
 
-\subsection{Point-Source Detector}
-Assuming that the sources in the images can be modeled as a Gaussian, we can find the flux for different pre-seeing weight sizes $\sigma$ as
-\begin{equation}\label{eq: point-source detector}
-    F(\sigma)=\frac{A\sigma^2}{a^2+\sigma^2}\exp\left\{-\frac{d^2}{2(a^2+\sigma^2)}\right\},
-\end{equation}
-where $A$ is some normalization constant, $d$ is the distance between the center of the source and the center of the weight function, and $a$ is the scale parameter of the source.
-By measuring the flux at different weight sizes, and fitting \autoref{eq: point-source detector} to this, the value of $a$ can be used to find a measure of how close the object is to being a point-source.
+% \subsection{Point-Source Detector}
+% Assuming that the sources in the images can be modeled as Gaussian, we can find the flux for different pre-seeing weight sizes $\sigma$ as
+% \begin{equation}\label{eq: point-source detector}
+%     F(\sigma)=\frac{A\sigma^2}{a^2+\sigma^2}\exp\left\{-\frac{d^2}{2(a^2+\sigma^2)}\right\},
+% \end{equation}
+% where $A$ is some normalization constant, $d$ is the distance between the center of the source and the center of the weight function, and $a$ is the scale parameter of the source.
+% By measuring the flux at different weight sizes and fitting \autoref{eq: point-source detector} to this, the value of $a$ can be used to find a measure of how close the object is to being a point-source.
 
 
 \section{Simulation Framework}\label{sec: Simulation Framework}
 
-Observations are simulated to test the effectiveness of this method. A fiducial model is defined, of which various aspects are varied to test where the limitations of this method lie. The simulated images are 128 by 128 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
+Observations are simulated to test the effectiveness of this method. A fiducial model is defined, with various aspects varied to test where the limitations of this method lie. The simulated images are 128 by 128 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
 
 \begin{equation}
     I(x,y) \propto \exp\left(-\frac{1}{2}\left(\frac{x^2}{10^2}-\frac{y^2}{5^2}\right)\right)
@@ -207,7 +207,7 @@ is compared to the flux measured with the deconvolved weight and the observed im
 \end{equation}
 Gaussian noise is applied after the convolution, and to find the variance on the flux \autoref{eq: variance correlated} is used. 
 This results in the observation being
-where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested by using Gaussian \glspl{psf} and Gaussian weights, varying their sizes, and computing both the true flux and the measured flux.
+where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested using Gaussian \glspl{psf} with Gaussian weights, varying their sizes, and computing both the true and measured fluxes.
 Using this information, the relative error on the flux measurements is computed using
 \begin{equation}
     \epsilon_F=\frac{F_\mathrm{Measured}- F_\mathrm{True}}{F_\mathrm{True}}.
@@ -224,7 +224,7 @@ This is repeated for different combinations of weight and \gls{psf} sizes in the
 Up until this point, the noise in the simulations was uncorrelated. However, in real observations, this is rarely the case. To simulate correlated noise, uncorrelated noise is convolved with a Gaussian with a scale parameter called 'noise scale'. The accuracy of the correlated noise also depends on the lag chosen in \autoref{eq: variance correlated}. This lag can be estimated from the local covariance matrix, where $L$ is chosen to center the matrix at the point where the absolute sum of its values exceeds 99\% of the sum of the absolute values of the full local covariance matrix.
 
 \subsection{PSF Shape}
-To test the method for robustness against variations in the \gls{psf} used for the deconvolution compared to the true \gls{psf}, the flux of the object is calculated using differently size \glspl{psf} and compared to the true value of the flux.
+To test the method for robustness against variations in the \gls{psf} used for the deconvolution compared to the true \gls{psf}, the flux of the object is calculated using \glspl{psf} of different sizes and compared to the true value of the flux.
 
 \subsection{Aperture Shape}
 To test the aperture shape that maximizes the \gls{snr}, the flux \gls{snr} is calculated for various scale parameters in both the x- and y-directions.
@@ -254,7 +254,7 @@ The \glspl{psf} of the Rubin filters are already in a form that can be directly 
 
 
 \subsection{Noise Square}
-Find a square with the minimal variance. This square should contain no sources, so it should be only background noise. This noise square is used to calculate the correlation between the pixels for the MER mosaics (following \autoref{subsec: Noise from RMS}) and the covariance matrix for the Rubin images (following \autoref{subsec: Noise Estimation from background Noise}).
+Find a square with the minimal variance. This square should contain no sources, so it should be only background noise. This noise square is used to calculate the correlation between the pixels for the MER mosaics (following \autoref{subsec: Noise from RMS}).
 
 
 
@@ -264,7 +264,8 @@ To find the pre-seeing weight function, a Gaussian is fitted to the objects in t
 Now that there is a semi-empirical relation between the size of the source and the optimal weight size, a Gaussian is fitted to the sources in the VIS band. Following this, the pre-seeing size is estimated by using the size of the \gls{psf} of the VIS band $\sigma_\mathrm{fit}^2\approx\sigma_\mathrm{intrinsic}^2+\sigma_\mathrm{VIS-PSF}^2$. The intrinsic size is then converted to a weight function size by using the polynomial.
 
 \subsection{Applying PCA-phot Algorithm}
-For each galaxy, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the \gls{mer} mosaic, which corresponds to 12.8". To get the same physical size for the Rubin images, the cutout is 64 pixels. 
+For each galaxy, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the \gls{mer} mosaic, which corresponds to a physical size of 12.8". 
+% To get the same physical size for the Rubin images, the cutout is 64 pixels. 
 
 As the centers of the objects are not exactly in the center of the pixel, bilinear interpolation is used to find the flux of the object. 
 
