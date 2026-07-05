@@ -11,17 +11,17 @@ def flux(image,
          centers,
          psfdeconvolver,
          weight_sizes,
-         noise_model=None,
+         noise_model = None,
          cutout_size: int = 128,
          image_conversion_factor: int = 1,
          bilinear_interpolation: bool = False,
          show_progress: bool = True):
 
+    # Create FFT builder
     complex_in = pyfftw.empty_aligned(
         (cutout_size, cutout_size // 2 + 1),
         dtype="complex64",
     )
-
     irfft2 = pyfftw.builders.irfft2(
         complex_in
     )
@@ -31,11 +31,11 @@ def flux(image,
 
     Nc = centers.shape[0]
 
-    # ----------------------------
     # Normalize weight input
-    # ----------------------------
+    # If only one weight size is given, the weight becomes a circular Gaussian
     if ws.ndim == 0:
         ws = np.array([[ws.item(), ws.item(), 0.0]])
+    # If multiple weight sizes are given, the weights are expanded to match the number of centers
     elif ws.ndim == 1:
         if ws.size == 3:
             ws = ws.reshape(1, 3)
@@ -46,9 +46,7 @@ def flux(image,
 
     Nw = ws.shape[0]
 
-    # ----------------------------
-    # Define iteration mode
-    # ----------------------------
+    # Check the type of loop to be used
     if Nw == 1:
         mode = "scalar_weight"
     elif Nc == 1:
@@ -59,14 +57,13 @@ def flux(image,
         raise ValueError(
             "Mismatch: centers and weights must match or be scalar-expanded")
 
-    # ----------------------------
-    # FFT grid
-    # ----------------------------
+    # Initialize the FFT grid
     H = W = cutout_size
     ky = fft.fftfreq(H)[:, None]
     kx = fft.rfftfreq(W)[None, :]
     kx_scaled, ky_scaled = prepare_phase_coordinates(kx, ky)
 
+    #
     fluxes = np.empty(max(Nc, Nw))
     variances = None if noise_model is None else np.empty(max(Nc, Nw))
 

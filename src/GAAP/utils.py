@@ -1,9 +1,6 @@
 import numpy as np
 from numba import njit
 
-# @njit(fastmath=True)
-
-
 def padded_cutout_with_center(image: np.ndarray,
                               cx: float,
                               cy: float,
