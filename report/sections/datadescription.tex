@@ -1,15 +1,34 @@
 \chapter{Data Description}
-\section{Euclid}
-Euclid was launched \textbf{DATE} as part of \gls{esa}. It is placed at the second Lagrange point in the Earth-Sun system. The goal of Euclid is to study the dark energy and dark matter content in the universe, as well as the large-scale structure and weak lensing. For Q1, Euclid did \gls{edf}, which is divided into 3 parts: \gls{edfn}, \gls{edff}, and \gls{edfs}. These fields are observed using the \gls{vis} and \gls{nisp}, which operate in the visible part of the spectrum and the \gls{nir}, respectively. 
-\textbf{MOSAIC}
-\textbf{CATALOG}
-\textbf{PSF grid}
-\textbf{PIXEL SIZE}
-The \gls{mer} tiles have observation in several external telescopes, namely: \gls{cfht}, \gls{hsc}, \gls{panstarrs}, and \gls{decam}. The observations with the external telescopes are part of the \gls{cfis}, \gls{wishes}, \gls{panstarrs}, and \gls{des}, respectively.
-also \gls{whigs}
+
+Euclid is a space telescope developed \gls{esa} and was launched in 2023. The goal of Euclid is to study the dark energy and dark matter content in the universe, as well as the large-scale structure and weak lensing. To achieve this, it uses optical and near-infrared imaging in combination with spectroscopy.
+
+
+\section{Euclid Deep Field}
+
+In this work, data from Euclid from \gls{q1} is used. Specifically \gls{edf}, which is divided into 3 parts: \gls{edfn}, \gls{edff}, and \gls{edfs} (\autoref{fig: covarage}. The deep fields consist of a total of 50 deg$^2$. Each of the three regions is visited multiple times for observations. The goal of the deep fields is to observe faint and distant objects in the universe
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{results/figures/papers/EuclidWideRegionOfInterest.65.MollweideReferenceSurveyGAL.MOL.Logos.png}
+    \caption{Wide field (blue) and deep field (yellow) coverage of Euclid. \textbf{SOURCE}}
+    \label{fig: covarage}
+\end{figure}
+
+
+
+\section{Euclid Instruments}
+
+On board Euclid, 2 instruments take observations using the \gls{vis} and \gls{nisp} instruments, which operate in the visible part of the spectrum and the near-infrared, respectively. \gls{vis} contains a single filter, whereas \gls{nisp} has three filters
+
+
+\section{MER Mosaic}
+
+The \glspl{edf} are observed using the two instruments. Different observations are stacked to create \gls{mer} mosaics. In addition to the filters from the \gls{vis} and \gls{nisp}, complementary ground-based telescopes are used, namely: \gls{cfht}, \gls{hsc}, \gls{panstarrs}, and \gls{decam}. The observations with the external telescopes are part of the \gls{cfis}, \gls{wishes}/\gls{whigs}, \gls{panstarrs}, and \gls{des}, respectively. These improve the wavelength coverage. All of the observations are resampled and rescaled to a common size in such a way that the images in the different fields all have a pixel scale of 0.1"\footnote{1"=1/3600$^\circ$}.
+
+
 \begin{table}[H]
     \centering
-    \caption{Filters used for observations of objects in the MER mosaics (adapted from Table 1 \citep{euclid_collaboration_euclid_2025}).}
+    \caption{Filters used for observations of fields in the \gls{mer} mosaics (adapted from Table 1 \citep{euclid_collaboration_euclid_2025}).}
     \label{tab:mer filters}
     \begin{tabular*}{\textwidth}{cc @{\extracolsep{\fill}}ccc}
     \hline 
@@ -43,33 +62,13 @@ also \gls{whigs}
 \hline 
 \end{tabular*} 
 \end{table}
+These filters cover the wavelength range from $\sim0.4\mathrm{\mu m}$ to $\sim1.7\mathrm{\mu m}$, giving information about the light emitted by sources in the optical and near-infrared.
+In this work, the \gls{mer} mosaics are used that have been background subtracted. \textbf{ZEROPOINTS CORRECTION} In addition to the mosaics, the \gls{rms} maps and \gls{psf} grids are used. The \gls{rms} maps capture the error in the pixel values of the observations and are used to compute the error on the flux. The \gls{psf} grids are, as the name suggests, a grid of \glspl{psf}, which can be used to interpolate the shape of the \gls{psf} depending on the location in the image.
 
-The \gls{mer} tiles are publicly available on the Euclid Science Archive\footnote{\url{https://eas.esac.esa.int/sas/}}
-% \section{Vera Rubin Observatory}
-% The Vera Rubin Observatory received first light in \textbf{DATE}. It is located in the \textbf{LOCATION} in Chile. This telescope observes the southern sky and makes a survey every \textbf{HOW MANY DAYS}. This is used to look for transient events in the sky, such as supernovae and comets. Rubin has 6 different filters that it uses to observe the sky. 
-% \textbf{IMAGES}
-% \textbf{PSF}
-% \textbf{PIXEL SIZE}
-% \begin{table}[H]
-%     \centering
-%     \caption{Filters that Rubin uses (adapted from Figure 1 \citep{huber_holismokes_2021}.}
-%     \label{tab: rubin filters}
-%     \begin{tabular*}{.3\textwidth}{cc}
-%     \hline 
-%     Filter & $\lambda_\mathrm{eff}$ [um] \\ 
-%     \hline \hline
-%     $u$ & 0.367 \\ 
-%     \hline 
-%     $g$ & 0.482\\
-%     \hline 
-%     $r$ & 0.622 \\ 
-%     \hline 
-%     $i$ & 0.754 \\ 
-%     \hline
-%     $z$ & 0.869\\ 
-%     \hline 
-%     $y$ & 0.9712\\ 
-% \hline 
-% \end{tabular*}
+\section{MER Catalog}
 
-% \end{table}
+The \gls{mer} catalogs are complementary to the \gls{mer} mosaics. They contain information about the sources in each observation. They contain the coordinates of the sources, with information about the \gls{fwhm}, flux, morphology, etc. In this work, the coordinates and \gls{fwhm} are used to calculate the aperture flux using \gls{pca-phot}. The results of this technique are compared to the colors derived from the flux measurements in the catalog.
+\newline
+The \gls{mer} mosaics, \gls{mer} catalogs, \gls{rms} maps, and \gls{psf} grids are retrieved from the Euclid Science Archive\footnote{\url{https://eas.esac.esa.int/sas/}}, where they are publicly available.
+
+\section{PHZ Catalog}

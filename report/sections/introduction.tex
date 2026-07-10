@@ -1,11 +1,11 @@
 \chapter{Introduction}
-Due to the expansion of the universe, the farther galaxies are, the faster they appear to move. This relative motion causes the light that is emitted by these galaxies to be Doppler shifted. The effect where the light is stretched due to the expansion is called cosmological redshift. Measurements of the redshift of galaxies can be used to determine their velocity, and by assuming a cosmology, the redshifts can be turned into measurements of the distance to those objects. This can be used to make a 3D map of the distribution of galaxies in the observable universe, giving insights into the large-scale structure formation and distribution of dark matter.
+Due to the expansion of the universe, the farther galaxies are, the faster they appear to move. This relative motion causes the light that is emitted by these galaxies to be Doppler-shifted. The effect where the light is stretched due to the expansion is called cosmological redshift. Therefore, measurements of galaxy redshifts can be used to determine their velocities, and by assuming a cosmology, the redshifts can be converted into distance measurements. This can be used to make a 3D map of the distribution of galaxies in the observable universe, giving insights into the large-scale structure formation and distribution of dark matter.
 
 \begin{wrapfigure}{r}{0.5\textwidth}
-    \vspace{-1em}   % sometimes needed to align the image, 1 em is size of capital M, 1 ex of lower case x
+    \vspace{-1em}   
 	\centering
 	\includegraphics[width=0.9\linewidth]{results/figures/papers/2df_slice_blue_big.png}
-	\caption[Caption]{2dF redshift galaxy survey\protect\footnotemark}
+	\caption{2dF redshift galaxy survey\protect\footnotemark}
     \label{fig:placeholder}
     %\vspace{-1ex}
 \end{wrapfigure}
@@ -17,12 +17,13 @@ Due to the expansion of the universe, the farther galaxies are, the faster they 
 The most accurate measurements of the redshift are spectroscopic redshifts. This involves using spectroscopy to directly determine the redshift, for example, by examining shifts in specific atomic lines or other spectral features. However, there is a problem with this method. It can only be applied to a handful of objects at a time. Thus, this method takes considerably longer to determine the redshift for a large number of sources. Photometry can also be used to find the redshift for a large number of sources at the same time. Photometry is, in essence, spectroscopy with a really low resolution.
 
 \section{Photometric colors}
+
 Photometry is a method to determine the brightness of objects in the sky. The measurements use a broadband filter, which only allows light in a certain wavelength range to pass through and be detected by the observer. The filter detects only a fraction of the light in the wavelength range, which is called the filter response curve. 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/papers/Euclid.EOL.2020.pdf}
-    \caption[Filter response curve for Euclid]{The filter response curves for the photometric (solid lines) and spectroscopic bands (dashed lines) on board Euclid. The VIS band is part of the \gls{vis} instrument, whereas the Y-, J-, and H-bands are part of \gls{nisp}.  \citep{scaramella_euclid_2021}}
+    \caption{The filter response curves for the photometric (solid lines) and spectroscopic bands (dashed lines) on board Euclid. The VIS band is part of the \gls{vis} instrument, whereas the Y-, J-, and H-bands are part of \gls{nisp}.  \citep{scaramella_euclid_2021}}
     \label{fig: Euclid filter response}
 \end{figure}
 The observed flux is the spectrum of the object integrated over the wavelengths 
@@ -35,12 +36,12 @@ The flux can be converted to an apparent magnitude. The lower the apparent magni
 \begin{equation}\label{eq: magnitude}
     m_i=-2.5\log_{10}\left(F_i\right) + C
 \end{equation}
-where $F_i$ is the flux measured in the broad band $i$ and $C$ is some value which can be chosen depending on the application of the measurements. The color of an object is the difference between the magnitudes of two different filters.
+where $F_i$ is the flux measured in the broadband $i$ and $C$ is some value which can be chosen depending on the application of the measurements. The color of an object is the difference between the magnitudes of two different filters.
 
 \begin{equation}
     (m_A-m_B)=-2.5\log_{10}\left(\frac{F_A}{F_B}\right)
 \end{equation}
-Colors are often denoted as the difference in the filters instead of the difference in the magnitude of the filter (e.g., $(A-B)$ means the same thing as $(m_A-m_B)$). Different magnitude systems define the value of $C$ in \autoref{eq: magnitude}. The Vega magnitude system defines the magnitudes of the star Vega to be 0 in every filter. This way, you find that the magnitude of an object is given by 
+Colors are often denoted as the difference in the filters instead of the difference in the magnitude of the filter (e.g., $(A-B)$ means the same thing as $(m_A-m_B)$). Different magnitude systems define the value of $C$ in \autoref{eq: magnitude}. The Vega magnitude system defines the magnitude of the star Vega to be 0 in every filter. This way, you find that it gives the magnitude of an object
 \begin{equation}
     m_i=-2.5\log\left(\frac{F_i}{F_i^\mathrm{Vega}}\right).
 \end{equation}
@@ -51,7 +52,7 @@ An alternative system is the AB magnitude system, where the magnitude of a sourc
 \end{equation}
 This system is more accurate as it does not depend on measurements of the colors of Vega. 
 
-\section{Stars}
+\section{Types of objects}
 \subsection{Stellar Object}
 \subsection{Galaxies}
 \subsection{QSOs}
@@ -68,7 +69,7 @@ In differential photometry, the difference between two objects in the observatio
 
 \textbf{e.g. aperture photometry and PSF-fitting photometry, Model-fitting, surface photometry, forced photometry, and isophotal photometry
 what are the limitations of those methods}
-\subsection{KRON}
+% \subsection{KRON}
 \subsection{T-phot}
 \cite{merlin_t-phot_2015}
 \subsection{A-phot}
@@ -77,24 +78,23 @@ what are the limitations of those methods}
 \subsection{GAaP}
 \cite{Kuijken_2008}
 
-\textbf{COPIED FROM WIKIPEDIA REPLACE WITH OWN TEXT}
-To perform absolute photometry, one must correct for differences between the effective passband through which an object is observed and the passband used to define the standard photometric system. This is often in addition to all of the other corrections discussed above. Typically this correction is done by observing the object(s) of interest through multiple filters and also observing a number of photometric standard stars.[34] If the standard stars cannot be observed simultaneously with the target(s), this correction must be done under photometric conditions, when the sky is cloudless and the extinction is a simple function of the airmass.
+% \textbf{COPIED FROM WIKIPEDIA REPLACE WITH OWN TEXT}
+% To perform absolute photometry, one must correct for differences between the effective passband through which an object is observed and the passband used to define the standard photometric system. This is often in addition to all of the other corrections discussed above. Typically this correction is done by observing the object(s) of interest through multiple filters and also observing a number of photometric standard stars.[34] If the standard stars cannot be observed simultaneously with the target(s), this correction must be done under photometric conditions, when the sky is cloudless and the extinction is a simple function of the airmass.
 
-Relative photometry
-To perform relative photometry, one compares the instrument magnitude of the object to a known comparison object, and then corrects the measurements for spatial variations in the sensitivity of the instrument and the atmospheric extinction. This is often in addition to correcting for their temporal variations, particularly when the objects being compared are too far apart on the sky to be observed simultaneously.[6] When doing the calibration from an image that contains both the target and comparison objects in close proximity, and using a photometric filter that matches the catalog magnitude of the comparison object most of the measurement variations decrease to null.
+% Relative photometry
+% To perform relative photometry, one compares the instrument magnitude of the object to a known comparison object, and then corrects the measurements for spatial variations in the sensitivity of the instrument and the atmospheric extinction. This is often in addition to correcting for their temporal variations, particularly when the objects being compared are too far apart on the sky to be observed simultaneously.[6] When doing the calibration from an image that contains both the target and comparison objects in close proximity, and using a photometric filter that matches the catalog magnitude of the comparison object most of the measurement variations decrease to null.
 
-Differential photometry
-Differential photometry is the simplest of the calibrations and most useful for time series observations.[5] When using CCD photometry, both the target and comparison objects are observed at the same time, with the same filters, using the same instrument, and viewed through the same optical path. Most of the observational variables drop out and the differential magnitude is simply the difference between the instrument magnitude of the target object and the comparison object (Mag = C Mag – T Mag). This is very useful when plotting the change in magnitude over time of a target object, and is usually compiled into a light curve.[5]
+% Differential photometry
+% Differential photometry is the simplest of the calibrations and most useful for time series observations.[5] When using CCD photometry, both the target and comparison objects are observed at the same time, with the same filters, using the same instrument, and viewed through the same optical path. Most of the observational variables drop out and the differential magnitude is simply the difference between the instrument magnitude of the target object and the comparison object (Mag = C Mag – T Mag). This is very useful when plotting the change in magnitude over time of a target object, and is usually compiled into a light curve.[5]
 
-Surface photometry
-For spatially extended objects such as galaxies, it is often of interest to measure the spatial distribution of brightness within the galaxy rather than simply measuring the galaxy's total brightness. An object's surface brightness is its brightness per unit solid angle as seen in projection on the sky, and measurement of surface brightness is known as surface photometry.[10] A common application would be measurement of a galaxy's surface brightness profile, meaning its surface brightness as a function of distance from the galaxy's center. For small solid angles, a useful unit of solid angle is the square arcsecond, and surface brightness is often expressed in magnitudes per square arcsecond. The diameter of galaxies are often defined by the size of the 25th magnitude isophote in the blue B-band.[35]
+% Surface photometry
+% For spatially extended objects such as galaxies, it is often of interest to measure the spatial distribution of brightness within the galaxy rather than simply measuring the galaxy's total brightness. An object's surface brightness is its brightness per unit solid angle as seen in projection on the sky, and measurement of surface brightness is known as surface photometry.[10] A common application would be measurement of a galaxy's surface brightness profile, meaning its surface brightness as a function of distance from the galaxy's center. For small solid angles, a useful unit of solid angle is the square arcsecond, and surface brightness is often expressed in magnitudes per square arcsecond. The diameter of galaxies are often defined by the size of the 25th magnitude isophote in the blue B-band.[35]
 
-Forced photometry
-In forced photometry, measurements are conducted at a specified location rather than for a specified object. It is "forced" in the sense that a measurement can be taken even if there is no object visible (in the spectral band of interest) in the location being observed. Forced photometry allows extracting a magnitude, or an upper limit for the magnitude, at a chosen sky location.[36][37][38]
+% Forced photometry
+% In forced photometry, measurements are conducted at a specified location rather than for a specified object. It is "forced" in the sense that a measurement can be taken even if there is no object visible (in the spectral band of interest) in the location being observed. Forced photometry allows extracting a magnitude, or an upper limit for the magnitude, at a chosen sky location.[36][37][38]
 
 \section{New Technique}
-why is it better and what problem does it solve
-This thesis introduces a different way of measuring the flux of objects in an image. This method compensates for the effects the PSf and seeing have on the image, which should give more accurate color measurements. 
+This work introduces a different way of measuring the flux of objects in an image, \gls{pca-phot}. This method compensates for the effects the PSf and seeing have on the image, which allows for more accurate colors by combining flux measurements in different bands.  
 
 
 \section{Scope}
@@ -102,13 +102,6 @@ What datasets, simulations, or surveys are used
 What aspects are addressed (method development, validation, comparison)
 What is not covered (to define boundaries clearly)
 
-The goal of this thesis is to explore a new method of determining the colors of objects, apply that technique to survey images of Euclid and Rubin, and determine the photometric redshift of objects. 
+The goal of this thesis is to explore a new method of determining the colors of objects, apply that technique to survey observations of Euclid, and determine the photometric redshift of objects. 
 
-First, the algorithm is explained. Subsequently, the method's limitations and accuracy are evaluated using simulations. Next, this method is applied to Euclid and Rubin images. Lastly, the colors determined with the \gls{pca-phot} method are used to fit the spectra and derive the photometric redshift.
-
-\gls{qso}
-\gls{wishes}
-\gls{sdss}
-\gls{lsst}
-\gls{desi}
-\gls{unions}
+First, the algorithm is explained. Subsequently, the method's limitations and accuracy are evaluated using simulations. Next, this method is applied to Euclid images. Lastly, the colors determined with \gls{pca-phot} are used to categorize the sources. 

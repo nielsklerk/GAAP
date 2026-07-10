@@ -1,22 +1,22 @@
 \chapter{Results}
-This chapter begins with simulation results that demonstrate the reliability and limitations of the \gls{pca-phot} algorithm for determining the flux values of different sources. Following this, the flux measurements of the \gls{mer} tiles are discussed and compared to the fluxes in the \gls{mer} catalog.
+This chapter begins with simulation results that demonstrate the reliability and limitations of the \gls{pca-phot} algorithm for determining the flux values of different sources. Following this, the flux measurements of the \gls{mer} tiles are discussed and compared to the fluxes in the \gls{mer} catalog. After which, the colors from the aperture fluxes are used to classify sources.
 
 
 \section{Simulation}
 
-The \gls{pca-phot} method was tested on simulated images as specified in \autoref{sec: Simulation Framework}. The results of these simulations are shown and discussed in this section.
+The \gls{pca-phot} method is tested on simulated images as specified in \autoref{sec: Simulation Framework}. The results of these simulations are shown and discussed in this section.
 
 
 \subsection{Deconvolution}\label{subsec: Deconvolution}
 
-Before the \gls{pca-phot} method can be applied, the deconvolution method must be tested to ensure it yields an accurate result. The deconvolution is stable when the weight is 'larger' than the \gls{psf}. In the simulation, this is straightforward to derive because both are Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians yields a Gaussian with a variance equal to the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a \gls{psf} with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconvolution}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the \gls{psf}, as this would result in a negative variance. 
+Before the \gls{pca-phot} method can be applied, the deconvolution method must be tested to ensure it yields an accurate result. The deconvolution is stable when the weight is 'larger' than the \gls{psf}. In theory, this is straightforward to derive because both the \gls{psf} and weight function are approximately Gaussian, so comparing their scale factors yields a direct measure of their relative sizes. The convolution of two Gaussians yields a Gaussian with a variance equal to the sum of the variances of the original Gaussians. So the deconvolution of a weight function with a variance of $\sigma_\mathrm{weight}^2$ with a \gls{psf} with a variance of $\sigma_\mathrm{PSF}^2$ gives the deconvolved weight with a variance $\sigma^2_\mathrm{deconvolution}=\sigma^2_\mathrm{weight}-\sigma^2_\mathrm{PSF}$. From this, it is clear that the deconvolution fails when the weight is smaller than the \gls{psf}, as this would result in a negative variance. 
 
-To test whether the deconvolution works, weight functions of different sizes are deconvolved with the \gls{psf}. A Gaussian is fitted to the resulting weight function, and the scale parameter of the fit is compared to the expected scale parameter (\autoref{fig: deconvolution}).  
+Pre-seeing weight functions of different sizes are deconvolved with the \gls{psf} to test whether the implementation of the deconvolution described in \autoref{subsec: flux measurement}. A Gaussian is fitted to the resulting post-seeing weight function, and the scale parameter of the fit is compared to the expected scale parameter (\autoref{fig: deconvolution}).  
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\linewidth]{results/figures/simulation/deconvolution_relation.pdf}
-    \caption[Consistency between the numerical and analytical deconvolution.]{Relation between the size of the weight function after deconvolution and the size before deconvolution. The deconvolution follows the theoretical relation for the weight functions that are larger than the \gls{psf}, but start to fail when the weight function is similar in size to or smaller than the \gls{psf}. }
+    \caption{Relation between the size of the weight function after deconvolution and the size before deconvolution. The deconvolution follows the theoretical relation for the weight functions that are larger than the \gls{psf}, but starts to fail when the weight function is similar in size to or smaller than the \gls{psf}. }
     \label{fig: deconvolution}
 \end{figure}
 The measured size of the deconvolved weight function aligns well with the expected result for weight sizes that are larger than the \gls{psf}. When the size of the weight function comes close to the size of the \gls{psf}, the results start to deviate slightly from the theoretical value, and when the weight function is smaller than the \gls{psf}, the deconvolution starts to fail. 
@@ -24,15 +24,15 @@ The measured size of the deconvolved weight function aligns well with the expect
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\linewidth]{results/figures/simulation/2_regimes.pdf}
-    \caption[Three regimes of deconvolution]{The three regimes of the deconvolution of a Gaussian weight function by a Gaussian \gls{psf}. The case where the weight function is smaller than the \gls{psf} (Left). The case where the weight function is the same size as the \gls{psf} (middle). The case where the weight function is larger than the \gls{psf}, and deconvolves correctly (right).}
+    \caption{The three regimes of the deconvolution of a Gaussian weight function by a Gaussian \gls{psf}. The case where the weight function is smaller than the \gls{psf} (Left). The case where the weight function is the same size as the \gls{psf} (middle). The case where the weight function is larger than the \gls{psf}, and deconvolves correctly (right).}
     \label{fig: 2 regimes}
 \end{figure}
-\autoref{fig: 2 regimes} shows that when the weight function is smaller than the \gls{psf}, the resulting deconvolved weight function has an oscillatory effect in it. Even when the weight function is the same size as the \gls{psf}, there are still some of these effects. However, in the case that the weight function is bigger than the \gls{psf}, it deconvolves to the correct Gaussian shape. 
+\autoref{fig: 2 regimes} shows that when the weight function is smaller than the \gls{psf}, the resulting deconvolved weight function has ringing artifacts in it. This is due to the amplification of higher frequency modes in the deconolvoution.  Even when the weight function is the same size as the \gls{psf}, there are still some of these effects. However, in the case that the weight function is bigger than the \gls{psf}, it deconvolves to the correct Gaussian shape. 
 
 
-\subsection{Flux Accuracy}
+\subsection{Flux Accuracy}\label{subsec: result flux accuracy}
 
-The \gls{pca-phot} method is applied to the simulated observation to assess its effectiveness. First, the method is applied to different locations in the observation, and the result is compared to the true flux at that location. This is done to both look at the accuracy of the method as well as the accuracy of the interpolation method described in \textbf{REFERENCE INTERPOLATION SUBSECTION}.
+The \gls{pca-phot} method is applied to the simulated observation to assess its effectiveness. First, the method is applied to different locations in the observation, and the result is compared to the true flux at that location. This is done to both look at the accuracy of the method as well as the accuracy of the translation of the weight function by multiplying it with a complex factor in Fourier space, as described in \autoref{subsec: applying pca-phot algorithm}.
 
 \begin{figure}[H]
     \centering
@@ -40,7 +40,8 @@ The \gls{pca-phot} method is applied to the simulated observation to assess its 
     \caption{The fractional error on the measured flux compared to the true flux at different positions in the simulated image. The yellow line denotes the border of 1$\%$ absolute error. The measured flux is most accurate near the center of the image, i.e., the galaxy. Further from the center, the flux measurements are less accurate due to the effects of the noise in the observation.}
     \label{fig: center accuracy}
 \end{figure}
-The flux measurements are accurate near the center of the simulated observation where the galaxy resides. Further outwards, the measurements become less accurate as these regions are dominated by noise. \textbf{DISCUSS THE INTERPOLATION}.
+The flux measurements are accurate near the center of the simulated observation where the simulated galaxy resides. Further outwards, the measurements become less accurate as these regions are dominated by noise. There seem to be no artifacts due to the translation of the weight function in real space by multiplying the Fourier transform by a complex factor based on the shift in real space. This allows for an analytical weight function, whereas with interpolation the weight function is only an approximation of the true weight function. In case a different method, such as interpolation, is used to find the post-seeing weight function on a subgrid level, this would introduce grid-like artifacts in \autoref{fig: center accuracy}.
+
 The effectiveness of the \gls{pca-phot} method is tested for different combinations of the weight size and the size of the \gls{psf}. The measured flux values are compared to the true flux values, where the weight function is centered at the middle of the image, i.e., the galaxy.
 
 \begin{figure}[H]
@@ -49,10 +50,10 @@ The effectiveness of the \gls{pca-phot} method is tested for different combinati
     \caption{The fractional error on the measured flux compared to the true flux for different combinations of weights and \gls{psf} sizes. The solid yellow line denotes the border of 1$\%$ absolute error, and the dashed red line shows where the weight function and the \gls{psf} have the same size. The measured flux is accurate when the weight function is bigger than the \gls{psf}. However, the measurements become unstable when the weight function is smaller than the \gls{psf}.}
     \label{fig: flux accuracy}
 \end{figure}
-\autoref{fig: flux accuracy} shows two different regimes. The first region is the measurements taken with weights smaller than the \gls{psf}, where the measured flux values are inaccurate. This result is expected as the deconvolution of the weight function, where the \gls{psf} is larger, results in artifacts, as shown in \autoref{subsec: Deconvolution}. In the region where the weight function is larger than the \gls{psf}, the flux measurements are correct. 
+\autoref{fig: flux accuracy} shows two different regimes. The first region is the measurements taken with weights smaller than the \gls{psf}, where the measured flux values are inaccurate. This result is expected as the deconvolution of the weight function, where the \gls{psf} is larger, results in artifacts, as shown in \autoref{subsec: Deconvolution}. In the region where the weight function is larger than the \gls{psf}, the flux measurements are accurate. This result means that there is no inherent bias in the method within the tested parameters.
 
 
-\subsection{Flux Error Accuracy}
+\subsection{Flux Error Accuracy}\label{subsec: flux error accuracy}
 
 10000 different observations are simulated with different instances of noise, and the flux and error on the flux are estimated from these observations. The standard deviation of the flux is compared to the mean of the estimated standard deviation of the flux. First, the errors are calculated using the background noise to estimate the error on the flux (as described in \autoref{subsec: Noise Estimation from background Noise}). 
 
@@ -62,7 +63,7 @@ The effectiveness of the \gls{pca-phot} method is tested for different combinati
     \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. The error in the flux is measured using the background noise. The yellow solid line denotes the border of 1\%. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: background error PSF}
 \end{figure}
-The relative error on the standard deviation shown in \autoref{fig: background error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. Next, the accuracy of the errors calculated using the \gls{rms} is tested (as described in \autoref{subsec: Noise from RMS})
+The relative error on the standard deviation shown in \autoref{fig: background error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. Especially, in the region above the red line where the deconvolution is stable as discussed in \autoref{subsec: result flux accuracy}. Next, the accuracy of the errors calculated using the \gls{rms} is tested (as described in \autoref{subsec: Noise from RMS})
 
 \begin{figure}[H]
     \centering
@@ -70,7 +71,7 @@ The relative error on the standard deviation shown in \autoref{fig: background e
     \caption{The measured error divided by the true flux error, computed from the distribution of flux values across different noise instances. The error in the flux is measured using the \gls{rms} and the correlation function derived from the background noise. The yellow solid line denotes the border of 1\%. The PSF size and weight do not affect the accuracy of the error.}
     \label{fig: rms error PSF}
 \end{figure}
-The relative error on the standard deviation shown in \autoref{fig: rms error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. 
+The relative error on the standard deviation shown in \autoref{fig: rms error PSF} indicates that the estimated error is accurate and does not depend on the PSF size or the weight. This result is similar to the result from \autoref{fig: background error PSF}, where the results are also largely accurate in the region above the red line, but start to underestimate the noise for the case where the weight function is large. 
 
 
 \subsection{PSF shape}
@@ -83,12 +84,12 @@ In the previous subsections, the \gls{psf} used for the deconvolution of the wei
     \caption{The relative error on the flux for different combinations of the \gls{psf} used for the deconvolution and the \gls{psf} used to generate the observation. When the \gls{psf} used for the deconvolution is larger than the \gls{psf} used for the generation of the observation, the flux is underestimated. The reverse is true when the \gls{psf} used for the deconvolution is smaller than the \gls{psf} used for the generation of the observation. }
     \label{fig: psf shape}
 \end{figure}
-\autoref{fig: psf shape} shows that the \gls{psf} used for the deconvolution must be close to the \gls{psf} used for the generation of the observation to give the most accurate results for the measurements of the flux. In the case that the \gls{psf} for the generation of the observation becomes large, the \gls{psf} used for the deconvolution has to be closer to the size of the true \gls{psf} to achieve the same accuracy. 
-
+\autoref{fig: psf shape} shows that the \gls{psf} used for the deconvolution must be close to the \gls{psf} used for the generation of the observation to give the most accurate results for the measurements of the flux. In the case that the \gls{psf} for the generation of the observation becomes large, the \gls{psf} used for the deconvolution has to be closer to the size of the true \gls{psf} to achieve the same accuracy. The difference in sign based on whether the \gls{psf} is bigger or smaller than the true \gls{psf} comes from the resulting size of the post-seeing weight function. When the \gls{psf} used for the deconvolution is greater than the true \gls{psf}, the post-seeing weight function becomes smaller than it should be resulting in a smaller amount of aperture flux measrued. The inverse is true in the case that the \gls{psf} used for the deconvolution is smaller than the true \gls{psf}. 
+\textbf{include figure explaining this?}
 
 \subsection{Aperture Shape}
 
-The shape of the weight function also has an effect on the measured flux and the error in the measurement. In this section, the shape of the size of the weight function is varied both in the x- and the y-direction, without rotating the weight function. 
+The shape of the weight function also affects the measured flux and the error in the measurement. In this section, the shape and the size of the weight function are varied both in the x- and the y-direction, without rotating the weight function. 
 
 \begin{figure}[H]
     \centering
@@ -96,7 +97,7 @@ The shape of the weight function also has an effect on the measured flux and the
     \caption{The relative error on the flux measurement for different shapes of the weight function. The error is close to 0 when the size of the weight function is larger than the size of the \gls{psf} in both directions.}
     \label{fig: weight accuracy}
 \end{figure}
-The flux measurement of the elliptical weight function is accurate, as shown in \autoref{fig: weight accuracy}, as long as the scale parameter in both directions is larger than the size of the \gls{psf}. When measuring the flux from a source, the \gls{snr} is important to get the most accurate results. 
+The flux measurement of the elliptical weight function is accurate, as shown in \autoref{fig: weight accuracy}, as long as the scale parameter in both directions is larger than the size of the \gls{psf}, which is expected following the results from \autoref{subsec: result flux accuracy}. When measuring the flux from a source, getting a high \gls{snr} is important to get the most accurate results. 
 
 \begin{figure}[H]
     \centering
@@ -104,61 +105,67 @@ The flux measurement of the elliptical weight function is accurate, as shown in 
     \caption{The \gls{snr} for different combinations of the horizontal and vertical standard deviations of the weight. The dashed line shows the spherical Gaussians; all the off-diagonal combinations are elliptical weights.}
     \label{fig: best aperture}
 \end{figure}
-The maximum \gls{snr} of a circular Gaussian weight function in \autoref{fig: best aperture} is slightly lower than the \gls{snr} compared to the maximum \gls{snr} for the elliptical Gaussian weight functions. Therefore, the size can be optimized to give a higher \gls{snr} for each source in an image. However, there is a computational disadvantage to this, as such an elliptical Gaussian weight function requires 3 parameters; it is unlikely that different sources have the same weight function that optimizes the \gls{snr}, whereas circular Gaussian weight functions only require 1 parameter, so more of the deconvolved weight functions can be used for different sources. 
+The maximum \gls{snr} of a circular Gaussian weight function (diagonal line) in \autoref{fig: best aperture} is slightly lower than the \gls{snr} compared to the maximum \gls{snr} for the elliptical Gaussian weight functions. Therefore, the size can be optimized to give a higher \gls{snr} for each source in an image. However, there is a computational disadvantage to this, as such an elliptical Gaussian weight function requires 3 parameters; it is unlikely that different sources have the same weight function that optimizes the \gls{snr}, whereas circular Gaussian weight functions only require 1 parameter, so more of the deconvolved weight functions can be used for different sources. Another problem that arises from the fact that there are 3 parameters is that the extra free parameters allow for overfitting. For example, \textbf{EXAMPLE}
+
+\subsection{Summary of simulation results}
+
 
 \newpage
 \section{Flux Measurement}
 
-\subsection{Preprocessing}
-The \glspl{psf} of tile \textbf{TILEINDEX} is used to determine the relationship between the source size in the VIS band and the weight-function size that optimizes the \gls{snr} of the flux across all bands. A Gaussian object is simulated with Gaussian noise. Different sizes of weight functions are used to find the \gls{snr} for each of the \glspl{psf}. For each of the \glspl{psf}, the curve is divided by its maximum, and the results are summed to obtain a single curve that captures the combined \gls{snr} across all the \glspl{psf}. The size of the weight function where this curve is maximized is combined with the size of the source. This is repeated for different sizes of the source, resulting in a relation between the size of the source and the size of the weight function that maximizes the \gls{snr}. A 5th-order polynomial is fitted to the measurements. 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/observation/weight_snr.pdf}
-    \caption{The relation between the size of the Gaussian weight function that maximizes some form of the \gls{snr} over all bands compared to the size of the source in the VIS field. }
-    \label{fig: weight snr}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\linewidth]{results/figures/observation/best_weight_snr.pdf}
-    \caption{The relation between the size of the Gaussian weight function that maximizes some form of the \gls{snr} over all bands compared to the size of the source in the VIS field. }
-    \label{fig: best weight snr}
-\end{figure}
+In this section, the application of the \gls{pca-phot} method on the \gls{mer} mosaics is discussed, including the preprocessing. The results are compared to the colors derived from the flux measurements in the \gls{mer} catalogs. 
 
-\begin{table}[H]
-\centering
-\begin{tabular}{l c}
-\hline
-\textbf{Survey / Band} & \textbf{PSF Scale (arcsec)} \\
-\hline
-CFIS-R      & 0.36 \\
-CFIS-U      & 0.38 \\
-PANSTARRS-I & 0.52 \\
-WISHES-G    & 0.35 \\
-WISHES-Z    & 0.23 \\
-NIR-Y       & 0.20 \\
-NIR-J       & 0.22 \\
-NIR-H       & 0.23 \\
-DES-G       & 0.58 \\
-DES-R       & 0.50 \\
-DES-I       & 0.45 \\
-DES-Z       & 0.46 \\
-VIS         & 0.09 \\
-\hline
-\end{tabular}
-\caption{\gls{psf} scale parameters for different surveys and bands.}
-\label{tab:psf_scales}
-\end{table}
+% \subsection{Preprocessing}
+% \textbf{ZEROPOINT}
+% The \glspl{psf} of tile \textbf{TILEINDEX} is used to determine the relationship between the source size in the VIS band and the weight-function size that optimizes the \gls{snr} of the flux across all bands. A Gaussian object is simulated with Gaussian noise. Different sizes of weight functions are used to find the \gls{snr} for each of the \glspl{psf}. For each of the \glspl{psf}, the curve is divided by its maximum, and the results are summed to obtain a single curve that captures the combined \gls{snr} across all the \glspl{psf}. The size of the weight function where this curve is maximized is combined with the size of the source. This is repeated for different sizes of the source, resulting in a relation between the size of the source and the size of the weight function that maximizes the \gls{snr}. A 5th-order polynomial is fitted to the measurements. 
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.5\linewidth]{results/figures/observation/weight_snr.pdf}
+%     \caption{The relation between the size of the Gaussian weight function that maximizes some form of the \gls{snr} over all bands compared to the size of the source in the VIS field. }
+%     \label{fig: weight snr}
+% \end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.5\linewidth]{results/figures/observation/best_weight_snr.pdf}
+%     \caption{The relation between the size of the Gaussian weight function that maximizes some form of the \gls{snr} over all bands compared to the size of the source in the VIS field. }
+%     \label{fig: best weight snr}
+% \end{figure}
+
+% \begin{table}[H]
+% \centering
+% \begin{tabular}{l c}
+% \hline
+% \textbf{Survey / Band} & \textbf{PSF Scale (arcsec)} \\
+% \hline
+% CFIS-R      & 0.36 \\
+% CFIS-U      & 0.38 \\
+% PANSTARRS-I & 0.52 \\
+% WISHES-G    & 0.35 \\
+% WISHES-Z    & 0.23 \\
+% NIR-Y       & 0.20 \\
+% NIR-J       & 0.22 \\
+% NIR-H       & 0.23 \\
+% DES-G       & 0.58 \\
+% DES-R       & 0.50 \\
+% DES-I       & 0.45 \\
+% DES-Z       & 0.46 \\
+% VIS         & 0.09 \\
+% \hline
+% \end{tabular}
+% \caption{\gls{psf} scale parameters for different surveys and bands.}
+% \label{tab:psf_scales}
+% \end{table}
 
 
-Next, a Gaussian is fitted to the sources in the \gls{mer} tiles, which is used to find the best weight size to optimize the \gls{snr}. The coordinates in the \gls{mer} catalog are used to set the centers of the object, which will also be used for the flux measurements. The distribution of the fitted sizes of the sources is shown in \textbf{LINK FIGURE}.
+% Next, a Gaussian is fitted to the sources in the \gls{mer} tiles, which is used to find the best weight size to optimize the \gls{snr}. The coordinates in the \gls{mer} catalog are used to set the centers of the objects, which will also be used for the flux measurements. The distribution of the fitted sizes of the sources is shown in \textbf{LINK FIGURE}.
 
-\textbf{FIGURE WITH THE DISTRIBUTION OF THE SIZES OF THE OBJECTS IN THE IMAGES}
+% \textbf{FIGURE WITH THE DISTRIBUTION OF THE SIZES OF THE OBJECTS IN THE IMAGES}
 
-The sizes of the weight function are clipped between 0.7" and 1.2". The lower bound is to make sure that the weight function is bigger than the largest \gls{psf}. The upper bound is to prevent the fringing effect of the deconvolution. 
+% The sizes of the weight function are clipped between 0.7" and 1.2". The lower bound is to make sure that the weight function is bigger than the largest \gls{psf}. The upper bound is to prevent the fringing effect of the deconvolution. 
 
 
 \subsection{Observation Results: Flux Measurements}
-Using the FWHM of the \gls{mer} catalogue, fluxes for objects in the \gls{mer} tiles are calculated, and measurement errors are estimated from the \gls{rms} maps. A selection of the sources is made based on the \gls{snr}, considering only sources that have a \gls{snr} greater than 5 in each of the bands considered. 
+Using the \gls{fwhm} of the \gls{mer} catalogue, fluxes for objects in the \gls{mer} tiles are calculated, and measurement errors are estimated from the \gls{rms} maps. A selection of the sources is made based on the \gls{snr}, considering only sources that have an \gls{snr} greater than 5 in each of the bands considered. 
 
 \begin{figure}[H]
     \centering
@@ -166,7 +173,7 @@ Using the FWHM of the \gls{mer} catalogue, fluxes for objects in the \gls{mer} t
     \caption{Color-color diagram of the point-like sources. The colors are derived from the flux in the \gls{des} filters G, R, and I. The sources in the image are those with a point-source probability $\geq$70\% given by the \gls{mer} catalog.}
     \label{fig:color color gri}
 \end{figure}
-The flux measurements of the point sources in the fields, where the number of sources that have a \gls{snr} greater than 5 in the \gls{mer} catalog is larger than that of the \gls{pca-phot}. In both cases, the distribution is narrower towards the blue (bottom left) than towards the redder end (top right). Furthermore, there is a streak of objects that are much bluer than most other objects. These are most likely \glspl{qso}. 
+The flux measurements of the point sources in the \gls{edf} show that the number of sources that have an \gls{snr} greater than 5 in the \gls{mer} catalog is larger than that of the \gls{pca-phot}. In both cases, the distribution is narrower towards the blue (bottom left) than towards the redder end (top right). Furthermore, there is a streak of objects that are much bluer than most other objects. These are most likely \glspl{qso}. The position of the point sources in the color-color diagram is nearly identical between the \gls{pca-phot} method and the \gls{mer} catalogs. 
 
 
 \begin{figure}[H]
@@ -175,7 +182,7 @@ The flux measurements of the point sources in the fields, where the number of so
     \caption{Color-color diagram of point-like and extended sources. The colors are derived from the flux in the \gls{desi} filter g, and the \gls{nisp} filters J$_E$ and H$_E$. The point-like sources in the image are the objects in the \gls{mer} catalog with a point-source probability $\geq$70\% given by the \gls{mer} catalog, and the extended sources are those with a point-source probability <70\%.}
     \label{fig:color color gHHJ}
 \end{figure}
-Again, the number of sources in the selection of MER sources is larger than that of the \gls{pca-phot}. There appear to be 2 large distributions of sources. A group that concentrated towards the bottom. These are largely objects that have a point-source probability $\geq$70\%. However, there is also contamination of sources that have a lower point-source probability. In the upper group of sources, there is a smaller group of sources that branches from the main population of sources with a point-source probability <70\%.
+\autoref{fig:color color gHHJ} shows that the number of sources in the selection of \gls{mer} sources is larger than that of the \gls{pca-phot}, just like in \autoref{fig:color color gri}. There appear to be 2 large distributions of sources. A group that concentrated towards the bottom. These are largely objects that have a point-source probability $\geq$70\%. However, there is also contamination of sources that have a lower point-source probability. In the upper group of sources, there is a smaller group of sources that branches from the main population of sources with a point-source probability <70\%. The different number of sources in both selection suggest one of three options: (i) \gls{pca-phot} is less accurate than the method used to calculate the flux in the \gls{mer} catalogs, (ii) \gls{pca-phot} overestimates the noise on the flux, which decreases the number of sources in the selection, or (iii) the method used to calculate the flux in the \gls{mer} catalogs underestimates the noise on the flux, which increases the number of sources in the selection.
 
 \begin{figure}[H]
     \centering
@@ -183,6 +190,8 @@ Again, the number of sources in the selection of MER sources is larger than that
     \caption{Comparison of \gls{snr} from \gls{pca-phot} and the \gls{mer} catalog for all catalog filters. The dashed line denotes equal \gls{snr}. The measurements are from tiles 102022978 (top row), 102158274 (middle row), and 102158274 (bottom row).}
     \label{fig: snr comparison correlated}
 \end{figure}
+The results in \autoref{fig: snr comparison correlated} show a similar behavior, where the \gls{snr} of the sources, especially towards higher \gls{snr}, is lower for the \gls{pca-phot} method compared to the method used to calculate the flux in the \gls{mer} catalogs.
+\textbf{INCLUDE MORE STATISTICS FOR THE COMPARISON}
 
 
 % \subsection{Observation Results: Photometric Redshift}
@@ -204,12 +213,12 @@ Again, the number of sources in the selection of MER sources is larger than that
 \section{Classification}
 
 
-Following a similar procedure as in \cite{SourceNeeded}, the colors of the objects in the \gls{mer} tiles are used to classify the objects. 
+Following a similar procedure as \cite{euclid_collaboration_euclid_2026}, the colors of the objects in the \gls{mer}is tiles are used to classify the objects. In addition to the colors, the fractional difference between the aperture fluxes for different weight sizes is used to classify the sources as point-like or extended. The goal is to classify the sources into one of three categories: stars, galaxies, and \glspl{qso}.
 
 \subsection{Splitting Sources}\label{subsec: Splitting Sources}
 
 
-Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. All possible combinations of the fluxes to form the colors are input into the model and then reduced to a 2-dimensional dataset. The resulting space is then divided into two regions. One region has colors that correspond to stellar colors, and the other has colors that correspond to objects that have a color that resembles the color of a galaxy. This is done for the tiles in the \gls{edfn} and for the tiles in \gls{edff} and \gls{edfs}.
+Here, \gls{umap} \citep{mcinnes_umap_2018} is used to reduce the dimensionality of all the color information of the sources. This is done for the tiles in the \gls{edfn} and for the tiles in \gls{edff} and \gls{edfs}.
 
 \begin{figure}[H]
     \centering
@@ -217,21 +226,21 @@ Here, UMAP \citep{SourceNeeded} is used to reduce the dataset's dimensionality. 
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/UMAP_splitting_north.pdf}
-        \caption{First image}
-        \label{fig: umap splitting north}
+        % \caption{First image}
+        % \label{fig: umap splitting north}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/UMAP_splitting_south.pdf}
-        \caption{Second image}
-        \label{fig: umap splitting south}
+        % \caption{Second image}
+        % \label{fig: umap splitting south}
     \end{subfigure}
     
     \caption{\gls{umap} dimension reduction of the colors for the objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). Both show two large clusters of objects which are labeled.}
     \label{fig: umap splitting}
 \end{figure}
-Using \gls{umap}, 2 large clusters of objects are visible (\autoref{fig: umap splitting}). However, there is no information on which type of object corresponds to these clusters. For this, the colors of the clusters are plotted to show which type of object corresponds to which label.
+Using \gls{umap}, 2 large clusters of objects are visible (\autoref{fig: umap splitting}). The structure of the clusters is similar between the 2 fields. The points with label 1 are more shaped as a blob, whereas the points with label0 form a longer string. However, there is no information on which type of object corresponds to these clusters. For this, the colors of the clusters are plotted to show which type of object corresponds to which label.
 
 \begin{figure}[H]
     \centering
@@ -239,24 +248,24 @@ Using \gls{umap}, 2 large clusters of objects are visible (\autoref{fig: umap sp
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/color_color_splitting_north.pdf}
-        \caption{First image}
-        \label{fig: color color splitting north}
+        % \caption{First image}
+        % \label{fig: color color splitting north}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/color_color_splitting_south.pdf}
-        \caption{Second image}
-        \label{fig: color color splitting south}
+        % \caption{Second image}
+        % \label{fig: color color splitting south}
     \end{subfigure}
     
     \caption{Color-color diagram of objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). The objects are split based on the labels in \autoref{fig: umap splitting}.}
     \label{fig: color color splitting}
 \end{figure}
-\autoref{fig: color color splitting} shows that the sources that have label '1' are redder than the sources with label '0'. Furthermore, the sources with the label '0' are more clustered into a main sequence \textbf{CHECK!} structure. Therefore, the objects with label '0' are tagged as star-like objects and the objects with label '1' are tagged as galaxy-like objects.
+\autoref{fig: color color splitting} shows that sources labeled 1 are redder than those labeled 0. Furthermore, the sources labeled 0 are at the loci expected for stars. Therefore, the objects with label 0 are tagged as star-like objects and the objects with label 1 are tagged as galaxy-like objects.
 
 \subsection{Star-like Objects}
-The star-like objects (labeled '0' in \autoref{subsec: Splitting Sources}) are split into smaller groups once more, but using the colors in the same way as for the splitting of the objects into star-like and galaxy-like, but information on the difference in between the fluxes measured using the different weight sizes is also provided into the model, which gives information about the size of the object in the images.  
+The star-like objects (labeled 0 in \autoref{subsec: Splitting Sources}) are split into smaller groups once more, using the colors in the same way as for the splitting of the objects into star-like and galaxy-like, but information on the difference in between the fluxes measured using the different weight sizes is also provided into the model, which gives information about the size of the object in the images.  
 
 \begin{figure}[H]
     \centering
@@ -264,20 +273,21 @@ The star-like objects (labeled '0' in \autoref{subsec: Splitting Sources}) are s
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/UMAP_star_north.pdf}
-        \caption{First image}
-        \label{fig: umap star north}
+        % \caption{First image}
+        % \label{fig: umap star north}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/UMAP_star_south.pdf}
-        \caption{Second image}
-        \label{fig: umap star south}
+        % \caption{Second image}
+        % \label{fig: umap star south}
     \end{subfigure}
     
     \caption{\gls{umap} dimension reduction of the colors and the fractional difference in the flux between different weight sizes for the objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). }
     \label{fig: umap star}
 \end{figure}
+The structure of the sources after the dimension reduction in both \gls{edfn} and \gls{edff}/\gls{edfs} is very similar. There is a large fraction of the objects that form a semi-circular structure with a hole in it. Besides that large collection of sources, there is a smaller offshoot of sources that form, in the case of \gls{edfn}, two clusters, and for  \gls{edff}/\gls{edfs} a singular cluster.
 
 
 
@@ -287,15 +297,15 @@ The star-like objects (labeled '0' in \autoref{subsec: Splitting Sources}) are s
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/color_color_star_north.pdf}
-        \caption{First image}
-        \label{fig: color color star north}
+        % \caption{First image}
+        % \label{fig: color color star north}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/color_color_star_south.pdf}
-        \caption{Second image}
-        \label{fig: color color star south}
+        % \caption{Second image}
+        % \label{fig: color color star south}
     \end{subfigure}
     
     \caption{Color-color diagram of objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). The objects are split based on the labels in \autoref{fig: umap splitting}.}
@@ -347,10 +357,10 @@ A part of the objects that have colors similar to stars found using the \gls{uma
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{results/figures/observation/blended_object.pdf}
-    \caption{Sources in tile 102021503 (\gls{edff}/\gls{edfs}) that have a label '1' according to the \gls{umap} dimension reduction shown in \autoref{fig: umap star}. The centers of the objects are highlighted by a lime circle. Most of the objects shown are clearly visible in the \gls{vis}, but are blended in the \gls{des}-G.}
+    \caption{Sources in tile 102021503 (\gls{edff}/\gls{edfs}) that have a label 1 according to the \gls{umap} dimension reduction shown in \autoref{fig: umap star}. The centers of the objects are highlighted by a lime circle. Most of the objects shown are clearly visible in the \gls{vis}, but are blended in the \gls{des}-G.}
     \label{fig: Extended stars}
 \end{figure}
-\cite{SourceNeeded} have also classified the objects based on the fluxes a comparison between their results and the results of the clustering is shown in \autoref{}
+\cite{euclid_collaboration_euclid_2026} have also classified the objects based on the fluxes; a comparison between their results and the results of the clustering is shown in \autoref{tab: star-like comparison}.
 
 \begin{table}[H]
 \centering
@@ -365,36 +375,41 @@ label 2 & \input{results/tables/star/north/2.txt} \\
 \addlinespace
 \midrule
 \multicolumn{9}{l}{\textbf{\gls{edff}/\gls{edfs}}} \\
-label 0 & 20\% & 10\% & 12\% & 18\% & 11\% & 8\% & 13\% & 8\% \\
-label 1 & 18\% & 12\% & 14\% & 16\% & 10\% & 9\% & 12\% & 9\% \\
+label 0 & \input{results/tables/star/south/0.txt} \\
+label 1 & \input{results/tables/star/south/1.txt} \\
 \bottomrule
 \end{tabular}
-\caption{Percentage distribution across the eight categories.}
+\caption{Classification of the objects with labels according to the \gls{phz} catalogue. The objects are either flagged as unclassified, or as star, galaxy, or \gls{qso} or a combination of the three.}
+\label{tab: star-like comparison}
 \end{table}
+The sources that have label 0 are largely classified as stars by \cite{euclid_collaboration_euclid_2026}, which is also what is expected from the point-source-probability in the \gls{mer} catalog. 
+
+
 \subsection{Galaxy-like Objects}
-After the splitting of the sources based on the colors derived from the  1\gls{fwhm} flux, the colors of both 0.5 \gls{fwhm} and 2 \gls{fwhm} are used to split the sources further. As stated in \ref{WHERE EXPLAINED HOW POINTSOURCES DETECTED}, the colors derived using different weight sizes should give information about the physical size of the source in the image and thus can help to differentiate the \glspl{qso} from the galaxies. As before, UMAP is used to reduce the dimensionality of the colors and the relative difference in the flux of the different weight sizes.
+
+After the splitting of the sources based on the colors derived from the  1\gls{fwhm} flux, the colors of both 0.5 \gls{fwhm} and 2 \gls{fwhm} are used to split the sources further. As stated in \autoref{WHERE EXPLAINED HOW POINTSOURCES DETECTED}, the colors derived using different weight sizes should give information about the physical size of the source in the image and thus can help to differentiate the \glspl{qso} from the galaxies. As before, UMAP is used to reduce the dimensionality of the colors and the relative difference in the flux of the different weight sizes.
 \begin{figure}[H]
     \centering
 
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/UMAP_galaxy_north.pdf}
-        \caption{First image}
-        \label{fig: umap galaxy north}
+        % \caption{First image}
+        % \label{fig: umap galaxy north}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/UMAP_galaxy_south.pdf}
-        \caption{Second image}
-        \label{fig: umap galaxy south}
+        % \caption{Second image}
+        % \label{fig: umap galaxy south}
     \end{subfigure}
     
     \caption{\gls{umap} dimension reduction of the colors and the fractional difference in the flux between different weight sizes for the objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). }
     \label{fig: umap galaxy}
 \end{figure}
 
-The \gls{umap} dimension reduction shows a similar structure for both the \gls{edfn} and \gls{edff}/\gls{edfs}, where there is one large cluster of objects and then a smaller cluster close to it. Furthermore, in the field \gls{edfn} there are several additional smaller clusters. Looking at which tiles the objects originate show thatr the sources in these smaller clusters olythere are only present in a small number of tiles. This indicates that the might be some error in the measurements or calibration for these tiles, resulting in the deviating behavior. These 
+The \gls{umap} dimension reduction shows a similar structure for both the \gls{edfn} and \gls{edff}/\gls{edfs}, where there is one large cluster of objects and then a smaller cluster close to it. Furthermore, in the field \gls{edfn} there are several additional smaller clusters. Looking at which tiles the objects originate from shows that the sources in these smaller clusters olytherethere are only present in a small number of tiles. This indicates that the might be some error in the measurements or calibration for these tiles, resulting in the deviating behavior.
 
 \begin{figure}[H]
     \centering
@@ -402,22 +417,22 @@ The \gls{umap} dimension reduction shows a similar structure for both the \gls{e
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/color_color_galaxy_north.pdf}
-        \caption{First image}
-        \label{fig: color color galaxy north}
+        % \caption{First image}
+        % \label{fig: color color galaxy north}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.45\textwidth}
         \centering
         \includegraphics[width=\linewidth]{results/figures/analysis/color_color_galaxy_south.pdf}
-        \caption{Second image}
-        \label{fig: color color galaxy south}
+        % \caption{Second image}
+        % \label{fig: color color galaxy south}
     \end{subfigure}
     
     \caption{Color-color diagram of objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). The objects are split based on the labels in \autoref{fig: umap splitting}.}
     \label{fig: color color galaxy}
 \end{figure}
 
-This shows that for both \gls{edfn} and \gls{edff}/\gls{edfs} there are sources that have a high point-source-probability. Notably, \gls{edfn} has a third group with different behavior. However, this group only contains objects that are from 3 tiles. This group will be discussed in \autoref{subsec: Tiles with Different Colors}. 
+This shows that for both \gls{edfn} and \gls{edff}/\gls{edfs} there are sources that have a high point-source-probability. Notably, \gls{edfn} has a third group with different behavior. However, this group only contains objects that are only from 3 tiles. This group will be discussed in \autoref{subsec: Tiles with Different Colors}. 
 
 \begin{table}[H]
 \centering
@@ -435,8 +450,8 @@ label 5 & \input{results/tables/galaxy/north/5.txt} \\
 \addlinespace
 \midrule
 \multicolumn{9}{l}{\textbf{\gls{edff}/\gls{edfs}}} \\
-label 0 & 20\% & 10\% & 12\% & 18\% & 11\% & 8\% & 13\% & 8\% \\
-label 1 & 18\% & 12\% & 14\% & 16\% & 10\% & 9\% & 12\% & 9\% \\
+label 0 & \input{results/tables/galaxy/south/0.txt} \\
+label 1 & \input{results/tables/galaxy/south/1.txt} \\
 \bottomrule
 \end{tabular}
 \caption{Classification of the objects with labels according to the \gls{phz} catalogue. The objects are either flagged as unclassified, or as star, galaxy, or \gls{qso} or a combination of the three.}
@@ -497,3 +512,4 @@ Here, the distribution of the measured fluxes in the WISHES-Z band for these til
 
 
 \section{Little Red Dots}
+\textbf{IF TIME PERMITS}

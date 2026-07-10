@@ -1,9 +1,26 @@
 \chapter{Discussion}
 
-A disadvantage of this method compared to a method such as model-fitting is that it cannot compensate for bad image quality or oversaturated objects. Model-fitting methods can use the surrounding good pixels to estimate the flux of the object, but \gls{gaap} cannot do that and will thereby get a really large error on the flux as the \gls{rms} map has large (\textbf{VALUES}) values at those spots. 
-For the noise-limited observations, \gls{gaap} does not improve results much
-compared to other methods, such as \textbf{EXAMPLES}, as the error on the color measurements is dominated by the noise in the image and not the difference in the
-\gls{psf}.
-\textbf{WEIGHT FUNCTION IS EXTENDED AND THEREFORE BLENDING IS A PROBLEM}
-\textbf{DUST CORRECTIONS}
-\textbf{DEBLENDING}
+In this chapter, the results of the simulation and the application of \gls{pca-phot} to Euclid observations are discussed. 
+
+\section{Main Findings}
+
+This work developed the \gls{pca-phot} method, which computes the aperture flux in different bands by compensating for the effect that the \gls{psf} has on the observation. The simulations show that the pre-seeing aperture flux is recovered and that the error on the measurement can accurately be estimated. Applying \gls{pca-phot} to Euclid observations shows that consistent colors are recovered, which can be used for different applications, such as categorization and determining photometric redshift.
+
+\section{Interpretation and Limitations of the Simulation Results}
+
+The simulations of the aperture flux measurements gave accurate results when compared to the theoretical results. This validates that the \gls{pca-phot} method works in practice and not only mathematically. It is important to note that the method only works for an aperture that is larger than the \gls{psf}, this is a fundamental limitation of this method and not something that can be resolved by implementing \gls{pca-phot} differently. 
+
+In \autoref{subsec: flux error accuracy}, the two different methods of estimating the error on the aperture flux. One uses an \gls{rms} map and the correlation of the background noise, and the other just uses the background to estimate the error. Both take a single cutout of the observation and use that information for the entire image to estimate the error. This might not be as accurate as it could be, as the noise in the observation could vary depending on the location in the image. For example, the edges of an observation are often noisier than the center of the image. One method to partially resolve this problem is to use different background cutouts for the error estimation per source observed that are closer to that source. This should improve the accuracy of the noise estimation as the noise is more representative of the noise around the source of interest. Generally, the method that utilizes the \gls{rms} map is more accurate as it uses local information about the noise to make the estimate. However, if there is no \gls{rms} map available, the other method also gives an accurate result if the noise is uniform enough across the image.
+
+
+\section{Comparison with Other Techniques}
+
+\section{Scientific Implementation}
+
+\gls{pca-phot} should improve the accuracy of the color measurements of sources. This should allow for more accurate \gls{sed} fitting of sources. This gives more accurate photo-z, which gives more accurate cosmology
+
+\section{Improvements and Future Work}
+
+Automatic weight optimization, application of elliptical weight function. Blended/close sources. Dust reddening correction
+
+For future studies, apply this to other large sky surveys such as \gls{lsst} and Roman. 

@@ -1,9 +1,16 @@
 \chapter{Methods}\label{ch: Methods}
-In this chapter, the \gls{pca-phot} algorithm is explained and tested on simulated observations. Next, the technique is applied to Euclid Q1 observations. 
+
+In this chapter, the \gls{pca-phot} algorithm is explained and tested on simulated observations. After validating the method in a controlled environment, the technique is applied to observations from Euclid Q1. 
+
 
 \section{PCA-PHOT}
-\subsection{Flux Measurement}
-Aperture photometry uses a weight function to find the flux of objects in observations. In general, it can be expressed in the following way
+
+The goal of \gls{pca-phot} is to measure the pre-seeing aperture flux for observations that have different \glspl{psf}. In this section, the necessary mathematics is derived to be able to measure the pre-seeing aperture flux and estimate the error on the measurement. This is important to find the intrinsic aperture fluxes which are independent of seeing. 
+
+
+\subsection{Flux Measurement}\label{subsec: flux measurement}
+
+In aperture photometry, a weight function is used to find the flux of sources in observations. In general, it can be expressed in the following way
 
 \begin{equation}\label{eq: aperture photometry}
     F_\mathrm{A} = \int dxdyO(x,y)W_\mathrm{A}(x,y),
@@ -34,9 +41,10 @@ is the pre-seeing weight function with $\bar{P}$ the reflected \gls{psf} $\bar{P
 \noindent The \gls{pca-phot} algorithm then works as follows:
 \begin{enumerate}
     \item Choose a pre-seeing aperture function $\tilde{W}_\mathrm{A}$, which is going to be applied to all bands
-    \item Calculate the post-seeing aperture $W_\mathrm{A}^i$ by deconvolving the aperture function $\tilde{W}_\mathrm{A}$ by the reflected \gls{psf} $\bar{P}_i$, of band $i$; $W^i_\mathrm{A}=\tilde{W}_\mathrm{A}\otimes^{-1}\bar{P}_i$
-    \item Calculate the aperture flux for each band using the post-seeing aperture function $W_\mathrm{A}^i$.
+    \item Calculate the post-seeing weight $W_\mathrm{A}^i$ by deconvolving the weight function $\tilde{W}_\mathrm{A}$ by the reflected \gls{psf} $\bar{P}_i$, of band $i$; $W^i_\mathrm{A}=\tilde{W}_\mathrm{A}\otimes^{-1}\bar{P}_i$
+    \item Calculate the aperture flux for each band using the post-seeing weight function $W_\mathrm{A}^i$.
 \end{enumerate}
+Rather than correcting for the \gls{psf} in the observation itself, this method adjusts the weight function based on the \gls{psf} and applies it directly to the observation. This gives more accurate results as the weight function is analytical and the \gls{psf} is often known to a high degree of certainty.
 The deconvolution can be computed by applying the Fourier transform to \autoref{eq: weight convolution} to find the frequency components of the \gls{psf} and pre-seeing weight function. Since a convolution turns into a multiplication in the frequency domain, this results in
 
 \begin{equation}\label{eq: fourier domain}
@@ -47,25 +55,25 @@ From \autoref{eq: fourier domain}, a direct formula for the post-seeing aperture
 \begin{equation}\label{eq: analytical deconvolution}
     W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\tilde{W}_\mathrm{A}\}}{\mathcal{F}\{\bar{P}_i\}}\right\}.
 \end{equation}
-However, \autoref{eq: analytical deconvolution} has a division by the Fourier transform of the reflected \gls{psf}, which can be close to 0 at certain points. Division by a small number inflates the machine error in the calculation, leading to inaccurate results. 
-To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $\varepsilon=10^{-8}$ is added to the equation to stabilize it 
+Although \autoref{eq: analytical deconvolution} is mathematically correct, it has a division by the Fourier transform of the reflected \gls{psf}, which can be close to 0 at certain points. Due to the division in Fourier space, any noise gets massively amplified, leading to inaccurate results. 
+To improve the numerical stability of \autoref{eq: analytical deconvolution}, a factor $\varepsilon=10^{-8}$ \textbf{WHY THIS NUMBER} is added to the equation to stabilize it 
 
 \begin{equation}\label{eq: numerical deconvolution}
     W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+\varepsilon}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\right\}.
 \end{equation}
-If the weight matrix is the same for different sources, except for a shift. The aperture flux becomes 
+This equation forms the basis for the \gls{pca-phot} method. \footnote{In the special case where the weight matrix is the same for different sources, except for a shift. The aperture flux becomes 
 
 \begin{equation}
     F_\mathrm{A}(x',y') = \int dxdy\;O(x,y)W_\mathrm{A}(x-x',y-y') = (O \otimes \bar{W}_\mathrm{A})(x',y'),
 \end{equation}
-with $\bar{W}_A(x,y)=W_A(-x,-y)$ being the reflected weight function.
+with $\bar{W}_A(x,y)=W_A(-x,-y)$ being the reflected weight function.}
 
 \noindent As the image has discrete pixels, the formula for the aperture flux becomes
 
 \begin{equation}\label{eq: flux}
     F_\mathrm{A} = \sum_{x,y}O(x,y)W_\mathrm{A}(x,y).
 \end{equation}
-where $O(x,y)$ and $W_\mathrm{A}(x,y)$ are the pixel values of the observation and the post-seeing respectively. The uncertainty in the flux can be calculated using
+where $O(x,y)$ and $W_\mathrm{A}(x,y)$ are the pixel values of the observation and the post-seeing weight function, respectively. The uncertainty in the measured aperture flux can be calculated using
 
 \begin{equation}\label{eq: variance}
     \sigma^2 = \sum_{x,y}\sum_{x',y'}W_\mathrm{A}(x,y)C(x,y;x',y')W_\mathrm{A}(x',y').
@@ -93,31 +101,36 @@ where $C(x,y;x',y')$ is the covariance matrix between the pixels at position $(x
 % \end{equation}
 % This only works if the image $O_i$ is in counts. If this is not the case, the observation should first be converted to counts, then the variance can be calculated, and lastly, the variance can be converted back to the original units of the image.
 
+
 \subsection{Noise Estimation from background Noise}\label{subsec: Noise Estimation from background Noise}
+
+To get an estimate for the noise on the measured aperture flux of a source, some assumptions need to be made about the covariance matrix. 
 Assuming that the covariance of pixels only depends on the distance between the pixels and is the same across the entire image, the covariance becomes a local covariance matrix
 
 \begin{equation}
     C(x,y;x',y') \approx C(x'-x,y'-y)=C(\Delta x, \Delta y).
 \end{equation}
 Filling this approximation into \autoref{eq: variance}, the expression simplifies to 
+
 \begin{equation}\label{eq: local variance}
     \sigma^2 = \sum_{x,y}\sum_{\Delta x,\Delta y}W_\mathrm{A}(x,y)C(\Delta x, \Delta y)W_\mathrm{A}(x+\Delta x,y + \Delta y).
 \end{equation}
-The local covariance matrix $C(\Delta x, \Delta y)$ can be calculated using the formula
+The local covariance matrix $C(\Delta x, \Delta y)$ can be computed using the formula
 
 \begin{equation}
     C(\Delta x, \Delta y) = \left\langle \tilde{N}(x,y)\tilde{N}(x+\Delta x,y+\Delta y)\right\rangle.
 \end{equation}
-where $\tilde{N}(x,y)=N(x,y) - \langle N(x,y)\rangle$ with $N$ being a pure noise image.
+where $\tilde{N}(x,y)=N(x,y) - \langle N(x,y)\rangle$ with $N$ being a pure noise image for which an empty part of the sky can be used.
 
 \begin{equation}
     C(\Delta x, \Delta y) = \frac{\int dx dy \tilde{N}(x,y)\tilde{N}(x+\Delta x,y+\Delta y)}{\int dx dy} 
 \end{equation}
 which can be written like
+
 \begin{equation}
-    C(\Delta x, \Delta y) = \frac{\left(\tilde{N} \otimes\tilde{\bar{N}}\right)}{\int dx dy}(\Delta x, \Delta y).
+    C(\Delta x, \Delta y) = \frac{1}{\int dx dy}\left(\tilde{N} \otimes\Bar{\tilde{N}}\right)(\Delta x, \Delta y).
 \end{equation}
-where $\bar{\tilde{N}}(x,y)=\tilde{N}(-x,-y)$.
+where $\Bar{\tilde{N}}(x,y)=\tilde{N}(-x,-y)$.
 Lastly, we assume that the local covariance matrix is 0 above some lag $L$ such that $C(\Delta x, \Delta y) = 0$ $\forall|\Delta x|, |\Delta y| > L$.
 
 \noindent This reduces the number of terms in \autoref{eq: local variance}
@@ -131,7 +144,7 @@ Finally, if the pixels in the image are uncorrelated, the only non-zero element 
 \end{equation}
 
 \subsection{Noise from RMS}\label{subsec: Noise from RMS}
-If the noise varies across the image, the assumption made in \autoref{subsec: Noise Estimation from background Noise} does not hold anymore. In this case, the only assumption required to obtain the covariance matrix is that the correlation between two pixels does not depend on their spatial location within the image. So the covariance matrix can be approximated like
+If the noise varies across the image, the assumption made in \autoref{subsec: Noise Estimation from background Noise} does not hold anymore. In this case, the only assumption required to obtain the covariance matrix is that the correlation between two pixels does not depend on their spatial location within the image, i.e., the noise is stationary. So the covariance matrix can be approximated like
 
 \begin{equation}\label{eq: rms covariance}
     C(x,y;x',y') \approx \sigma(x,y)\rho(x-x',y-y')\sigma(x',y'),
@@ -142,18 +155,22 @@ where $\sigma(x,y)$ is the standard deviation at position $(x,y)$ and $\rho(x-x'
     \rho(x-x',y-y')=\frac{C(x-x',y-y')}{\max C(x-x',y-y')}
 \end{equation}
 Inserting \autoref{eq: rms covariance} into \autoref{eq: variance} results in
+
 \begin{equation}\label{eq: rms variance}
     \sigma^2=\sum_{x,y,x',y'}W(x,y)\sigma(x,y)\rho(x-x',y-y')\sigma(x',y')W(x',y').
 \end{equation}
-By defining $W(x,y)\sigma(x,y)=W'(x,y)$, \autoref{eq: rms variance} can be written like
+By introducing a weighted standard deviation $\sigma'(x,y)=W(x,y)\sigma(x,y)$, \autoref{eq: rms variance} can be written like
+
 \begin{equation}\label{eq: rms variance v2}
-    \sigma^2=\sum_{x,y,x',y'}W'(x,y)\rho(x-x',y-y')W'(x',y').
+    \sigma^2=\sum_{x,y,x',y'}\sigma'(x,y)\rho(x-x',y-y')\sigma'(x',y').
 \end{equation}
 \autoref{eq: rms variance v2} can be further simplified to the expression
+
 \begin{equation}\label{eq: variance rms correlated}
-    \sigma^2=\sum_{x,y}W'(x,y)(\rho\otimes W')(x,y).
+    \sigma^2=\sum_{x,y}\sigma'(x,y)(\rho\otimes \sigma')(x,y).
 \end{equation}
 In the case that the noise in the pixels is uncorrelated, the only non-zero element of the correlation function is $\rho(0,0)=1$. This results in the expression simplifying to
+
 \begin{equation}\label{eq: variance rms uncorrelated}
     \sigma^2=\sum_{x,y}W'^2(x,y) =\sum_{x,y}\sigma^2(x,y)W^2(x,y).
 \end{equation}
@@ -166,28 +183,30 @@ In the case that the noise in the pixels is uncorrelated, the only non-zero elem
 % where $A$ is some normalization constant, $d$ is the distance between the center of the source and the center of the weight function, and $a$ is the scale parameter of the source.
 % By measuring the flux at different weight sizes and fitting \autoref{eq: point-source detector} to this, the value of $a$ can be used to find a measure of how close the object is to being a point-source.
 
-
+\newpage
 \section{Simulation Framework}\label{sec: Simulation Framework}
 
-Observations are simulated to test the effectiveness of this method. A fiducial model is defined, with various aspects varied to test where the limitations of this method lie. The simulated images are 128 by 128 pixels. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
+Observations are simulated to test the effectiveness of \gls{pca-phot}. A fiducial model is defined, with which various aspects are varied to test where the limitations of this method lie. The simulated images are 128 by 128 pixels \textbf{WHY THIS PIXEL SCALE, FFT, LARGE ENOUGH FOR SOURCES}. An elliptical Gaussian is chosen for the galaxy's intrinsic image, with standard deviations of 5 pixels along the y-axis and 10 pixels along the x-axis. 
 
 \begin{equation}
-    I(x,y) \propto \exp\left(-\frac{1}{2}\left(\frac{x^2}{10^2}-\frac{y^2}{5^2}\right)\right)
+    I(x,y) \propto \exp\left(-\frac{1}{2}\left(\frac{x^2}{10^2}+\frac{y^2}{5^2}\right)\right)
 \end{equation}
 where the origin is in the center of the image.
 The sum of the pixel values of this intrinsic image $I$ of the galaxy is 1000. This intrinsic image is then convolved with a normalized Gaussian \gls{psf} $P$ with a standard deviation of 3 pixels.
+
 \begin{equation}
     P(x,y) \propto \exp\left(-\left(\frac{x^2+y^2}{3^2}\right)\right)
 \end{equation}
-The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. The noise $N$ in the simulated image is drawn from a Gaussian distribution with mean 0 and variance 0.01. The resulting observation is then calculated using 
+The \gls{psf} is normalized such that the pixel values sum to 1.
+The fiducial weight function is a normalized Gaussian with a standard deviation of 8 pixels. The noise $N$ in the simulated image is drawn from a Gaussian distribution with mean 0 and variance 0.01. The resulting observation is the combination of the \gls{psf}, intrinsic image, and the noise
 \begin{equation}
     O = P\otimes I + N.
 \end{equation}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{results/figures/simulation/fiducial_model.pdf}
-    \caption[Fiducial model]{The simulated fiducial model, PSF, background noise, and the simulated observation.}
+    \includegraphics[width=0.6\linewidth]{results/figures/simulation/fiducial_model.pdf}
+    \caption{The elliptical Gaussian intrinsic image of the galaxy  (top left), the \gls{psf} (top right), and the noise (bottom left) are combined to form the fiducial observation (bottom right).}
     \label{fig: fiducial model}
 \end{figure}
 \noindent Next, each component of the fiducial model is varied individually to investigate the consequences of each part on the measured flux and the estimated error.  
@@ -195,24 +214,22 @@ The fiducial weight function is a normalized Gaussian with a standard deviation 
 
 \subsection{Flux Accuracy}\label{subsec: flux accuracy}
 
-The flux determined from the pre-seeing image with the pre-seeing weight function
+The flux determined from the pre-seeing image with the pre-seeing weight
 
 \begin{equation}
     F_\mathrm{True} = \int dxdy I(x,y) \tilde{W}_\mathrm{A}(x,y)
 \end{equation}
-is compared to the flux measured with the deconvolved weight and the observed image with noise
+is used compared to the aperture flux measured with the deconvolved weight and the observed image with noise
 
 \begin{equation}
     F_\mathrm{Measured} = \int dxdy O(x,y) W_\mathrm{A}(x,y).
 \end{equation}
-Gaussian noise is applied after the convolution, and to find the variance on the flux \autoref{eq: variance correlated} is used. 
-This results in the observation being
-where $P$ is the \gls{psf}, $I$ the intrinsic image, and $N$ the Gaussian noise. The accuracy of the flux measurement is tested using Gaussian \glspl{psf} with Gaussian weights, varying their sizes, and computing both the true and measured fluxes.
-Using this information, the relative error on the flux measurements is computed using
+The fractional error in the flux is used to gain insight into where \gls{pca-phot} works and, more importantly, where it fails. The flux is measured at different points in the image and for different combinations of \gls{psf} size and size of the weight function, where both are Gaussian. The fractional error can be calculated using
+
 \begin{equation}
     \epsilon_F=\frac{F_\mathrm{Measured}- F_\mathrm{True}}{F_\mathrm{True}}.
 \end{equation}
-
+The fractional error is preferred over an absolute error as the measured flux depends on the size of the weight function. The fractional error corrects for the difference in scale involved and allows for an easier evaluation of the accuracy of the \gls{pca-phot} method.
 
 \subsection{Error Accuracy}
 To assess the accuracy of the error, different noise realizations are generated, and the flux $F_i$ and error $\sigma_i$ are computed for each realization. The standard deviation of the flux values is taken as the true standard deviation, $\sigma_\mathrm{True}=\mathrm{std}(F_i)$. The mean of the measured errors $\sigma_\mathrm{Measured}=\mathrm{mean}(\sigma_i)$ is used to compute the relative error on the error of the flux
@@ -221,22 +238,30 @@ To assess the accuracy of the error, different noise realizations are generated,
 \end{equation}
 This is repeated for different combinations of weight and \gls{psf} sizes in the same way as in \autoref{subsec: flux accuracy}.
 
-Up until this point, the noise in the simulations was uncorrelated. However, in real observations, this is rarely the case. To simulate correlated noise, uncorrelated noise is convolved with a Gaussian with a scale parameter called 'noise scale'. The accuracy of the correlated noise also depends on the lag chosen in \autoref{eq: variance correlated}. This lag can be estimated from the local covariance matrix, where $L$ is chosen to center the matrix at the point where the absolute sum of its values exceeds 99\% of the sum of the absolute values of the full local covariance matrix.
+Up until this point, the noise in the simulations was uncorrelated. However, in real observations, this is rarely the case. To simulate correlated noise, uncorrelated noise is convolved with a Gaussian with a scale parameter called 'noise scale'. There are two different methods to estimate the error on the aperture flux as discussed in \autoref{subsec: Noise Estimation from background Noise} and \autoref{subsec: Noise from RMS}. Both methods are tested for accuracy by generating 10,000 different noisy images for the simulation. For the method that only uses the background noise to estimate the error on the aperture flux (\autoref{subsec: Noise Estimation from background Noise}), only the simulated noise is provided to the algorithm. For the other method that also uses \gls{rms} (\autoref{subsec: Noise from RMS}), the simulated noise is used to get information about the correlation between pixels, and the \gls{rms} is a uniform image corresponding to the variance of the noise.
+% The accuracy of the correlated noise also depends on the lag chosen in \autoref{eq: variance correlated}. This lag can be estimated from the local covariance matrix, where $L$ is chosen to center the matrix at the point where the absolute sum of its values exceeds 99\% of the sum of the absolute values of the full local covariance matrix.
+
 
 \subsection{PSF Shape}
-To test the method for robustness against variations in the \gls{psf} used for the deconvolution compared to the true \gls{psf}, the flux of the object is calculated using \glspl{psf} of different sizes and compared to the true value of the flux.
+
+To test the method for robustness against variations in the \gls{psf} used for the deconvolution compared to the true \gls{psf}, the flux of the object is calculated using \glspl{psf} of different sizes and compared to the true value of the flux. In practice, it is impossible to perfectly model the \gls{psf} due to spatial variations, incomplete modeling etc. 
+
 
 \subsection{Aperture Shape}
-To test the aperture shape that maximizes the \gls{snr}, the flux \gls{snr} is calculated for various scale parameters in both the x- and y-directions.
+
+The shape of the weight function also influences what flux is measured and the \gls{snr} of that measurement. Different sizes of weight functions are tested on the fiducial image to get information on how the shape of the weight function influences the \gls{snr}. For this, elliptical Gaussian weight functions are used with different combinations of scale parameters on the x-axis and the y-axis. The choice of Gaussian weight functions is because their analytical Fourier transform is known and they are smooth functions, which result in a more stable deconvolution, unlike a top-hat function.
 
 
 \newpage
 
 \section{Observational Data}
-To apply the \gls{pca-phot} method to images from both Euclid and Rubin, several inputs are required: \glspl{psf}, noise squares, and weight functions.
+
+To apply the \gls{pca-phot} method to images from \gls{edf}, several inputs are required: observations, coordinates of sources, \glspl{psf}, and the \gls{rms} map.
+
 
 \subsection{PSF}
-The \glspl{psf} of the Rubin filters are already in a form that can be directly used for the measurement of the fluxes. The MER catalog has a \gls{psf} grid. This can be used to find a more accurate \gls{psf} for each part of the image by interpolating between grid points. However, in \gls{pca-phot} this is computationally expensive as the prefactor in \autoref{eq: numerical deconvolution} then needs to be recalculated for every single source. Instead of that approach, the \glspl{psf} in the grid are averaged to find a single \gls{psf} representing the seeing in the entire image.
+
+The \glspl{psf} of the Rubin filters are already in a form that can be directly used for the measurement of the fluxes. The MER catalog has a \gls{psf} grid. This can be used to find a more accurate \gls{psf} for each part of the image by interpolating between grid points. However, in \gls{pca-phot} this is computationally expensive as the prefactor in \autoref{eq: numerical deconvolution} then needs to be recalculated for every single source. Instead of that approach, the \glspl{psf} in the grid are averaged to find a single \gls{psf} representing the seeing in the entire image is used for the aperture flux.
 
 % \subsection{PSF Construction}
 
@@ -255,20 +280,19 @@ The \glspl{psf} of the Rubin filters are already in a form that can be directly 
 
 \subsection{Noise Square}
 Find a square with the minimal variance. This square should contain no sources, so it should be only background noise. This noise square is used to calculate the correlation between the pixels for the MER mosaics (following \autoref{subsec: Noise from RMS}).
+\textbf{EXPLAIN HOW THIS IS FOUND}
 
 
 
-\subsection{Fitting Weights}
-To find the pre-seeing weight function, a Gaussian is fitted to the objects in the image. This is done in the VIS as this band has the highest resolution and quality. Next, Gaussian-shaped galaxies with different scales are simulated and convolved with the different \gls{psf} of all the filters in \autoref{tab:mer filters}. \gls{pca-phot} is applied to the images using differently sized pre-seeing weight functions, which gives the \gls{snr} over the different sizes of weight functions. These curves are normalized by dividing by the maximum and then added together to get a single curve that represents the \gls{snr} across all filters. The maximum of this curve is linked to the size of the Gaussian in the pre-seeing image. This gives a relation between the pre-seeing image size and the optimal pre-seeing weight function size to maximize the \gls{snr} across the different filters. A 6th-order polynomial is fitted to this relation. 
+% \subsection{Fitting Weights}
 
-Now that there is a semi-empirical relation between the size of the source and the optimal weight size, a Gaussian is fitted to the sources in the VIS band. Following this, the pre-seeing size is estimated by using the size of the \gls{psf} of the VIS band $\sigma_\mathrm{fit}^2\approx\sigma_\mathrm{intrinsic}^2+\sigma_\mathrm{VIS-PSF}^2$. The intrinsic size is then converted to a weight function size by using the polynomial.
+% To find the pre-seeing weight function, a Gaussian is fitted to the objects in the image. This is done in the VIS as this band has the highest resolution and quality. Next, Gaussian-shaped galaxies with different scales are simulated and convolved with the different \gls{psf} of all the filters in \autoref{tab:mer filters}. \gls{pca-phot} is applied to the images using differently sized pre-seeing weight functions, which gives the \gls{snr} over the different sizes of weight functions. These curves are normalized by dividing by the maximum and then added together to get a single curve that represents the \gls{snr} across all filters. The maximum of this curve is linked to the size of the Gaussian in the pre-seeing image. This gives a relation between the pre-seeing image size and the optimal pre-seeing weight function size to maximize the \gls{snr} across the different filters. A 6th-order polynomial is fitted to this relation. 
 
-\subsection{Applying PCA-phot Algorithm}
-For each galaxy, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the \gls{mer} mosaic, which corresponds to a physical size of 12.8". 
-% To get the same physical size for the Rubin images, the cutout is 64 pixels. 
+% Now that there is a semi-empirical relation between the size of the source and the optimal weight size, a Gaussian is fitted to the sources in the VIS band. Following this, the pre-seeing size is estimated by using the size of the \gls{psf} of the VIS band $\sigma_\mathrm{fit}^2\approx\sigma_\mathrm{intrinsic}^2+\sigma_\mathrm{VIS-PSF}^2$. The intrinsic size is then converted to a weight function size by using the polynomial.
 
-As the centers of the objects are not exactly in the center of the pixel, bilinear interpolation is used to find the flux of the object. 
-
+\subsection{Applying PCA-phot Algorithm}\label{subsec: applying pca-phot algorithm}
+The coordinates and \gls{fwhm} from the \gls{mer} catalogues are used to find the flux of sources in the \gls{mer} tiles.
+For each source, a cutout is made around it to determine the flux in that region. The cutout is 128 pixels for the \gls{mer} mosaic, which corresponds to a physical size of 12.8". However, the center of the sources is not necessarily exactly the center of the cutout due to the discrete number of pixels in the image. 
 Defining the fractional coordinates as
 \begin{equation}
     dx = x - \lfloor x\rfloor,\;dy = y - \lfloor y\rfloor.
@@ -276,20 +300,37 @@ Defining the fractional coordinates as
 
 The weight function has to be shifted to the correct sub-pixel position. This can be done by multiplying the Fourier transform of the weight function by a phase factor that depends on the shift of the weight function. By modifying \autoref{eq: numerical deconvolution}, the new weight function becomes
 \begin{equation}\label{eq: numerical deconvolution v2}
-    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\cdot\exp(-2\pi i(k_xdx+k_ydx))\right\}.
+    W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+K}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\cdot\exp(-2\pi i(k_xdx+k_ydy))\right\}.
 \end{equation}
-The size of the pre-seeing weight function is the \gls{fwhm} of the sources used in the \gls{mer} catalog. The flux is calculated for weight functions that are multiples of this \gls{fwhm}, following a similar procedure as \cite{SourceNeeded}. 
+This allows for the reuse of the same-sized weight function for different sources. The sizes of the pre-seeing weight functions are 0.5, 1, and 2 times the \gls{fwhm} given by the \gls{mer} catalogs, following a similar procedure as \cite{euclid_collaboration_euclid_2026}. The \gls{fwhm} are determined from the worst filter and are therefore a good way to find what size of weight function can be used, as the weight function needs to be larger than the \gls{psf} of the worst band. Furthermore, 0.5\gls{fwhm} can be used as the scale parameter for the weight function, as the \gls{fwhm} of a Gaussian is $\mathrm{FWHM}=2\sqrt{2\ln2}\sigma\approx2.355\sigma$ (WIKIPEDIA FOR NOW)\footnote{\url{https://en.wikipedia.org/wiki/Full_width_at_half_maximum}}
 
+\newpage
 \section{Source Classification}
-The colors calculated using the different sizes of the weight functions give information about the properties of the observed sources in the Euclid fields.
+
+The colors calculated using the different sizes of the weight functions give information about the properties of the observed sources in the Euclid fields. Furthermore, the size of a source in the sky also gives information on the type of the object; stars and \glspl{qso} are point sources, while galaxies are generally extended.
+
+
+\subsection{Splitting Based on Colors}\label{subsec: splitting based on colors}
+To separate sources into groups of sources that have similar colors to either stars or galaxies, \gls{umap} is used. \textbf{EXPLANATION OF UMAP + PARAMS USED}. After the dimension reduction of the color data, DBSCAN \citep{ester_density-based_1996} is used to label the sources into two groups: one with sources that have star-like colors, and one with sources that have galaxy-like colors.
+
 \subsection{Differentiating between Point-Sources and Extended Sources}
-As \gls{pca-phot} is a way to apply a weight function on the pre-seeing image, point-sources are delta functions in this pre-seeing image. The weight functions are centered on the objects, which means that for point-sources, the flux does not change much as the value of the weight function at the center is constant for different sizes of the weight functions. However, for extended sources, increasing the size of the pre-seeing weight function increases the flux. This can be used to divide the sources into a group of point-sources and a group of extended sources.
-\textbf{HOW TO DO THIS MORE PRECISELY}
 
-\subsection{Point-Sources}
-The point-sources in the images largely consist of stellar objects and \glspl{qso}. 
+As \gls{pca-phot} is a way to apply a weight function on the pre-seeing image, point sources can be represented by delta functions in this pre-seeing image. The weight functions are centered on the objects, which means that for point sources, the flux is nearly independent of the size of the weight function, as the value of the weight function at the center is constant for different sizes of the weight functions. However, for extended sources, increasing the size of the pre-seeing weight function increases the flux. This can be used to divide the sources into a group of point sources and a group of extended sources.
 
-\subsection{Extended Sources}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{results/figures/analysis/point_vs_extended.pdf}
+    \caption{The difference in the aperture flux for a point source and an extended source. When a Gaussian weight function is centered on the source, the aperture flux is the same for different sizes of the weight function, but for an extended source the aperture flux increases when the size of the weight function increases.}
+    \label{fig:placeholder}
+\end{figure}
+This means that the difference in flux for different-sized weight functions gives information about the physical size of the source in the image. A similar procedure is followed as in \autoref{subsec: splitting based on colors}, except the fractional difference between different weight sizes in each band is added into the parameters that \gls{umap} reduces the dimensionality of. Those are defined as
+\begin{align}
+\Delta_{\mathrm{1,i}} &= \frac{F_{\mathrm{1FWHM,i}}-F_{\mathrm{0.5FWHM,i}}}{F_{\mathrm{1FWHM,i}}}, \\
+\Delta_{\mathrm{2,i}} &= \frac{F_{\mathrm{2FWHM,i}}-F_{\mathrm{1FWHM,i}}}{F_{\mathrm{2FWHM,i}}}, \\
+\Delta_{\mathrm{3,i}} &= \frac{F_{\mathrm{2FWHM,i}}-F_{\mathrm{0.5FWHM,i}}}{F_{\mathrm{2FWHM,i}}},
+\end{align}
+where i denotes the band in which the flux is computed. These are the fractional changes in the flux for the different weight functions. The choice of division is always to divide by the flux from the larger weight function of which the difference is calculated. This is because the large weight function should give a more stable result. Using these parameters in combination with the colors should help to distinguish sources that are extended and those that are not.
+The results of this are compared to the results from \cite{euclid_collaboration_euclid_2026}, which used the colors to classify sources into stars, galaxies, and \glspl{qso}.
 
 
 
