@@ -9,6 +9,7 @@
 \usepackage{blindtext} % only need for text example
 \usepackage{makecell}
 \usepackage{rotating}
+\usepackage{tcolorbox}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -34,16 +35,16 @@
 %% Define parameters %%
 %%%%%%%%%%%%%%%%%%%%%%%
 
-\title{Measuring Photometric Colors from Euclid Observations}
-% \subtitle{With a matching catchy subtitle} % optional, comment this line if not applicable
+\title{X-BAP: Cross-Band Aperture Photometry}
+% \subtitle{} % optional, comment this line if not applicable
 % \subject{\thesistypeshort thesis} % optional, comment this line if not applicable
 \author{Niels de Klerk}
 \studentid{s3640477}
 \supervisor{Prof. Dr. K. Kuijken}
 % \secondsupervisor{Supervi Sor} % optional, comment this line if not applicable
 \corrector{Prof. Dr. H. Hoekstra}
-\projectstart{September 2025}
-\projectend{Juli 2026}
+\projectstart{October 2025}
+\projectend{July 2026}
 \affiliation{Leiden Observatory, Leiden University}
 \address{P.O. Box 9513, 2300 RA Leiden, The Netherlands}
 \coverimage{report/layout/figures/free_frontpage/EWS-Q1-EDFS_Clusters-R4-GAL-16K9K.V8c.png}
@@ -64,10 +65,10 @@
 
 % Frontmatter contents
 \input{report/frontmatter/abstract}
-\input{report/frontmatter/acknowledgements.tex}
+% \input{report/frontmatter/acknowledgements.tex}
 \tableofcontents
-\listoftables
-\listoffigures
+% \listoftables
+% \listoffigures
 \input{report/frontmatter/nomenclature.tex}
 
 %\cleardoublepage
@@ -81,8 +82,9 @@
 % Input chapters
 \input{report/sections/introduction}
 \input{report/sections/datadescription}
-\input{report/sections/methods}
-\input{report/sections/results}
+\input{report/sections/X-BAP}
+\input{report/sections/simulation}
+\input{report/sections/application}
 \input{report/sections/discussion}
 \input{report/sections/conclusion}
 

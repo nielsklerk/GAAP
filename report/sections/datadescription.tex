@@ -1,15 +1,43 @@
 \chapter{Data Description}
-\section{Euclid}
-Euclid was launched \textbf{DATE} as part of \gls{esa}. It is placed at the second Lagrange point in the Earth-Sun system. The goal of Euclid is to study the dark energy and dark matter content in the universe, as well as the large-scale structure and weak lensing. For Q1, Euclid did \gls{edf}, which is divided into 3 parts: \gls{edfn}, \gls{edff}, and \gls{edfs}. These fields are observed using the \gls{vis} and \gls{nisp}, which operate in the visible part of the spectrum and the \gls{nir}, respectively. 
-\textbf{MOSAIC}
-\textbf{CATALOG}
-\textbf{PSF grid}
-\textbf{PIXEL SIZE}
-The \gls{mer} tiles have observation in several external telescopes, namely: \gls{cfht}, \gls{hsc}, \gls{panstarrs}, and \gls{decam}. The observations with the external telescopes are part of the \gls{cfis}, \gls{wishes}, \gls{panstarrs}, and \gls{des}, respectively.
-also \gls{whigs}
+
+Since \gls{x-bap} is designed for multi-band photometry, the Euclid mission provides a great dataset to apply it to, as it combines high-resolution space observations with ground-based ones. Euclid is a space telescope developed \gls{esa} and was launched in 2023. The goal of Euclid is to study the dark energy and dark matter content in the universe, using the large-scale structure and weak lensing. To achieve this, it uses optical and near-infrared imaging in combination with spectroscopy.
+
+
+\section{Euclid Mission}
+
+In this work, Euclid \gls{q1} data from the Euclid mission \citep{european_space_agency_euclid_nodate} is used, which is the first public release of the Euclid mission. \gls{q1} consists of a single visit of \gls{edf}, which is divided into 3 parts: \gls{edfn}, \gls{edff}, and \gls{edfs}. These coverage areas are shown in \autoref{fig: coverage}.  The deep fields consist of a total of 50 deg$^2$. Each of the three regions is visited multiple times for observations during the total Euclid mission. However, \gls{q1} only consists of a single visit. The repeated observations throughout the mission help to find and observe faint and distant objects.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{results/figures/papers/EuclidWideRegionOfInterest.65.MollweideReferenceSurveyGAL.MOL.Logos.png}
+    \caption{Wide field (blue) and deep field (yellow) coverage of Euclid. \textbf{SOURCE}}
+    \label{fig: coverage}
+\end{figure}
+
+
+
+\section{Euclid Instruments}
+
+On board Euclid, two instruments take observations using the \gls{vis} and \gls{nisp} instruments, which operate in the visible part of the spectrum and the near-infrared, respectively. 
+
+\subsection{VIS}
+The \gls{vis} contains a single filter, which operates in the wavelength range of 550-900 nm. This instrument is designed to take high-resolution observations of the universe. This is used to accurately measure the shapes of galaxies. Furthermore, \gls{vis} is used to learn more about matter in the universe. As the matter distorts spacetime, the path light takes also changes. So the high resolution of \gls{vis} allows to measure the subtle changes in the shapes of galaxies, which in turn gives information about the distribution of matter in the universe.
+
+\gls{vis} has a \gls{fov} of \~ 0.56 deg$^2$ and a pixel size of 0.1"\footnote{1"=1/3600$^\circ$}. 
+
+\subsection{NISP}
+\gls{nisp} is an instrument that does both imaging and spectroscopy, and has three filters: $Y_\mathrm{E}$, $J_\mathrm{E}$, $H_\mathrm{E}$. This gives more information about the light of sources in the \gls{nir} part of the spectrum. This information can be used to measure the photo-z of galaxies, which can be used to find the distribution of galaxies in the universe. As galaxies trace the dark matter, their distribution also provides insights into the distribution of dark matter. 
+
+\gls{nisp} has a \gls{fov} of \~0.55 deg$^2$ and a pixel size of 0.3". This means that the resolution and sensitivity of \gls{nisp} are lower than \gls{vis}.
+
+\section{External Data}
+
+Euclid has only 4 broadband filters, which provide insufficient information to determine photometric redshifts, since different galaxy types and redshifts can produce similar colors. Therefore, external complementary ground-based surveys are used, namely: \gls{cfis}, \gls{whigs}/\gls{wishes}, \gls{panstarrs}, and \gls{des}. These provide more information about the optical light coming from sources. \gls{cfis} provides the $u$ and $r$ bands from the \gls{cfht}. \gls{whigs} and \gls{wishes} provide the $g$ and $z$ bands from the \gls{hsc}. Lastly, \gls{panstarrs} provides $i$.  All these surveys are from ground-based telescopes that are located in the northern hemisphere and therefore can only complement \gls{edfn}. For \gls{edff} and \gls{edfs}, \gls{des} provides $g$, $r$, $i$, and $z$ with the \gls{decam} which is located in the southern hemisphere. This means that the \gls{edfn} has one additional filter, namely $u$, compared to \gls{edff}/\gls{edfs} which gives more information on the bluer wavelength range. All the filters and the fields which they cover are shown in \autoref{tab:mer filters}.
+
+
 \begin{table}[H]
     \centering
-    \caption{Filters used for observations of objects in the MER mosaics (adapted from Table 1 \citep{euclid_collaboration_euclid_2025}).}
+    \caption{Filters used for observations of fields in the \gls{mer} mosaics (adapted from Table 1 \citep{euclid_collaboration_euclid_2025}).}
     \label{tab:mer filters}
     \begin{tabular*}{\textwidth}{cc @{\extracolsep{\fill}}ccc}
     \hline 
@@ -33,43 +61,55 @@ also \gls{whigs}
     \hline
     \gls{des} & \gls{decam} $z$ & 0.926 & -  & x \\ 
     \hline
-    \gls{vis} & \gls{vis} $I_E$ & 0.715 & x & x \\ 
+    Euclid & \gls{vis} $I_\mathrm{E}$ & 0.715 & x & x \\ 
     \hline
-    \gls{nir} & \gls{nisp} $Y_E$ & 1.085 & x & x \\ 
+    Euclid & \gls{nisp} $Y_\mathrm{E}$ & 1.085 & x & x \\ 
     \hline
-    \gls{nir} & \gls{nisp} $J_E$ & 1.375 & x & x \\ 
+    Euclid & \gls{nisp} $J_\mathrm{E}$ & 1.375 & x & x \\ 
     \hline
-    \gls{nir} & \gls{nisp} $H_E$ & 1.773 & x & x \\ 
+    Euclid & \gls{nisp} $H_\mathrm{E}$ & 1.773 & x & x \\ 
 \hline 
 \end{tabular*} 
 \end{table}
+These filters cover the wavelength range from $\sim0.4\mathrm{\mu m}$ to $\sim1.7\mathrm{\mu m}$, giving information about the light emitted by sources in the optical and near-infrared. The combination of the ground-based observation and the observation by Euclid gives much better constraints on photo-z measurement than the Euclid observation could be themselves.
 
-The \gls{mer} tiles are publicly available on the Euclid Science Archive\footnote{\url{https://eas.esac.esa.int/sas/}}
-% \section{Vera Rubin Observatory}
-% The Vera Rubin Observatory received first light in \textbf{DATE}. It is located in the \textbf{LOCATION} in Chile. This telescope observes the southern sky and makes a survey every \textbf{HOW MANY DAYS}. This is used to look for transient events in the sky, such as supernovae and comets. Rubin has 6 different filters that it uses to observe the sky. 
-% \textbf{IMAGES}
-% \textbf{PSF}
-% \textbf{PIXEL SIZE}
-% \begin{table}[H]
-%     \centering
-%     \caption{Filters that Rubin uses (adapted from Figure 1 \citep{huber_holismokes_2021}.}
-%     \label{tab: rubin filters}
-%     \begin{tabular*}{.3\textwidth}{cc}
-%     \hline 
-%     Filter & $\lambda_\mathrm{eff}$ [um] \\ 
-%     \hline \hline
-%     $u$ & 0.367 \\ 
-%     \hline 
-%     $g$ & 0.482\\
-%     \hline 
-%     $r$ & 0.622 \\ 
-%     \hline 
-%     $i$ & 0.754 \\ 
-%     \hline
-%     $z$ & 0.869\\ 
-%     \hline 
-%     $y$ & 0.9712\\ 
-% \hline 
-% \end{tabular*}
+\section{Data Products}
 
-% \end{table}
+This work uses several of the data products provided by \gls{q1}. The data products and how they are used are explained below.
+
+\subsection{MER Mosaics}
+
+The \glspl{edf} are observed using the two Euclid instruments and the complementary external data. Different observations in the same broadband filter are aligned and stacked to create \gls{mer} mosaics. All of the observations are resampled and rescaled to a common size in such a way that the images in the different fields all have a pixel scale of 0.1", which is the same pixel scale as \gls{vis}. This allows for a common coordinate system between the observations in different bands. However, as a result of the resampling, the noise in the observation gets correlated, which should be taken into account when estimating the error on the aperture flux measurement.
+In this work, \gls{mer} mosaics that have been background-subtracted are used. The units of the \gls{mer} mosaics are in magnitude with different zero-points and therefore need to be converted to a common flux unit to accurately compare the flux in different bands. Using \autoref{eq: magnitude ab}, the flux in each pixel can be found using
+\begin{equation}
+    m_\mathrm{AB}=-2.5\log_{10}\left(F_\mathrm{Jy}\right) + 8.90,
+\end{equation}
+and the units of the image are such that
+\begin{equation}
+    m_\mathrm{AB}=-2.5\log_{10}\left(C\right) + ZP,
+\end{equation}
+where $C$ are the pixel values in the image and $ZP$ is the zero-point. Setting these equations equal, gives
+\begin{equation}\label{eq: zeropoints correction}
+    F_\mathrm{Jy} = C\cdot10^{(8.90-ZP)/2.5}.
+\end{equation}
+So to convert the image from the pixel values given to flux values is multiplication by a factor that depends on the zero-points of the observation. So the conversion factor is the same within a single observation, but can differ between filters.
+
+\subsection{RMS Maps}
+
+In addition to the mosaics, the \gls{rms} maps are used. The \gls{rms} maps estimate the standard deviation in the pixel values. This error comes from several sources, such as the shot noise, readout noise, and the errors of the stacking of observations. Similar to the \gls{mer} mosaics, the \gls{rms} maps are in magnitude with a zero-point. So the pixel values are converted to units of flux using \autoref{eq: zeropoints correction}. The \gls{rms} maps are used to find the error on the aperture flux measurements of \gls{x-bap}, but the \gls{rms} maps are not enough to estimate the error on the measurements due to the correlated noise.
+
+\subsection{PSF grids}
+
+The \gls{psf} grids are, as the name suggests, a grid of \glspl{psf}, which can be used to interpolate the shape of the \gls{psf} depending on the location in the image.
+
+\subsection{MER Catalog}
+
+The \gls{mer} catalogs are complementary to the \gls{mer} mosaics. They contain information about the sources in each observation. They contain the coordinates of the sources, with information about the \gls{fwhm}, flux, morphology, etc. In this work, the coordinates and \gls{fwhm} are used to calculate the aperture flux using \gls{x-bap}. The results of this technique are compared to the colors derived from the flux measurements in the catalog.
+
+\subsection{PHZ Catalog}
+
+\cite{euclid_collaboration_euclid_2026} created the \gls{phz} catalogs using the information of the \gls{mer} mosaics and \gls{mer} catalogs. It contains information about the classification of sources and their photometric redshift. This work uses the classification to compare the results of the classification using \gls{x-bap}.
+\newline
+The \gls{mer} mosaics, \gls{mer} catalogs, \gls{rms} maps, \gls{psf} grids, and \gls{phz} catalogs are retrieved from the Euclid Science Archive\footnote{\url{https://eas.esac.esa.int/sas/}}, where they are publicly available.
+
+\newpage

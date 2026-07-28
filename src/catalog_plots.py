@@ -8,6 +8,7 @@ import pandas as pd
 import gc
 import glob
 import matplotlib.ticker as ticker
+from matplotlib.ticker import SymmetricalLogLocator
 warnings.filterwarnings("ignore")
 
 plt.rcParams['font.size'] = 16
@@ -206,7 +207,7 @@ def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=5,
         for ax in axs:
             ax.xaxis.set_major_locator(ticker.MaxNLocator(5))
 
-        axs[0].set_title('PCA-phot')
+        axs[0].set_title('X-BAP')
         axs[1].set_title('MER')
         fig.tight_layout()
         plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_3[-1]}{filter_4[-1]}_gaap_catalog_cutoff_{error_cutoff}.pdf',
@@ -218,7 +219,7 @@ def plot_color_color_gaap_vs_mer(filters, plot_limits, n_bins, error_cutoff=5,
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
         ax.xaxis.set_major_locator(ticker.MaxNLocator(5))
-        ax.set_title('PCA-phot')
+        ax.set_title('X-BAP')
         fig.tight_layout()
         plt.savefig(f'/home/deklerk/GAAP/results/figures/analysis/{filter_1[-1]}{filter_2[-1]}{filter_3[-1]}{filter_4[-1]}_gaap_cutoff_{error_cutoff}.pdf',
                     bbox_inches='tight')
@@ -254,125 +255,335 @@ def plot_snr_comparison():
         sharey=True,
         gridspec_kw={'wspace': 0, 'hspace': 0}
     )
+
     FWHM = '1'
-    cutoff_snr = 1e-3
+    cutoff_snr = -np.inf
     DES_PLOTTED = False
     OTHER_PLOTTED = False
+
     processed = ['102022978', '102158274']
+
+    # Store all SNR differences
+    all_delta = []
+
     for outer_i, tile_index in enumerate(processed):
+
         gc.collect()
         print(tile_index)
 
         catalog_file = glob.glob(
-            f'{catalog_folder}/EUC_MER_FINAL-CAT_TILE{tile_index}*.fits')[0]
+            f'{catalog_folder}/EUC_MER_FINAL-CAT_TILE{tile_index}*.fits'
+        )[0]
+
         with fits.open(catalog_file, memmap=True) as hdul:
             cat = Table(hdul[1].data)
 
         if DES_PLOTTED and OTHER_PLOTTED:
             break
 
-        fluxes = pd.read_csv(f'{storage_folder}/{tile_index}_fluxes.csv')
+        fluxes = pd.read_csv(
+            f'{storage_folder}/{tile_index}_fluxes.csv'
+        )
 
         try:
-            for j, flt in enumerate(['G', 'R', 'I', 'Z']):
-                snr_meer = cat[f'FLUX_{flt}_EXT_DECAM_{FWHM}FWHM_APER'] / \
-                    cat[f'FLUXERR_{flt}_EXT_DECAM_{FWHM}FWHM_APER']
-                snr_gaap_euclid = fluxes[f'DES-{flt}'] / \
-                    fluxes[f'DES-{flt}_sigma']
 
-                mask = (snr_meer + snr_gaap_euclid > cutoff_snr) & \
-                    np.isfinite(snr_gaap_euclid) & np.isfinite(snr_meer)
+            for j, flt in enumerate(['G', 'R', 'I', 'Z']):
+
+                snr_meer = (
+                    cat[f'FLUX_{flt}_EXT_DECAM_{FWHM}FWHM_APER'] /
+                    cat[f'FLUXERR_{flt}_EXT_DECAM_{FWHM}FWHM_APER']
+                )
+
+                snr_gaap_euclid = (
+                    fluxes[f'DES-{flt}'] /
+                    fluxes[f'DES-{flt}_sigma']
+                )
+
+                mask = (
+                    np.isfinite(snr_gaap_euclid) &
+                    np.isfinite(snr_meer)
+                )
+
+                delta = snr_gaap_euclid[mask] - snr_meer[mask]
+                all_delta.append(delta)
 
                 ax = axs[1, j]
-                ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
-                           s=.1, rasterized=True, c='b')
-                ax.plot([cutoff_snr*0.1 + 1e-6, 1e6],
-                        [cutoff_snr*0.1 + 1e-6, 1e6], 'r--')
-                ax.text(0.05, 0.95, f'DES-{flt}', transform=ax.transAxes,
-                        ha='left', va='top', fontsize=15,
-                        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
-                print('des, ', tile_index)
-                DES_PLOTTED = True
-        except:
-            columns = {'U_EXT_MEGACAM': 'CFIS-U', 'G_EXT_HSC': 'WISHES-G',
-                       'R_EXT_MEGACAM': 'CFIS-R', 'I_EXT_PANSTARRS': 'PANSTARRS-I', 'Z_EXT_HSC': 'WISHES-Z'}
-            for j, flt in enumerate(['U_EXT_MEGACAM', 'G_EXT_HSC', 'R_EXT_MEGACAM', 'I_EXT_PANSTARRS', 'Z_EXT_HSC']):
-                snr_meer = cat[f'FLUX_{flt}_{FWHM}FWHM_APER'] / \
-                    cat[f'FLUXERR_{flt}_{FWHM}FWHM_APER']
-                snr_gaap_euclid = fluxes[f'{columns[flt]}'] / \
-                    fluxes[f'{columns[flt]}_sigma']
 
-                mask = (snr_meer + snr_gaap_euclid > cutoff_snr) & \
-                    np.isfinite(snr_gaap_euclid) & np.isfinite(snr_meer)
+                ax.scatter(
+                    snr_meer[mask],
+                    delta,
+                    s=0.5,
+                    alpha=0.25,
+                    rasterized=True
+                )
+
+                # ax.axhline(
+                #     0,
+                #     color='red',
+                #     linestyle='--',
+                #     linewidth=1
+                # )
+
+                ax.text(
+                    0.05, 0.95,
+                    f'DES-{flt}',
+                    transform=ax.transAxes,
+                    ha='left',
+                    va='top',
+                    fontsize=15,
+                    bbox=dict(
+                        facecolor='white',
+                        alpha=0.7,
+                        edgecolor='none'
+                    )
+                )
+
+                print('des, ', tile_index)
+
+            DES_PLOTTED = True
+
+
+        except:
+
+            columns = {
+                'U_EXT_MEGACAM': 'CFIS-U',
+                'G_EXT_HSC': 'WISHES-G',
+                'R_EXT_MEGACAM': 'CFIS-R',
+                'I_EXT_PANSTARRS': 'PANSTARRS-I',
+                'Z_EXT_HSC': 'WISHES-Z'
+            }
+
+
+            # Optical filters
+            for j, flt in enumerate([
+                'U_EXT_MEGACAM',
+                'G_EXT_HSC',
+                'R_EXT_MEGACAM',
+                'I_EXT_PANSTARRS',
+                'Z_EXT_HSC'
+            ]):
+
+                snr_meer = (
+                    cat[f'FLUX_{flt}_{FWHM}FWHM_APER'] /
+                    cat[f'FLUXERR_{flt}_{FWHM}FWHM_APER']
+                )
+
+                snr_gaap_euclid = (
+                    fluxes[f'{columns[flt]}'] /
+                    fluxes[f'{columns[flt]}_sigma']
+                )
+
+                mask = (
+                    np.isfinite(snr_gaap_euclid) &
+                    np.isfinite(snr_meer)
+                )
+
+                delta = snr_gaap_euclid[mask] - snr_meer[mask]
+                all_delta.append(delta)
 
                 ax = axs[0, j]
-                ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
-                           s=.1, rasterized=True, c='b')
-                ax.plot([cutoff_snr*0.1 + 1e-6, 1e6],
-                        [cutoff_snr*0.1 + 1e-6, 1e6], 'r--')
-                ax.text(0.05, 0.95, f'{columns[flt]}', transform=ax.transAxes,
-                        ha='left', va='top', fontsize=15,
-                        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
-                print('other, ', tile_index)
-                OTHER_PLOTTED = True
+
+                ax.scatter(
+                    snr_meer[mask],
+                    delta,
+                    s=0.5,
+                    alpha=0.25,
+                    rasterized=True
+                )
+
+                # ax.axhline(
+                #     0,
+                #     color='red',
+                #     linestyle='--',
+                #     linewidth=1
+                # )
+                if flt != 'G_EXT_HSC':
+                    ax.text(
+                        0.05, 0.95,
+                        f'{columns[flt]}',
+                        transform=ax.transAxes,
+                        ha='left',
+                        va='top',
+                        fontsize=15,
+                        bbox=dict(
+                            facecolor='white',
+                            alpha=0.7,
+                            edgecolor='none'
+                        )
+                    )
+                else:
+                    ax.text(
+                        0.05, 0.95,
+                        f'WHIGS-G',
+                        transform=ax.transAxes,
+                        ha='left',
+                        va='top',
+                        fontsize=15,
+                        bbox=dict(
+                            facecolor='white',
+                            alpha=0.7,
+                            edgecolor='none'
+                        )
+                    )
+
 
             # NIR filters
             for j, flt in enumerate(['H', 'J', 'Y']):
-                snr_meer = cat[f'FLUX_{flt}_{FWHM}FWHM_APER'] / \
-                    cat[f'FLUXERR_{flt}_{FWHM}FWHM_APER']
-                snr_gaap_euclid = fluxes[f'NIR-{flt}'] / \
-                    fluxes[f'NIR-{flt}_sigma']
 
-                mask = (snr_meer + snr_gaap_euclid > cutoff_snr) & \
-                    np.isfinite(snr_gaap_euclid) & np.isfinite(snr_meer)
+                snr_meer = (
+                    cat[f'FLUX_{flt}_{FWHM}FWHM_APER'] /
+                    cat[f'FLUXERR_{flt}_{FWHM}FWHM_APER']
+                )
+
+                snr_gaap_euclid = (
+                    fluxes[f'NIR-{flt}'] /
+                    fluxes[f'NIR-{flt}_sigma']
+                )
+
+                mask = (
+                    np.isfinite(snr_gaap_euclid) &
+                    np.isfinite(snr_meer)
+                )
+
+                delta = snr_gaap_euclid[mask] - snr_meer[mask]
+                all_delta.append(delta)
 
                 ax = axs[2, j]
-                ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
-                           s=.1, rasterized=True, c='b')
-                ax.plot([cutoff_snr*0.1 + 1e-6, 1e6],
-                        [cutoff_snr*0.1 + 1e-6, 1e6], 'r--')
-                ax.text(0.05, 0.95, f'NIR-{flt}', transform=ax.transAxes,
-                        ha='left', va='top', fontsize=15,
-                        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
+
+                ax.scatter(
+                    snr_meer[mask],
+                    delta,
+                    s=0.5,
+                    alpha=0.25,
+                    rasterized=True
+                )
+
+                # ax.axhline(
+                #     0,
+                #     color='red',
+                #     linestyle='--',
+                #     linewidth=1
+                # )
+
+                ax.text(
+                    0.05, 0.95,
+                    f'NIR-{flt}',
+                    transform=ax.transAxes,
+                    ha='left',
+                    va='top',
+                    fontsize=15,
+                    bbox=dict(
+                        facecolor='white',
+                        alpha=0.7,
+                        edgecolor='none'
+                    )
+                )
+
 
             # VIS
-            snr_meer = cat[f'FLUX_VIS_{FWHM}FWHM_APER'] / \
+            snr_meer = (
+                cat[f'FLUX_VIS_{FWHM}FWHM_APER'] /
                 cat[f'FLUXERR_VIS_{FWHM}FWHM_APER']
-            snr_gaap_euclid = fluxes['VIS'] / fluxes['VIS_sigma']
+            )
 
-            mask = (snr_meer + snr_gaap_euclid > cutoff_snr) & \
-                np.isfinite(snr_gaap_euclid) & np.isfinite(snr_meer)
+            snr_gaap_euclid = (
+                fluxes['VIS'] /
+                fluxes['VIS_sigma']
+            )
+
+            mask = (
+                np.isfinite(snr_gaap_euclid) &
+                np.isfinite(snr_meer)
+            )
+
+            delta = snr_gaap_euclid[mask] - snr_meer[mask]
+            all_delta.append(delta)
 
             ax = axs[2, 3]
-            ax.scatter(snr_meer[mask], snr_gaap_euclid[mask],
-                       s=.1, rasterized=True, c='b')
-            ax.plot([cutoff_snr*0.1 + 1e-16, 1e6],
-                    [cutoff_snr*0.1 + 1e-16, 1e6], 'r--')
-            ax.text(0.05, 0.95, f'VIS', transform=ax.transAxes,
-                    ha='left', va='top', fontsize=15,
-                    bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
-            ax.set_xscale('log')
-            ax.set_yscale('log')
-            ax.set_xlim(cutoff_snr*0.1 + 1e-6, 1e6)
-            ax.set_ylim(cutoff_snr*0.1 + 1e-6, 1e6)
 
-    # Labels only on outer axes
+            ax.scatter(
+                snr_meer[mask],
+                delta,
+                s=0.5,
+                alpha=0.25,
+                rasterized=True
+            )
+
+            # ax.axhline(
+            #     0,
+            #     color='red',
+            #     linestyle='--',
+            #     linewidth=1
+            # )
+
+            ax.text(
+                0.05, 0.95,
+                'VIS',
+                transform=ax.transAxes,
+                ha='left',
+                va='top',
+                fontsize=15,
+                bbox=dict(
+                    facecolor='white',
+                    alpha=0.7,
+                    edgecolor='none'
+                )
+            )
+
+
+    # ---------- formatting ----------
+
+    all_delta = np.concatenate(all_delta)
+
+    # robust y limits
+    ymin, ymax = np.percentile(all_delta, [.01, 99.99])
+    ylim = max(abs(ymin), abs(ymax))
+
+
+    for ax in axs.flat:
+
+        ax.set_xscale('log')
+
+        ax.set_yscale(
+            'symlog',
+            linthresh=1,
+            linscale=1
+        )
+
+        ax.set_ylim(-ylim, ylim)
+
+        # Control number of y-axis labels
+        ax.set_yticks([-1000, -10, 0, 10, 1000])
+
+        ax.grid(
+            True,
+            which='both',
+            alpha=0.25
+        )
+
+
     for ax in axs[0, :]:
         ax.tick_params(labelbottom=False)
+
     for ax in axs[:, 1:].flatten():
         ax.tick_params(labelleft=False)
 
-    # Remove individual axis labels
+
     for ax in axs.flat:
         ax.set_xlabel('')
         ax.set_ylabel('')
 
-    # Single shared labels centered on the figure
-    fig.supxlabel('MER SNR')
-    fig.supylabel('PCA-phot SNR')
 
-    # Ensure zero spacing (in case tight_layout reintroduces gaps)
-    fig.subplots_adjust(wspace=0, hspace=0)
+    fig.supxlabel('MER SNR')
+    fig.supylabel(
+        r'$\mathrm{SNR}_{\mathrm{X{-}BAP}}-\mathrm{SNR}_{\mathrm{MER}}$'
+    )
+
+
+    fig.subplots_adjust(
+        wspace=0,
+        hspace=0
+    )
 
     # plt.show()
     plt.savefig(
@@ -383,7 +594,7 @@ def plot_residual(filters):
     filter_1, filter_2 = filters
     filter_to_catalog_name = {
         'CFIS-U': 'U_EXT_MEGACAM',
-        'WISHES-G': 'G_EXT_HSC',
+        'WHIGS-G': 'G_EXT_HSC',
         'CFIS-R': 'R_EXT_MEGACAM',
         'PANSTARRS-I': 'I_EXT_PANSTARRS',
         'WISHES-Z': 'Z_EXT_HSC',
@@ -473,11 +684,11 @@ def main():
     # plot_color_color_gaap_vs_mer(
     #     ['DES-G', 'DES-R', 'DES-R', 'DES-I'], [-.5, 2.5, -0.5, 2.5], 500, plot_extended=False)
     # plt.show()
-    plot_color_color_gaap_vs_mer(
-        ['DES-G', 'NIR-J', 'NIR-J', 'NIR-H'], [-1, 6, -0.5, 1.2], 500)
-    plt.show()
-    # plot_snr_comparison()
+    # plot_color_color_gaap_vs_mer(
+    #     ['DES-G', 'NIR-J', 'NIR-J', 'NIR-H'], [-1, 6, -0.5, 1.2], 500)
     # plt.show()
+    plot_snr_comparison()
+    plt.show()
     # plot_residual(['NIR-J', 'NIR-H'])
 
 
