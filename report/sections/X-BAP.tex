@@ -87,7 +87,7 @@ To improve the numerical stability of \autoref{eq: analytical deconvolution}, a 
 \begin{equation}\label{eq: numerical deconvolution}
     W^i_\mathrm{A} = \mathcal{F}^{-1}\left\{\frac{\mathcal{F}\{\bar{P}_i\}^*}{|\mathcal{F}\{\bar{P}_i\}|^2+\varepsilon}\cdot\mathcal{F}\{\tilde{W}_\mathrm{A}\}\right\}.
 \end{equation}
-This equation forms the basis for the \gls{x-bap} method. 
+This equation forms the basis for the \gls{x-bap} method. In this work, the pre-seeing is chosen to be Gaussian as this has an analytical Fourier Transform, which prevents effects like fringing in the deconvolution.
 In the special case where the weight matrix is the same for different sources, except for a shift. The aperture flux becomes 
 
 \begin{equation}
