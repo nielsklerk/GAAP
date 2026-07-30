@@ -2,27 +2,31 @@
 
 In this chapter, the results of the simulation and the application of \gls{x-bap} to Euclid observations are discussed. 
 
-\section{Main Findings}
+\section{Summary of Main Findings}
 
-This work developed the \gls{x-bap} method, which computes the aperture flux in different bands by compensating for the effect that the \gls{psf} has on the observation. The simulations show that the pre-seeing aperture flux is recovered and that the error on the measurement can accurately be estimated. Applying \gls{x-bap} to Euclid observations shows that consistent colors are recovered, which can be used for different applications, such as categorization and determining photometric redshift.
+This work developed the \gls{x-bap} method, which computes the aperture flux in different bands by compensating for the effect that the \gls{psf} has on the observation. The simulations show that the pre-seeing aperture flux is accurately recovered. It is also important that the error on the aperture flux measurement is accurate. The simulations showed that the error can be approximately reproduced. However, in the case that the weight function becomes larger and the noise is more correlated, the error starts to be more underestimated. Applying \gls{x-bap} to Euclid observations showed that consistent colors are recovered when compared to the fluxes measured in the \gls{mer} catalog. The colors can be used for several applications. In this work, it was applied for source classification. The galaxies and stars were accurately separated, and a group of sources that are point-like was identified, which are possibly \glspl{qso}. Together, these results show that \gls{x-bap} is a practical technique that can be used for multi-band aperture photometry.
 
-\section{Interpretation and Limitations of the Simulation Results}
+\section{Interpretation of the Simulation Results}
 
-The simulations of the aperture flux measurements gave accurate results when compared to the theoretical results. This validates that the \gls{x-bap} method works in practice and not only mathematically. It is important to note that the method only works for an aperture that is larger than the \gls{psf}, this is a fundamental limitation of this method and not something that can be resolved by implementing \gls{x-bap} differently. 
+The simulations of the aperture flux measurements gave accurate results when compared to the theoretical results. This validates that the \gls{x-bap} method works in practice and not only mathematically. It is important to note that the method only works for an aperture that is larger than the \gls{psf}. This is a fundamental limitation of this method and not something that can be resolved by implementing \gls{x-bap} differently. 
 
 In \autoref{subsec: flux error accuracy}, the two different methods of estimating the error on the aperture flux are compared. One uses an \gls{rms} map and the correlation of the background noise, and the other just uses the background to estimate the error. Both take a single cutout of the observation and use that information for the entire image to estimate the error. This might not be as accurate as it could be, as the noise in the observation could vary depending on the location in the image. For example, the edges of an observation are often noisier than the center of the image. One method to partially resolve this problem is to use different background cutouts for the error estimation per source observed that are closer to that source. This should improve the accuracy of the noise estimation as the noise is more representative of the noise around the source of interest. Generally, the method that utilizes the \gls{rms} map is more accurate as it uses local information about the noise to make the estimate. However, if there is no \gls{rms} map available, the other method also gives an accurate result if the noise is uniform enough across the image.
 
+\textbf{limitations: average psf, gaussian aperture, blending, dependence mer catalog}
 
-\section{Comparison with Other Techniques}
+\section{Interpretation of the Application to MER Mosaics}
+\section{Comparison with Existing Techniques}
 
-\section{Scientific Implementation}
+\section{Scientific Implications}
 
-\gls{x-bap} should improve the accuracy of the color measurements of sources. This should allow for more accurate \gls{sed} fitting of sources. This gives more accurate photo-z, which gives more accurate cosmology
+\gls{x-bap} should improve the accuracy of the color measurements of sources. This allows for more accurate \gls{sed} fitting of sources. This gives more accurate photo-z, which gives more accurate cosmology
 
 \section{Improvements and Future Work}
 
 Automatic weight optimization, application of elliptical weight function. Blended/close sources. Dust reddening correction
 
 For future studies, apply this to other large sky surveys such as \gls{lsst} and Roman. 
+
+Overall, the simulations show that \gls{x-bap} works not only mathematically, but also numerically. A comparison to the \gls{mer} catalog shows consistent results. Although there are limitations to \gls{x-bap} such as the fact that the weight function needs to be larger than the \gls{psf}, the results show that \gls{x-bap} is a promising new technique for multi-band aperture photometry for widespread application to various large sky surveys.  
 
 \newpage

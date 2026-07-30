@@ -1,12 +1,13 @@
-\chapter{Survey Application}
-\textbf{TEXTTTTTTTT}
+\chapter{Survey Application}\label{ch: survey application}
+After testing and validating \gls{x-bap} in the simulations, \gls{x-bap} is applied to the \gls{mer} mosaics of \gls{q1}. The colors derived from the flux measurements are compared to colors derived from the 1\gls{fwhm} flux measurements in the \gls{mer} catalog. Thereafter, the colors are used to classify sources in the \gls{mer} mosaics, and the result is compared to the \gls{phz} catalog classifications. 
+
 \section{Application of X-BAP}
 
 In this section, the methodology of applying \gls{x-bap} to \gls{mer} mosaics is explained. To apply the \gls{x-bap} method to images from \gls{edf}, several inputs are required: observations, coordinates of sources, \glspl{psf}, and the \gls{rms} map.
 
 \subsection{PSF}
 
-The MER catalog has a \gls{psf} grid. This can be used to find a more accurate \gls{psf} for each part of the image by interpolating between grid points. However, in \gls{x-bap} this is computationally expensive as the prefactor in \autoref{eq: numerical deconvolution} then needs to be recalculated for every single source. Instead of that approach, the \glspl{psf} in the grid are averaged to obtain a single \gls{psf} that represents the seeing across the entire image, which is used for the aperture flux.
+Each \gls{mer} mosaic has a corresponding \gls{psf} grid per band. This can be used to find a more accurate \gls{psf} for each region of the image by interpolating between grid points. However, in \gls{x-bap} this is computationally expensive as the Fourier transform of the \gls{psf} in \autoref{eq: numerical deconvolution} then needs to be recalculated for every single source. Instead of that approach, this work averages the center 100 \glspl{psf} in the grid to obtain a single \gls{psf} that represents the seeing across the entire image, which is used for the aperture flux. This approach reduces the precision of the flux measurement, but substantially reduces the computational cost.
 
 % \subsection{PSF Construction}
 
@@ -20,14 +21,12 @@ The MER catalog has a \gls{psf} grid. This can be used to find a more accurate \
 %     \caption{The flux of the sources in the VIS-band for different FWHM. The vertical strip of sources is saturated stars in the image. These stars can be used to create an estimate of the PSF. }
 %     \label{fig: Chimney}
 % \end{figure}
-% The stretch of sources that form a vertical line are the saturated stars, which are point sources.  This means that after convolution with the PSF, they have the same shape as the PSF. These sources can be stacked to create an estimate for the PSF in that image. 
+% The sources that form a vertical line are the saturated stars, which are point sources.  This means that after convolution with the PSF, they have the same shape as the PSF. These sources can be stacked to create an estimate for the PSF in that image. 
 
 
 \subsection{Noise Square}
 
-Find a square with the minimal variance. This square should contain no sources, so it should be only background noise. This noise square is used to calculate the correlation between the pixels for the MER mosaics (following \Cref{subsec: Noise from RMS}).
-
-\textbf{EXPLAIN HOW THIS IS FOUND + image}
+Besides the \gls{rms} maps, information about the correlation between pixels is needed to estimate the error on the aperture flux measurement. For this a noise square is used, which is a cutout of the background in the observation. To find this square, cutouts are taken of the observation in a grid-like pattern. The cutouts are 128x128 pixels. This square should contain no sources, so it should have rather uniform pixel values. For each of the cutouts, the variance is computed and the cutout with the smallest variance is used as noise square. However, for some of the \gls{mer} tiles, the observations do not cover the full tile, resulting in large regions with zeroes. So a quality cut is made to noise square, demanding that the square has at least 90\% non-zero pixel values. This noise square is used to calculate the correlation between the pixels for the MER mosaics (following \Cref{subsec: Noise from RMS}).
 
 
 
@@ -58,7 +57,7 @@ The colors calculated using the different sizes of the weight functions give inf
 
 
 \subsection{Splitting Based on Colors}\label{subsec: splitting based on colors}
-To separate sources into groups of sources that have similar colors to either stars or galaxies, \gls{umap} is used. \textbf{EXPLANATION OF UMAP + PARAMS USED}. After the dimension reduction of the color data, DBSCAN \citep{ester_density-based_1996} is used to label the sources into two groups: one with sources that have star-like colors, and one with sources that have galaxy-like colors.
+To separate sources into groups of sources that have similar colors to either stars or galaxies, \gls{umap} is used \citep{mcinnes_umap_2018}. \gls{umap} perform a non-linear dimension reduction on data. It preseres local neighborhood information, which means that it retains the higher dimensional sutrcutre when reduin ght dimensionality. After the dimension reduction of the color data, DBSCAN \citep{ester_density-based_1996} is used to label the sources into two groups: one with sources that have star-like colors, and one with sources that have galaxy-like colors.
 
 \subsection{Differentiating between Point-Sources and Extended Sources}
 
@@ -68,7 +67,7 @@ As \gls{x-bap} is a way to apply a weight function on the pre-seeing image, poin
     \centering
     \includegraphics[width=0.9\linewidth]{results/figures/analysis/point_vs_extended.pdf}
     \caption{The difference in the aperture flux for a point source and an extended source. When a Gaussian weight function is centered on the source, the aperture flux is the same for different sizes of the weight function, but for an extended source the aperture flux increases when the size of the weight function increases.}
-    \label{fig:placeholder}
+    \label{fig: point vs extended}
 \end{figure}
 This means that the difference in flux for different-sized weight functions gives information about the physical size of the source in the image. A similar procedure is followed as in \autoref{subsec: splitting based on colors}, except the fractional difference between different weight sizes in each band is added into the parameters that \gls{umap} reduces the dimensionality of. Those are defined as
 \begin{align}
@@ -160,7 +159,7 @@ The flux measurements of the point sources in the \gls{edf} show that the number
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{results/figures/analysis/snr_comparison.pdf}
-    \caption{Comparison of \gls{snr} from \gls{x-bap} and the \gls{mer} catalog for all catalog filters. The dashed line denotes equal \gls{snr}. The measurements are from tiles 102022978 (top row), 102158274 (middle row), and 102158274 (bottom row).}
+    \caption{Comparison of \gls{snr} from \gls{x-bap} and the \gls{mer} catalog for all catalog filters. The dashed line denotes equal \gls{snr}. The measurements are from tiles 102022978 (top row), 102158274 (middle row and bottom row).}
     \label{fig: snr comparison correlated}
 \end{figure}
 The results in \autoref{fig: snr comparison correlated} show a similar behavior, where the \gls{snr} of the sources, especially towards higher \gls{snr}, is lower for the \gls{x-bap} method compared to the method used to calculate the flux in the \gls{mer} catalogs.
@@ -191,7 +190,7 @@ Following a similar procedure as \cite{euclid_collaboration_euclid_2026}, the co
 \subsubsection{Splitting Sources}\label{subsec: Splitting Sources}
 
 
-Here, \gls{umap} \citep{mcinnes_umap_2018} is used to reduce the dimensionality of all the color information of the sources. This is done for the tiles in the \gls{edfn} and for the tiles in \gls{edff} and \gls{edfs}.
+Here, \gls{umap} \citep{mcinnes_umap_2018} is used to reduce the dimensionality of all the color information of the sources. This is done for the tiles in the \gls{edfn} and for the tiles in \gls{edff} and \gls{edfs}. The result of the splitting based on colors is shown in \autoref{fig: umap splitting}.
 
 \begin{figure}[H]
     \centering
@@ -213,7 +212,7 @@ Here, \gls{umap} \citep{mcinnes_umap_2018} is used to reduce the dimensionality 
     \caption{\gls{umap} dimension reduction of the colors for the objects in the fields \gls{edfn} (left), and \gls{edff}/\gls{edfs} (right). Both show two large clusters of objects which are labeled.}
     \label{fig: umap splitting}
 \end{figure}
-Using \gls{umap}, 2 large clusters of objects are visible (\autoref{fig: umap splitting}). The structure of the clusters is similar between the 2 fields. The points with label 1 are more shaped as a blob, whereas the points with label0 form a longer string. However, there is no information on which type of object corresponds to these clusters. For this, the colors of the clusters are plotted to show which type of object corresponds to which label.
+\noindent Using \gls{umap}, 2 large clusters of objects are visible (\autoref{fig: umap splitting}). These are expected to be the sources that have galaxy-like colors and sources that have star-like colors. As \glspl{qso} can have much more varied colors, they are likely to be among both clusters. The structure of the clusters is similar between the 2 fields. The points with label 1 are more shaped as a blob, whereas the points with label 0 form a longer string. However, there is no information on which type of object corresponds to these clusters. For this, the colors of the clusters are plotted to show which type of object corresponds to which label.
 
 \begin{figure}[H]
     \centering
@@ -352,7 +351,7 @@ label 0 & \input{results/tables/star/south/0.txt} \\
 label 1 & \input{results/tables/star/south/1.txt} \\
 \bottomrule
 \end{tabular}
-\caption{Classification of the objects with labels according to the \gls{phz} catalog. The objects are either flagged as unclassified, or as star, galaxy, or \gls{qso} or a combination of the three.}
+\caption{Classification of the objects with labels according to the \gls{phz} catalog. The objects are either flagged as unclassified, or as star, galaxy, or \gls{qso}, or a combination of the three.}
 \label{tab: star-like comparison}
 \end{table}
 The sources that have label 0 are largely classified as stars by \cite{euclid_collaboration_euclid_2026}, which is also what is expected from the point-source-probability in the \gls{mer} catalog. 
@@ -427,7 +426,7 @@ label 0 & \input{results/tables/galaxy/south/0.txt} \\
 label 1 & \input{results/tables/galaxy/south/1.txt} \\
 \bottomrule
 \end{tabular}
-\caption{Classification of the objects with labels according to the \gls{phz} catalog. The objects are either flagged as unclassified, or as star, galaxy, or \gls{qso} or a combination of the three.}
+\caption{Classification of the objects with labels according to the \gls{phz} catalog. The objects are either flagged as unclassified, or as star, galaxy, or \gls{qso}, or a combination of the three.}
 \label{tab: galaxy}
 \end{table}
 The label 0 sources are expected to be mostly galaxies, which is also the result of the comparison with the results from the \gls{phz} catalog. The label 1 sources are expected to be the \glspl{qso}. In the case of \gls{edfn}, \~10.5\% of the sources are flagged as \gls{qso} in the \gls{phz} catalog. For \gls{edff}/\gls{edfs} almost none of the sources are flagged as \gls{qso} by the \gls{phz} catalog. This is most likely due to the missing $u$ band in these fields, which gives more information about bluer light than the other filters. This missing information makes it harder to flag the sources as \gls{qso}.  
@@ -476,8 +475,8 @@ Three tiles show a different color from the other tiles in the galaxy-like color
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{results/figures/analysis/flux_cmparison.png}
-    \caption{Distribution of the measured aperture fluxes on a logarithmic scale. The yellow lines are the distribution of fluxes in the tiles 102021578, 102021579, and 102021579. The blue lines are the distribution of fluxes in all the other tiles. For each band, both align well except for in the case of $z$ where they strongly deviate, especially for smaller aperture sizes.}
+    \includegraphics[width=0.9\linewidth]{results/figures/analysis/deviating_tiles.pdf}
+    \caption{Distribution of the measured aperture fluxes on a logarithmic scale. The yellow lines are the distribution of fluxes in the tiles 102021578, 102021579, and 102021579. The blue lines are the distribution of fluxes in all the other tiles. For each band, both align well except in the case of $z$, where they strongly deviate, especially for smaller aperture sizes.}
     \label{fig: }
 \end{figure}
 
